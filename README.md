@@ -13,3 +13,4 @@ Written using those technologies:
 ## Authors
 
 - Max Kamerov(Indigowar)<indigowar.github@gmail.com>
+- Evgeniy(delerus)<delerus21@gmail.com> 
