@@ -1,8 +1,8 @@
 set(cnm_lib_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/cnm/include/)
 
-file(GLOB_RECURSE cnm_lib_SRC_FILES src/*.cpp)
+file(GLOB_RECURSE cnm_lib_SRC_FILES src/**.cpp)
 
-file(GLOB_RECURSE cnm_lib_TEST_FILES test/*.cpp)
+file(GLOB_RECURSE cnm_lib_TEST_FILES test/**.cpp)
 
 add_library(cnm_lib STATIC ${cnm_lib_SRC_FILES})
 target_include_directories(cnm_lib PUBLIC ${cnm_lib_INCLUDE_DIRECTORIES})
