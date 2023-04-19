@@ -8,10 +8,11 @@
 #include <thread>
 #include <vector>
 
+namespace cnm::utils {
+
 class thread_pool {
  public:
-
-  thread_pool(size_t threads_amount) : m_stop_flag(false) {
+  explicit thread_pool(size_t threads_amount) : m_stop_flag(false) {
     for (size_t it = 0; it < threads_amount; it++) {
       m_threads.push_back(std::thread(&thread_pool::thread_loop, this));
     }
@@ -34,7 +35,7 @@ class thread_pool {
         if (m_stop_flag && m_tasks.empty()) {
           return;
         }
-        //func = m_tasks.front();
+        // func = m_tasks.front();
         func = m_tasks.pop();
       }
       func();
@@ -62,14 +63,12 @@ class thread_pool {
  private:
   std::vector<std::thread> m_threads;
   cnm::utils::thread_safe_queue<std::function<void()>> m_tasks;
-  //std::queue<std::function<void()>> m_tasks;
+  // std::queue<std::function<void()>> m_tasks;
   mutable std::mutex m_lock;
   std::atomic<bool> m_stop_flag;
   std::condition_variable m_condition;
 
-  class Worker {
-   public:
-  };
 };
+}  // namespace cnm::utils
 
 #endif  // HPP_CNM_LIB_UTILS_THREAD_POOL_HPP
