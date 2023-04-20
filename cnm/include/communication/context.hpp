@@ -17,9 +17,9 @@ class context {
 
   void abort();
 
-  context& operator<<(message&&);
+  void write(message&&);
 
-  context& operator>>(message&);
+  message read();
 
   context(const context&) = delete;
   context& operator=(const context&) = delete;
