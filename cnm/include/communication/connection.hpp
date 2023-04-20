@@ -1,6 +1,7 @@
 #ifndef HPP_CNM_LIB_COMMUNICATION_HPP
 #define HPP_CNM_LIB_COMMUNICATION_HPP
 
+#include <future>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
@@ -48,6 +49,22 @@ class connection {
    * @return true - if server can receive multiple messages, otherwise - false.
    */
   [[nodiscard]] virtual bool is_server_buffered() const noexcept = 0;
+
+  /**
+   *
+   * @return status is there no messages for master
+   */
+  [[nodiscard]] virtual bool is_master_chan_empty() const noexcept = 0;
+  /**
+   *
+   * @return status is there no messages for server
+   */
+  [[nodiscard]] virtual bool is_server_chan_empty() const noexcept = 0;
+
+  * @brief you can ask to receive later the message
+   * @return future object of received message
+   */
+  [[nodiscard]] virtual std::future<message> read_async(int) noexcept = 0;
 
   /**
    *
