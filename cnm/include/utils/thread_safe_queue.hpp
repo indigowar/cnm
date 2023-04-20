@@ -56,21 +56,14 @@ class thread_safe_queue final : protected std::queue<T> {
     std::queue<T>::push(value);
   }
 
-  /**
-   * @brief deletes a value from queue,
-   *
-   * @return the deleted value inside optional or nullopt
-   */
-  std::optional<T> pop() noexcept {
-    std::unique_lock lock{m_mutex};
-    if (std::queue<T>::empty()) {
-      return std::nullopt;
-    }
-
-    std::optional deleted_front_item{std::queue<T>::front()};
+  void pop() noexcept {
+    std::unique_lock lock(m_mutex);
     std::queue<T>::pop();
+  }
 
-    return deleted_front_item;
+  T front() const noexcept {
+    std::shared_lock lock(m_mutex);
+    return std::queue<T>::front();
   }
 
   thread_safe_queue(const thread_safe_queue&) = delete;
