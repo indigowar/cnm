@@ -61,7 +61,8 @@ class connection {
    */
   [[nodiscard]] virtual bool is_server_chan_empty() const noexcept = 0;
 
-  * @brief you can ask to receive later the message
+  /*
+   * @brief you can ask to receive later the message
    * @return future object of received message
    */
   [[nodiscard]] virtual std::future<message> read_async(int) noexcept = 0;
