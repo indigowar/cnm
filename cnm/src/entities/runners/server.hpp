@@ -11,22 +11,17 @@ namespace cnm::entities::runners {
 
 class server : public base_runner {
  public:
-  class logic {
-   public:
-    virtual void operator()(server&, communication::slave_ctx& ctx) = 0;
-  };
+  using logic_t = std::function<void(communication::slave_ctx&&)>;
 
-  [[maybe_unused]] server(std::string_view host, std::unique_ptr<logic> l)
-      : base_runner(host), m_handler(std::move(l)) {}
+  server(std::string_view host, size_t concurrent_capabilities,
+         logic_t handler);
 
-  ~server() override = default;
+  ~server();
 
-  [[maybe_unused]] void serve(communication::slave_ctx&&) noexcept override {}
-
+  virtual void serve(communication::slave_ctx&&) noexcept = 0;
 
  private:
-  std::unique_ptr<logic> m_handler;
-
+  logic_t m_logic;
   utils::thread_pool m_pool;
 };
 
