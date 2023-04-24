@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <utils/thread_safe_queue.hpp>
+#include "../../src/utils/thread_safe_queue.hpp"
 
 TEST(thread_safe_queue, default_behavior) {
   cnm::utils::thread_safe_queue<int> q;

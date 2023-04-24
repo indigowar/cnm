@@ -1,8 +1,8 @@
 #ifndef HPP_CNM_LIB_ENTITIES_RUNNERS_PERSONAL_COMPUTER_HPP
 #define HPP_CNM_LIB_ENTITIES_RUNNERS_PERSONAL_COMPUTER_HPP
 
-#include "entities/runners/runner.hpp"
-#include "utils/thread_safe_queue.hpp"
+#include "../../utils/thread_safe_queue.hpp"
+#include "runner.hpp"
 
 namespace cnm::entities::runners {
 

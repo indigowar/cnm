@@ -3,7 +3,7 @@
 
 #include <mutex>
 
-#include "communication/message.hpp"
+#include "message.hpp"
 
 namespace cnm::communication {
 

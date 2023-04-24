@@ -6,8 +6,8 @@
 #include <mutex>
 #include <shared_mutex>
 
-#include "communication/context.hpp"
-#include "communication/message.hpp"
+#include "context.hpp"
+#include "message.hpp"
 
 namespace cnm::communication {
 

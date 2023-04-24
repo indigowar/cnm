@@ -1,9 +1,9 @@
-#include "communication/connection.hpp"
+#include "connection.hpp"
 
 #include <random>
 
-#include "communication/master_ctx.hpp"
-#include "communication/slave_ctx.hpp"
+#include "master_ctx.hpp"
+#include "slave_ctx.hpp"
 
 using namespace cnm::communication;
 

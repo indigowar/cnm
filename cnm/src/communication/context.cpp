@@ -1,6 +1,6 @@
-#include "communication/context.hpp"
+#include "context.hpp"
 
-#include "communication/connection.hpp"
+#include "connection.hpp"
 
 using namespace cnm::communication;
 

@@ -1,8 +1,8 @@
 #ifndef HPP_CNM_LIB_COMMUNICATION_SLAVE_CTX_HPP
 #define HPP_CNM_LIB_COMMUNICATION_SLAVE_CTX_HPP
 
-#include "communication/connection.hpp"
-#include "communication/context.hpp"
+#include "connection.hpp"
+#include "context.hpp"
 
 namespace cnm::communication {
 

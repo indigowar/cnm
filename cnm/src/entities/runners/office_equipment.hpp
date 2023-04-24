@@ -5,7 +5,7 @@
 #ifndef HPP_CNM_LIB_ENTITIES_RUNNERS_OFFICE_EQUIPMENT_HPP
 #define HPP_CNM_LIB_ENTITIES_RUNNERS_OFFICE_EQUIPMENT_HPP
 
-#include "entities/runners/runner.hpp"
+#include "runner.hpp"
 
 namespace cnm::entities::runners {
 
