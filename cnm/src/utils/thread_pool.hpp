@@ -3,78 +3,80 @@
 
 #include <condition_variable>
 #include <functional>
-#include <future>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <thread>
-#include <chrono>
+#include <vector>
 
 namespace cnm::utils {
 
-// TODO: write
-//  https://github.com/bshoshany/thread-pool/blob/master/BS_thread_pool_light.hpp#L210
-class thread_pool final {
+class thread_pool {
+  using task_type = std::function<void()>;
+
  public:
-  explicit thread_pool(size_t);
-
-  ~thread_pool();
-
-  template <class Func, class... Args>
-  void push(Func&& function, Args&&... args) {
-    std::function<void()> task =
-        std::bind(std::forward<Func>(function), std::forward<Args>(args)...);
-    {
-      std::scoped_lock lock(m_mutex);
-      m_tasks.push(task);
+  explicit thread_pool(size_t num) {
+    for (size_t i{}; i < num; i++) {
+      workers_.emplace_back([this] {
+        while (true) {
+          task_type task;
+          {
+            std::unique_lock<std::mutex> lock(task_mutex_);
+            task_cond_.wait(lock, [this] { return !tasks_.empty(); });
+            task = std::move(tasks_.front());
+            tasks_.pop();
+          }
+          if (!task) {
+            push_stop_task();
+            return;
+          }
+          task();
+        }
+      });
     }
-    ++m_total;
-    m_available.notify_one();
   }
 
-  template <class Func, class... Args,
-            class Result =
-                std::invoke_result_t<std::decay_t<Func>, std::decay_t<Args>...>>
-  std::future<Result> submit(Func&& func, Args&&... args) {
-    std::function<Result()> task =
-        std::find(std::forward<Func>(func), std::forward<Args>(args)...);
-    std::shared_ptr<std::promise<Result>> promise =
-        std::make_shared<std::promise<Result>>();
+  ~thread_pool() { stop(); }
 
-    push([task, promise] {
-      try {
-        if constexpr (std::is_void_v<Result>) {
-          std::invoke(task);
-          promise->set_value();
-        } else {
-          promise->set_value(std::invoke(task));
-        }
-      } catch (...) {
-        try {
-          promise->set_exception(std::current_exception());
-        } catch (...) {
-        }
+  void stop() {
+    push_stop_task();
+    for (auto& worker : workers_) {
+      if (worker.joinable()) {
+        worker.join();
       }
-    });
-    return promise->get_future();
+    }
+    std::queue<task_type> empty{};
+    std::swap(tasks_, empty);
   }
 
-  void graceful_shutdown(const std::chrono::duration& wait_time);
+  template <typename F, typename... Args>
+  auto push(F&& f, Args&&... args) {
+    using return_type = std::invoke_result_t<F, Args...>;
+    auto task = std::make_shared<std::packaged_task<return_type()>>(
+        std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+    auto res = task->get_future();
 
-  void terminate();
+    {
+      std::lock_guard<std::mutex> lock(task_mutex_);
+      tasks_.emplace([task] { (*task)(); });
+    }
+    task_cond_.notify_one();
+
+    return res;
+  }
 
  private:
-  std::atomic_bool m_running;
-  std::condition_variable m_available;
-  std::condition_variable m_done;
-  std::queue<std::function<void()>> m_tasks;
-  std::atomic<size_t> m_total;
-  mutable std::mutex m_mutex;
-  std::atomic_bool m_waiting;
-  std::atomic_bool m_blocked;
+  void push_stop_task() {
+    std::lock_guard<std::mutex> lock(task_mutex_);
+    tasks_.emplace();
+    task_cond_.notify_one();
+  }
 
-  std::vector<std::thread> m_threads;
+  std::vector<std::thread> workers_{};
+  std::queue<task_type> tasks_{};
+  std::mutex task_mutex_;
+  std::condition_variable task_cond_;
 };
 
 }  // namespace cnm::utils
-
 #endif  // HPP_CNM_LIB_UTILS_THREAD_POOL_HPP

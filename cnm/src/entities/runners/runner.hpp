@@ -3,9 +3,9 @@
 
 #include <string_view>
 
-namespace cnm::entities::runners {
+#include "communication/slave_ctx.hpp"
 
-class serve_object_mock {};
+namespace cnm::entities::runners {
 
 /**
  * @brief base_runner is a base class for all runners that exists in network.
@@ -16,7 +16,7 @@ class base_runner {
 
   virtual ~base_runner() {}
 
-  // calling this method should start a termination process
+  virtual  // calling this method should start a termination process
   // so all threads that runner contains should be destroyed
   void terminate() noexcept { on_termination(); }
 
@@ -29,7 +29,7 @@ class base_runner {
    * because the connections are not ready and
    * there's no need in specifying of runner's behavior.
    */
-  virtual void serve(serve_object_mock&&) noexcept = 0;
+  virtual void serve(communication::slave_ctx&&) noexcept = 0;
 
  protected:
   // this method provides the logic of termination the runner
