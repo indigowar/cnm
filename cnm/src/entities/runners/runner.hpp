@@ -16,7 +16,7 @@ class base_runner {
 
   virtual ~base_runner() = default;
 
-  virtual  // calling this method should start a termination process
+  // calling this method should start a termination process
   // so all threads that runner contains should be destroyed
   void terminate() noexcept { on_termination(); }
 
