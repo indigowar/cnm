@@ -14,13 +14,13 @@ class base_runner {
  public:
   explicit base_runner(std::string_view host) : m_host{host} {}
 
-  virtual ~base_runner() {}
+  virtual ~base_runner() = default;
 
   virtual  // calling this method should start a termination process
   // so all threads that runner contains should be destroyed
   void terminate() noexcept { on_termination(); }
 
-  std::string_view host() const noexcept { return m_host; }
+  [[nodiscard]] std::string_view host() const noexcept { return m_host; }
 
   /**
    * @brief serve the given connection(task)
