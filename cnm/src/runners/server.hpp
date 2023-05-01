@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "communication/slave_ctx.hpp"
-#include "entities/runners/runner.hpp"
+#include "runner.hpp"
 #include "utils/thread_pool.hpp"
 
 namespace cnm::entities::runners {

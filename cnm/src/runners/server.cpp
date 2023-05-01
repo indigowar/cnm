@@ -1,4 +1,4 @@
-#include "entities/runners/server.hpp"
+#include "server.hpp"
 
 using namespace cnm::entities::runners;
 
