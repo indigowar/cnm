@@ -170,6 +170,11 @@ class channel_impl<package_t, 1> : public channel<package_t> {
 
   size_t limit() const noexcept { return 1; }
 
+  channel_impl(const channel_impl&) = delete;
+  channel_impl(channel_impl&&) = delete;
+  channel_impl& operator=(const channel_impl&) = delete;
+  channel_impl& operator=(channel_impl&&) = delete;
+
  private:
   static void runtime_check(bool v, std::string msg) {
     if (v) {
