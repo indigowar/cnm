@@ -15,6 +15,7 @@ namespace cnm::communication {
  */
 template <class T>
 class channel {
+ public:
   virtual ~channel() = default;
 
   /**
