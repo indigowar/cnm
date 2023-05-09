@@ -87,7 +87,7 @@ class channel_t : public channel<package_t> {
     closed_ = true;
 
     while (!pending_promises_.empty()) {
-      auto promise = pending_promises_.front();
+      auto promise = std::move(pending_promises_.front());
       promise.set_value(package_t{});
     }
   }
