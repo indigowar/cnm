@@ -202,7 +202,7 @@ class channel_t<package_t, 1> : public channel<package_t> {
     }
   }
 
-  size_t limit() const noexcept { return 1; }
+  size_t limit() const noexcept override { return 1; }
 
   channel_t(const channel_t&) = delete;
   channel_t(channel_t&&) = delete;
