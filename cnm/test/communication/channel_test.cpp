@@ -2,12 +2,14 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
+#include <numeric>
 #include <ranges>
 
 using namespace cnm::communication;
 
 TEST(channel_test, channel_creation_with_make_with_limit) {
-  auto chan = channel::make_with_limit<int>(5);
+  auto chan = channel<int>::make_with_limit(5);
   EXPECT_TRUE(chan.is_buffered());
   EXPECT_EQ(chan.get_limit(), 5);
   EXPECT_EQ(chan.get_amount_of_contained(), 0);
@@ -15,26 +17,26 @@ TEST(channel_test, channel_creation_with_make_with_limit) {
 }
 
 TEST(channel_test, channel_creation_with_make_unbuffered) {
-  auto chan = channel::make_unbuffered<int>();
+  auto chan = channel<int>::make_unbuffered();
   EXPECT_FALSE(chan.is_buffered());
-  EXPECT_THROWS(chan.get_limit(), unbufferized_channel_error);
+  EXPECT_THROW(chan.get_limit(), channel<int>::unbuffered_error);
   EXPECT_EQ(chan.get_amount_of_contained(), 0);
   EXPECT_FALSE(chan.is_closed());
 }
 
 TEST(channel_test, writting_in_channel) {
-  auto chan = channel::make_unbuffered<int>();
+  auto chan = channel<int>::make_unbuffered();
 
-  std::array<int, 10> array;
+  std::array<int, 10> array{};
   std::iota(array.begin(), array.end(), 0);
 
   std::for_each(array.begin(), array.end(), [&chan](int i) { chan << i; });
 
-  EXPECT_EQ(chan.get_contained_number(), 10);
+  EXPECT_EQ(chan.get_amount_of_contained(), 10);
 }
 
 TEST(channel_test, reading_from_channel) {
-  auto chan = channel::make_unbuffered<int>();
+  auto chan = channel<int>::make_unbuffered();
 
   chan << 50 << 100;
 
@@ -46,7 +48,7 @@ TEST(channel_test, reading_from_channel) {
 }
 
 TEST(channel_test, closing_channel) {
-  auto chan = channel::make_unbuffered<int>();
+  auto chan = channel<int>::make_unbuffered();
 
   EXPECT_FALSE(chan.is_closed());
 
@@ -57,14 +59,14 @@ TEST(channel_test, closing_channel) {
         int i{};
         chan >> i;
       },
-      channel_closed_error);
+      channel<int>::closed_channel_error);
   EXPECT_TRUE(chan.is_closed());
 }
 
 TEST(channel_test, reading_from_closing_channel) {
   // reading from closing channel should be available
 
-  auto chan = channel::make_unbuffered<int>();
+  auto chan = channel<int>::make_unbuffered();
 
   chan << 600 << 1000 << 3000;
 
@@ -77,7 +79,7 @@ TEST(channel_test, reading_from_closing_channel) {
         int i{};
         chan >> i;
       },
-      channel_closed_error);
+      channel<int>::closed_channel_error);
 
   int first{}, second{}, third{};
 
