@@ -1,4 +1,4 @@
-#include "communication/channel.hpp"
+#include "communication/channels/channel.hpp"
 
 #include <gtest/gtest.h>
 
