@@ -58,7 +58,7 @@ TEST(channel_test, closing_channel) {
       [&chan] {
         int i{};
         chan >> i;
-      },
+      }(),
       channel<int>::closed_channel_error);
   EXPECT_TRUE(chan.is_closed());
 }
@@ -78,7 +78,7 @@ TEST(channel_test, reading_from_closing_channel) {
       [&chan] {
         int i{};
         chan >> i;
-      },
+      }(),
       channel<int>::closed_channel_error);
 
   int first{}, second{}, third{};
