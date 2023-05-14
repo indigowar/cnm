@@ -18,7 +18,7 @@ class server : public base_runner {
 
   ~server();
 
-  virtual void serve(communication::slave_ctx&&) noexcept = 0;
+  virtual void serve(communication::slave_ctx&&) noexcept override;
 
  private:
   logic_t m_logic;
