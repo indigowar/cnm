@@ -6,17 +6,13 @@
 #include <mutex>
 #include <shared_mutex>
 
+#include "communication/channels/exceptions.hpp"
+
 namespace cnm::communication {
 
 template <class package_t>
 class channel final {
  public:
-  class unbuffered_error : public std::exception {};
-
-  class closed_error : public std::exception {};
-
-  struct overflow_error : public std::exception {};
-
   static channel<package_t> make_with_limit(size_t limit_value);
 
   static channel<package_t> make_unbuffered();

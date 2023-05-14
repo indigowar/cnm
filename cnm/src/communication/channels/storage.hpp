@@ -5,14 +5,22 @@
 #include <future>
 #include <queue>
 
+#include "communication/channels/exceptions.hpp"
+
 namespace cnm::communication {
 
 template <class T>
 class channel_internal_storage {
  public:
-  explicit channel_internal_storage() = default;
+  explicit channel_internal_storage(size_t limit) : m_limit{limit} {}
 
-  ~channel_internal_storage() = default;
+  ~channel_internal_storage() {
+    const auto exception =
+        std::make_exception_ptr(exceptions::channel_closed_error());
+    for (std::promise<T>& promise : m_expected) {
+      promise.set_exception(exception);
+    }
+  }
 
   void push(T value) {
     std::unique_lock lock(m_mutex);
@@ -31,9 +39,7 @@ class channel_internal_storage {
     return expect();
   }
 
-  [[nodiscard]] size_t size() const noexcept {
-    return m_saved.size() + m_expected.size();
-  }
+  [[nodiscard]] size_t size() const noexcept { return m_saved.size(); }
 
   channel_internal_storage(const channel_internal_storage<T>&) = delete;
   channel_internal_storage<T>& operator=(const channel_internal_storage<T>&) =
@@ -77,6 +83,7 @@ class channel_internal_storage {
   std::queue<std::future<T>> m_saved;
   std::queue<std::promise<T>> m_expected;
   std::mutex m_mutex;
+  size_t m_limit;
 };
 
 }  // namespace cnm::communication

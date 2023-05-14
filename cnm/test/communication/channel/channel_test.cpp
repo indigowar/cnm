@@ -19,7 +19,7 @@ TEST(channel_test, channel_creation_with_make_with_limit) {
 TEST(channel_test, channel_creation_with_make_unbuffered) {
   auto chan = channel<int>::make_unbuffered();
   EXPECT_FALSE(chan.is_buffered());
-  EXPECT_THROW(chan.get_limit(), channel<int>::unbuffered_error);
+  EXPECT_THROW(chan.get_limit(), exceptions::channel_unbuffered_error);
   EXPECT_EQ(chan.get_amount_of_contained(), 0);
   EXPECT_FALSE(chan.is_closed());
 }
@@ -52,14 +52,14 @@ TEST(channel_test, closing_channel) {
 
   EXPECT_FALSE(chan.is_closed());
 
-  chan.is_closed();
+  chan.close();
 
   EXPECT_THROW(
       [&chan] {
         int i{};
         chan >> i;
       }(),
-      channel<int>::closed_error);
+      exceptions::channel_closed_error);
   EXPECT_TRUE(chan.is_closed());
 }
 
@@ -79,7 +79,7 @@ TEST(channel_test, reading_from_closing_channel) {
         int i{};
         chan >> i;
       }(),
-      channel<int>::closed_error);
+      exceptions::channel_closed_error);
 
   int first{}, second{}, third{};
 
