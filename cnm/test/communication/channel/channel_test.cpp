@@ -59,7 +59,7 @@ TEST(channel_test, closing_channel) {
         int i{};
         chan >> i;
       }(),
-      channel<int>::closed_channel_error);
+      channel<int>::closed_error);
   EXPECT_TRUE(chan.is_closed());
 }
 
@@ -79,7 +79,7 @@ TEST(channel_test, reading_from_closing_channel) {
         int i{};
         chan >> i;
       }(),
-      channel<int>::closed_channel_error);
+      channel<int>::closed_error);
 
   int first{}, second{}, third{};
 

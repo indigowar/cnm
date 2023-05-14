@@ -13,9 +13,9 @@ class channel final {
  public:
   class unbuffered_error : public std::exception {};
 
-  class closed_channel_error : public std::exception {};
+  class closed_error : public std::exception {};
 
-  struct channel_is_overflowed : public std::exception {};
+  struct overflow_error : public std::exception {};
 
   static channel<package_t> make_with_limit(size_t limit_value);
 
@@ -30,9 +30,9 @@ class channel final {
 
   void close();
 
-  channel<package_t>& operator<<(package_t value) {}
+  channel<package_t>& operator<<(package_t value);
 
-  channel<package_t>& operator>>(package_t& value) {}
+  channel<package_t>& operator>>(package_t& value);
 
  private:
 };
