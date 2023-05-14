@@ -5,7 +5,7 @@
 using namespace cnm::communication;
 
 TEST(channel_internal_storage_test, main_test) {
-  channel_internal_storage<int> storage{};
+  channel_storage<int> storage{};
 
   storage.push(5);
   storage.push(1);

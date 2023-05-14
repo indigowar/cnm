@@ -10,11 +10,11 @@
 namespace cnm::communication {
 
 template <class T>
-class channel_internal_storage {
+class channel_storage {
  public:
-  explicit channel_internal_storage(size_t limit) : m_limit{limit} {}
+  explicit channel_storage(size_t limit) : m_limit{limit} {}
 
-  ~channel_internal_storage() {
+  ~channel_storage() {
     const auto exception =
         std::make_exception_ptr(exceptions::channel_closed_error());
     for (std::promise<T>& promise : m_expected) {
@@ -39,14 +39,16 @@ class channel_internal_storage {
     return expect();
   }
 
-  [[nodiscard]] size_t size() const noexcept { return m_saved.size(); }
+  [[nodiscard]] size_t size() const noexcept {
+    std::unique_lock lock(m_mutex);
+    return m_saved.size();
+  }
 
-  channel_internal_storage(const channel_internal_storage<T>&) = delete;
-  channel_internal_storage<T>& operator=(const channel_internal_storage<T>&) =
-      delete;
+  channel_storage(const channel_storage<T>&) = delete;
+  channel_storage<T>& operator=(const channel_storage<T>&) = delete;
 
-  channel_internal_storage(channel_internal_storage<T>&&) = delete;
-  channel_internal_storage& operator=(channel_internal_storage<T>&&) = delete;
+  channel_storage(channel_storage<T>&&) = delete;
+  channel_storage& operator=(channel_storage<T>&&) = delete;
 
  private:
   [[nodiscard]] bool has_saved() const noexcept { return !m_saved.empty(); }
@@ -68,6 +70,9 @@ class channel_internal_storage {
   }
 
   void save(T value) {
+    if (m_saved.size() >= m_limit) {
+      throw exceptions::channel_overflowed_error(m_limit);
+    }
     std::promise<T> promise{};
     auto future = promise.get_future();
     promise.set_value(value);
