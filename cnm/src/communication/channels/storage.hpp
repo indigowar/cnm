@@ -12,7 +12,7 @@ namespace cnm::communication {
 template <class T>
 class channel_storage {
  public:
-  explicit channel_storage(size_t limit) : m_limit{limit} {}
+  explicit channel_storage(size_t limit = 0) : m_limit{limit} {}
 
   ~channel_storage() {
     const auto exception =
@@ -70,7 +70,7 @@ class channel_storage {
   }
 
   void save(T value) {
-    if (m_saved.size() >= m_limit) {
+    if (m_saved.size() >= m_limit && has_limit()) {
       throw exceptions::channel_overflowed_error(m_limit);
     }
     std::promise<T> promise{};
@@ -84,6 +84,8 @@ class channel_storage {
     m_expected.pop();
     promise.set_value(value);
   }
+
+  bool has_limit() const noexcept { return m_limit != 0; }
 
   std::queue<std::future<T>> m_saved;
   std::queue<std::promise<T>> m_expected;
