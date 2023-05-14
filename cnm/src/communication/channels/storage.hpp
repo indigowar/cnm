@@ -10,17 +10,12 @@ namespace cnm::communication {
 template <class T>
 class channel_internal_storage {
  public:
-  struct storage_is_overflowed : public std::exception {};
-
-  explicit channel_internal_storage(size_t limit) : m_limit{limit} {}
+  explicit channel_internal_storage() = default;
 
   ~channel_internal_storage() = default;
 
   void push(T value) {
     std::unique_lock lock(m_mutex);
-    if (m_saved.size() + m_expected.size() >= m_limit) {
-      throw storage_is_overflowed();
-    }
     if (has_expected()) {
       put_in_expected(value);
       return;
@@ -32,9 +27,6 @@ class channel_internal_storage {
     std::unique_lock lock(m_mutex);
     if (has_saved()) {
       return from_saved();
-    }
-    if (m_saved.size() + m_expected.size() >= m_limit) {
-      throw storage_is_overflowed();
     }
     return expect();
   }
@@ -85,7 +77,6 @@ class channel_internal_storage {
   std::queue<std::future<T>> m_saved;
   std::queue<std::promise<T>> m_expected;
   std::mutex m_mutex;
-  size_t m_limit;
 };
 
 }  // namespace cnm::communication
