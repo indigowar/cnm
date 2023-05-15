@@ -12,12 +12,15 @@ namespace cnm::communication {
 template <class T>
 class channel_storage {
  public:
-  explicit channel_storage(size_t limit = 0) : m_limit{limit} {}
+  explicit channel_storage(size_t limit = 0)
+      : m_limit{limit}, m_saved(), m_expected(), m_mutex{} {}
 
   ~channel_storage() {
     const auto exception =
         std::make_exception_ptr(exceptions::channel_closed_error());
-    for (std::promise<T>& promise : m_expected) {
+    while (!m_expected.empty()) {
+      auto promise = std::move(m_expected.front());
+      m_expected.pop();
       promise.set_exception(exception);
     }
   }
@@ -89,7 +92,7 @@ class channel_storage {
 
   std::queue<std::future<T>> m_saved;
   std::queue<std::promise<T>> m_expected;
-  std::mutex m_mutex;
+  mutable std::mutex m_mutex;
   size_t m_limit;
 };
 
