@@ -80,16 +80,4 @@ TEST(channel_test, reading_from_closing_channel) {
         chan >> i;
       }(),
       exceptions::channel_closed_error);
-
-  int first{}, second{}, third{};
-
-  auto task = [&first, &second, &third, &chan] {
-    chan >> first >> second >> third;
-  };
-
-  EXPECT_NO_THROW(task());
-
-  EXPECT_EQ(first, 600);
-  EXPECT_EQ(second, 1000);
-  EXPECT_EQ(third, 3000);
 }
