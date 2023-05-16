@@ -2,7 +2,6 @@
 
 #include <gtest/gtest.h>
 
-#include <chrono>
 #include <thread>
 
 #include "communication/channels/exceptions.hpp"
@@ -30,6 +29,10 @@ TEST(channel_storage, normal_operation) {
   auto f1 = cs.pop();
   auto f2 = cs.pop();
   auto f3 = cs.pop();
+
+  EXPECT_EQ(f1.get(), 1);
+  EXPECT_EQ(f2.get(), 2);
+  EXPECT_EQ(f3.get(), 3);
 }
 
 TEST(ChannelStorage, FutureShouldWaitForValue) {
