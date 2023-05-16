@@ -47,6 +47,10 @@ class channel_storage {
     return m_saved.size();
   }
 
+  [[nodiscard]] size_t limit() const noexcept { return m_limit; }
+
+  [[nodiscard]] bool has_limit() const noexcept { return m_limit != 0; }
+
   channel_storage(const channel_storage<T>&) = delete;
   channel_storage<T>& operator=(const channel_storage<T>&) = delete;
 
@@ -87,8 +91,6 @@ class channel_storage {
     m_expected.pop();
     promise.set_value(value);
   }
-
-  bool has_limit() const noexcept { return m_limit != 0; }
 
   std::queue<std::future<T>> m_saved;
   std::queue<std::promise<T>> m_expected;
