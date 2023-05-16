@@ -35,7 +35,7 @@ TEST(channel_storage, normal_operation) {
   EXPECT_EQ(f3.get(), 3);
 }
 
-TEST(ChannelStorage, FutureShouldWaitForValue) {
+TEST(channel_storage, future_should_wait_for_value) {
   // Test with a limit of 1
   channel_storage<int> cs(1);
   ASSERT_EQ(cs.size(), 0);
@@ -58,7 +58,7 @@ TEST(ChannelStorage, FutureShouldWaitForValue) {
   t.join();
 }
 
-TEST(ChannelStorage, UnbufferedChannel) {
+TEST(channel_storage, unbuffered_storage) {
   // Test with an unbuffered channel (limit = 0)
   channel_storage<int> cs;
 
