@@ -9,24 +9,24 @@
 
 namespace cnm::communication {
 
+/**
+ * This class is internal channel storage @see channel
+ *
+ * It is not multi-thread safe.
+ * You must have additional layer that manages the access to object of this
+ * class.
+ *
+ * @tparam T
+ */
 template <class T>
 class channel_storage {
  public:
-  explicit channel_storage(size_t limit = 0)
-      : m_limit{limit}, m_saved(), m_expected(), m_mutex{} {}
+  explicit channel_storage(size_t limit = 0) : m_limit{limit} {}
 
-  ~channel_storage() {
-    const auto exception =
-        std::make_exception_ptr(exceptions::channel_closed_error());
-    while (!m_expected.empty()) {
-      auto promise = std::move(m_expected.front());
-      m_expected.pop();
-      promise.set_exception(exception);
-    }
-  }
+  ~channel_storage() { this->close(); }
 
   void push(T value) {
-    std::unique_lock lock(m_mutex);
+    throw_if_closed();
     if (has_expected()) {
       put_in_expected(value);
       return;
@@ -35,32 +35,49 @@ class channel_storage {
   }
 
   std::future<T> pop() {
-    std::unique_lock lock(m_mutex);
+    this->throw_if_closed();
     if (has_saved()) {
       return from_saved();
     }
     return expect();
   }
 
-  [[nodiscard]] size_t size() const noexcept {
-    std::unique_lock lock(m_mutex);
-    return m_saved.size();
-  }
+  [[nodiscard]] size_t size() const noexcept { return m_saved.size(); }
 
   [[nodiscard]] size_t limit() const noexcept { return m_limit; }
 
   [[nodiscard]] bool has_limit() const noexcept { return m_limit != 0; }
 
+  [[nodiscard]] bool empty() const noexcept { return m_saved.size() != 0; }
+
+  [[nodiscard]] bool is_closed() const noexcept { return m_closed; }
+
+  void close() {
+    const auto exception =
+        std::make_exception_ptr(exceptions::channel_closed_error());
+    while (!m_expected.empty()) {
+      auto promise = std::move(m_expected.front());
+      m_expected.pop();
+      promise.set_exception(exception);
+    }
+    m_closed = true;
+  }
+
   channel_storage(const channel_storage<T>&) = delete;
   channel_storage<T>& operator=(const channel_storage<T>&) = delete;
-
-  channel_storage(channel_storage<T>&&) = delete;
-  channel_storage& operator=(channel_storage<T>&&) = delete;
+  channel_storage(channel_storage<T>&&) noexcept = default;
+  channel_storage& operator=(channel_storage<T>&&) noexcept = default;
 
  private:
   [[nodiscard]] bool has_saved() const noexcept { return !m_saved.empty(); }
   [[nodiscard]] bool has_expected() const noexcept {
     return !m_expected.empty();
+  }
+
+  void throw_if_closed() {
+    if (m_closed) {
+      throw exceptions::channel_closed_error();
+    }
   }
 
   std::future<T> expect() {
@@ -94,8 +111,8 @@ class channel_storage {
 
   std::queue<std::future<T>> m_saved;
   std::queue<std::promise<T>> m_expected;
-  mutable std::mutex m_mutex;
   size_t m_limit;
+  bool m_closed{};
 };
 
 }  // namespace cnm::communication
