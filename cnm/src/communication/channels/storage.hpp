@@ -111,7 +111,7 @@ class channel_storage {
 
   std::queue<std::future<T>> m_saved;
   std::queue<std::promise<T>> m_expected;
-  size_t m_limit;
+  const size_t m_limit;
   bool m_closed{};
 };
 
