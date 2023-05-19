@@ -1,0 +1,103 @@
+@startuml
+
+class channel_storage<T> {
+    + channel_storage(size_t limit = 0)
+    + ~channel_storage()
+
+    + void push(T value)
+    + future<T> pop()
+    + void close()
+
+    + size_t size()
+    + size_t limit()
+    + bool has_limit()
+    + bool empty()
+    + bool is_closed()
+
+    - void throw_if_closed()
+    - bool has_saved()
+    - bool has_expected()
+
+    - future<T> expect()
+    - future<T> from_saved()
+    - void save(T)
+    - void put_in_expected(T)
+
+    - queue<future<T>> m_saved
+    - queue<promise<T>> m_expected
+    - const size_t m_limit
+    - bool m_closed
+}
+
+class channel<T> {
+    + {static} channel<T> make_with_limit(size_t limit)
+    + {static} channel<T> make_unbuffered()
+
+    + channel(channel_storage<T>&&)
+
+    + bool is_buffered()
+    + bool is_closed()
+    + size_t get_limit()
+    + size_t get_amount_of_contained()
+
+    + void close()
+
+    + operator<<(T value)
+    + operator>>(T& target)
+    + operator>>(future<T>& target)
+
+    -  future<T> read_from_storage()
+
+    - channel_storage<T> m_storage
+    - shared_mutex m_mutex
+}
+
+channel --o channel_storage
+
+class connection_ctx {}
+
+interface requester_ctx {}
+
+interface server_ctx { }
+
+class connection_requester_adapter {
+    - connection_context m_con
+}
+
+connection_requester_adapter ..|> requester_ctx
+connection_requester_adapter --o connection_ctx
+
+class connection_server_adapter {
+    - connection_context m_con
+}
+
+connection_server_adapter ..|> server_ctx
+connection_server_adapter --o connection_ctx
+
+abstract class base_runner {
+    + base_runner(string_view host)
+
+    + {abstract} void serve(server_ctx)
+    + {abstract} void terminate() noexcept
+
+    + string_view host()
+
+    - string_view m_host
+}
+
+base_runner -- server_ctx
+
+class personal_computer { }
+
+personal_computer --|> base_runner
+
+class server { }
+
+serve --|> base_runner
+
+class office_equipment { }
+
+office_equipment --|> base_runner
+
+
+@enduml
