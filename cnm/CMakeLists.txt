@@ -8,6 +8,7 @@ file(GLOB_RECURSE cnm_lib_TEST_FILES test/**.cpp)
 
 add_library(cnm_lib STATIC ${cnm_lib_HEADERS} ${cnm_lib_SRC_FILES})
 target_include_directories(cnm_lib PUBLIC ${cnm_lib_INCLUDE_DIRECTORIES})
+target_link_libraries(cnm_lib spdlog::spdlog)
 
 enable_testing()
 
