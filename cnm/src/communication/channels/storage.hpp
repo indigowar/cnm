@@ -7,10 +7,10 @@
 
 #include "communication/channels/exceptions.hpp"
 
-namespace cnm::communication {
+namespace Cnm::Communication {
 
 /**
- * This class is internal channel storage @see channel
+ * This class is internal Channel storage @see Channel
  *
  * It is not multi-thread safe.
  * You must have additional layer that manages the access to object of this
@@ -54,7 +54,7 @@ class channel_storage {
 
   void close() {
     const auto exception =
-        std::make_exception_ptr(exceptions::channel_closed_error());
+        std::make_exception_ptr(Exceptions::ChannelIsClosed());
     while (!m_expected.empty()) {
       auto promise = std::move(m_expected.front());
       m_expected.pop();
@@ -76,7 +76,7 @@ class channel_storage {
 
   void throw_if_closed() {
     if (m_closed) {
-      throw exceptions::channel_closed_error();
+      throw Exceptions::ChannelIsClosed();
     }
   }
 
@@ -95,7 +95,7 @@ class channel_storage {
 
   void save(T value) {
     if (m_saved.size() >= m_limit && has_limit()) {
-      throw exceptions::channel_overflowed_error(m_limit);
+      throw Exceptions::ChannelIsOverflowed(m_limit);
     }
     std::promise<T> promise{};
     auto future = promise.get_future();
@@ -115,6 +115,6 @@ class channel_storage {
   bool m_closed{};
 };
 
-}  // namespace cnm::communication
+}  // namespace Cnm::Communication
 
 #endif  // HPP_CNM_LIB_COMMUNICATION_CHANNELS_STORAGE_HPP

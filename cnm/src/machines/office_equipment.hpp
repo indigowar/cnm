@@ -5,12 +5,12 @@
 #ifndef HPP_CNM_LIB_ENTITIES_RUNNERS_OFFICE_EQUIPMENT_HPP
 #define HPP_CNM_LIB_ENTITIES_RUNNERS_OFFICE_EQUIPMENT_HPP
 
-#include "runner.hpp"
+#include "machine.hpp"
 
-namespace cnm::entities::runners {
+namespace Cnm::Machines {
 
-class office_equipment {};
+class OfficeEquipment : public Machine {};
 
-}  // namespace cnm::entities::runners
+}  // namespace Cnm::Machines
 
 #endif  // HPP_CNM_LIB_ENTITIES_RUNNERS_OFFICE_EQUIPMENT_HPP

@@ -5,7 +5,7 @@
 
 #include "message.hpp"
 
-namespace cnm::communication {
+namespace Cnm::Communication {
 
 class connection;
 
@@ -73,6 +73,6 @@ class context {
   bool m_happened_first_write;
 };
 
-}  // namespace cnm::communication
+}  // namespace Cnm::Communication
 
 #endif  // HPP_CNM_LIB_COMMUNICATION_CONTEXT_HPP

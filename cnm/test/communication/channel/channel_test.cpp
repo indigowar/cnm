@@ -6,37 +6,37 @@
 #include <numeric>
 #include <ranges>
 
-using namespace cnm::communication;
+using namespace Cnm::Communication;
 
-TEST(channel_test, channel_creation_with_make_with_limit) {
-  auto chan = channel<int>::make_with_limit(5);
-  EXPECT_TRUE(chan.is_buffered());
-  EXPECT_EQ(chan.get_limit(), 5);
-  EXPECT_EQ(chan.get_amount_of_contained(), 0);
-  EXPECT_FALSE(chan.is_closed());
+TEST(ChannelTest, ChannelCreationWith_makeWithLimit) {
+  auto chan = Channel<int>::makeWithLimit(5);
+  EXPECT_TRUE(chan.isBuffered());
+  EXPECT_EQ(chan.getLimit(), 5);
+  EXPECT_EQ(chan.getAmountOfContained(), 0);
+  EXPECT_FALSE(chan.isClosed());
 }
 
-TEST(channel_test, channel_creation_with_make_unbuffered) {
-  auto chan = channel<int>::make_unbuffered();
-  EXPECT_FALSE(chan.is_buffered());
-  EXPECT_THROW(chan.get_limit(), exceptions::channel_unbuffered_error);
-  EXPECT_EQ(chan.get_amount_of_contained(), 0);
-  EXPECT_FALSE(chan.is_closed());
+TEST(ChannelTest, ChannelCreationWith_makeUnbuffered) {
+  auto chan = Channel<int>::makeUnbuffered();
+  EXPECT_FALSE(chan.isBuffered());
+  EXPECT_THROW(chan.getLimit(), Exceptions::ChannelUnbuffered);
+  EXPECT_EQ(chan.getAmountOfContained(), 0);
+  EXPECT_FALSE(chan.isClosed());
 }
 
-TEST(channel_test, writting_in_channel) {
-  auto chan = channel<int>::make_unbuffered();
+TEST(ChannelTest, WrittingInChannel) {
+  auto chan = Channel<int>::makeUnbuffered();
 
   std::array<int, 10> array{};
   std::iota(array.begin(), array.end(), 0);
 
   std::for_each(array.begin(), array.end(), [&chan](int i) { chan << i; });
 
-  EXPECT_EQ(chan.get_amount_of_contained(), 10);
+  EXPECT_EQ(chan.getAmountOfContained(), 10);
 }
 
-TEST(channel_test, reading_from_channel) {
-  auto chan = channel<int>::make_unbuffered();
+TEST(ChannelTest, ReadingFromChannel) {
+  auto chan = Channel<int>::makeUnbuffered();
 
   chan << 50 << 100;
 
@@ -47,10 +47,10 @@ TEST(channel_test, reading_from_channel) {
   EXPECT_EQ(second, 100);
 }
 
-TEST(channel_test, closing_channel) {
-  auto chan = channel<int>::make_unbuffered();
+TEST(ChannelTest, ClosingChannel) {
+  auto chan = Channel<int>::makeUnbuffered();
 
-  EXPECT_FALSE(chan.is_closed());
+  EXPECT_FALSE(chan.isClosed());
 
   chan.close();
 
@@ -59,25 +59,25 @@ TEST(channel_test, closing_channel) {
         int i{};
         chan >> i;
       }(),
-      exceptions::channel_closed_error);
-  EXPECT_TRUE(chan.is_closed());
+      Exceptions::ChannelIsClosed);
+  EXPECT_TRUE(chan.isClosed());
 }
 
-TEST(channel_test, reading_from_closing_channel) {
-  // reading from closing channel should be available
+TEST(ChannelTest, ReadingFromClosedChannel) {
+  // reading from closing Channel should be available
 
-  auto chan = channel<int>::make_unbuffered();
+  auto chan = Channel<int>::makeUnbuffered();
 
   chan << 600 << 1000 << 3000;
 
   chan.close();
 
-  EXPECT_TRUE(chan.is_closed());
+  EXPECT_TRUE(chan.isClosed());
 
   EXPECT_THROW(
       [&chan] {
         int i{};
         chan >> i;
       }(),
-      exceptions::channel_closed_error);
+      Exceptions::ChannelIsClosed);
 }

@@ -4,7 +4,7 @@
 #include "connection.hpp"
 #include "context.hpp"
 
-namespace cnm::communication {
+namespace Cnm::Communication {
 class master_ctx : public context {
  public:
   master_ctx(connection& con, int id) : context(con, id) {}
@@ -17,6 +17,6 @@ class master_ctx : public context {
     return con.is_master_buffered();
   }
 };
-}  // namespace cnm::communication
+}  // namespace Cnm::Communication
 
 #endif  // HPP_CNM_LIB_COMMUNICATION_MASTER_CTX_HPP

@@ -8,117 +8,116 @@
 #include "communication/channels/exceptions.hpp"
 #include "communication/channels/storage.hpp"
 
-namespace cnm::communication {
+namespace Cnm::Communication {
 
 template <class T>
-class base_chan_t {
+class IBaseChannel {
  public:
-  virtual ~base_chan_t() = default;
-  [[nodiscard]] virtual bool is_buffered() const noexcept = 0;
-  [[nodiscard]] virtual bool is_closed() const noexcept = 0;
-  [[nodiscard]] virtual size_t get_limit() const = 0;
-  [[nodiscard]] virtual size_t get_amount_of_contained() const noexcept = 0;
+  virtual ~IBaseChannel() = default;
+  [[nodiscard]] virtual bool isBuffered() const noexcept = 0;
+  [[nodiscard]] virtual bool isClosed() const noexcept = 0;
+  [[nodiscard]] virtual size_t getLimit() const = 0;
+  [[nodiscard]] virtual size_t getAmountOfContained() const noexcept = 0;
 };
 
 template <class T>
-class read_chan_t : public base_chan_t<T> {
+class IReadableChannel : public IBaseChannel<T> {
  public:
-  virtual read_chan_t<T>& operator>>(T& value) = 0;
-  virtual read_chan_t<T>& operator>>(std::future<T>& value) = 0;
+  virtual IReadableChannel<T>& operator>>(T& value) = 0;
+  virtual IReadableChannel<T>& operator>>(std::future<T>& value) = 0;
 };
 
 template <class T>
-class write_chan_t : public base_chan_t<T> {
+class IWritableChannel : public IBaseChannel<T> {
  public:
-  virtual write_chan_t<T>& operator<<(T value) = 0;
+  virtual IWritableChannel<T>& operator<<(T value) = 0;
 };
 
-template <class package_t>
-class channel final : public read_chan_t<package_t>,
-                      public write_chan_t<package_t> {
+template <class T>
+class Channel : public IReadableChannel<T>, public IWritableChannel<T> {
  public:
-  static channel<package_t> make_with_limit(size_t limit_value) {
-    return channel<package_t>(channel_storage<package_t>(limit_value));
+  static Channel<T> makeWithLimit(size_t limit_value) {
+    return Channel<T>(channel_storage<T>(limit_value));
   }
 
-  static channel<package_t> make_unbuffered() {
-    return channel<package_t>(channel_storage<package_t>());
+  static Channel<T> makeUnbuffered() {
+    return Channel<T>(channel_storage<T>());
   }
 
-  explicit channel(channel_storage<package_t>&& storage)
-      : m_storage(std::move(storage)) {}
+  explicit Channel(channel_storage<T>&& storage)
+      : storage(std::move(storage)) {}
 
-  ~channel() = default;
+  ~Channel() = default;
 
-  [[nodiscard]] bool is_buffered() const noexcept override {
-    std::shared_lock lock(m_mutex);
-    return m_storage.has_limit();
+  [[nodiscard]] bool isBuffered() const noexcept override {
+    std::shared_lock lock(mutex);
+    return storage.has_limit();
   }
 
-  [[nodiscard]] bool is_closed() const noexcept override {
-    std::shared_lock lock(m_mutex);
-    return m_storage.is_closed();
+  [[nodiscard]] bool isClosed() const noexcept override {
+    std::shared_lock lock(mutex);
+    return storage.is_closed();
   }
 
-  [[nodiscard]] size_t get_limit() const override {
-    std::shared_lock lock(m_mutex);
-    if (!m_storage.has_limit()) {
-      throw exceptions::channel_unbuffered_error();
+  [[nodiscard]] size_t getLimit() const override {
+    std::shared_lock lock(mutex);
+    if (!storage.has_limit()) {
+      throw Exceptions::ChannelUnbuffered();
     }
-    return m_storage.limit();
+    return storage.limit();
   }
 
-  [[nodiscard]] size_t get_amount_of_contained() const noexcept override {
-    std::shared_lock lock(m_mutex);
-    return m_storage.size();
+  [[nodiscard]] size_t getAmountOfContained() const noexcept override {
+    std::shared_lock lock(mutex);
+    return storage.size();
   }
 
   void close() {
-    std::unique_lock lock(m_mutex);
-    if (m_storage.is_closed()) {
-      throw exceptions::channel_closed_error();
+    std::unique_lock lock(mutex);
+    if (storage.is_closed()) {
+      throw Exceptions::ChannelIsClosed();
     }
-    m_storage.close();
+    storage.close();
   }
 
   // write method
-  write_chan_t<package_t>& operator<<(package_t value) override {
-    std::unique_lock lock(m_mutex);
-    m_storage.push(value);
+  IWritableChannel<T>& operator<<(T value) override {
+    std::unique_lock lock(mutex);
+    storage.push(value);
     return *this;
   }
 
   // sync read
-  read_chan_t<package_t>& operator>>(package_t& value) override {
-    auto future = read_from_storage();
+  IReadableChannel<T>& operator>>(T& value) override {
+    auto future = readFromStorage();
     future.wait();
     value = future.get();
     return *this;
   }
 
   // async read
-  read_chan_t<package_t>& operator>>(std::future<package_t>& value) override {
-    value = std::move(read_from_storage());
+  IReadableChannel<T>& operator>>(std::future<T>& value) override {
+    value = std::move(readFromStorage());
     return *this;
   }
 
-  channel(const channel<package_t>&) = delete;
-  channel& operator=(const channel<package_t>&) = delete;
+  Channel(const Channel<T>&) = delete;
+  Channel& operator=(const Channel<T>&) = delete;
 
-  channel(channel<package_t>&&) = delete;
-  channel& operator=(channel<package_t>&&) = delete;
+  Channel(Channel<T>&&) = delete;
+  Channel& operator=(Channel<T>&&) = delete;
 
  private:
-  std::future<package_t> read_from_storage() {
-    std::unique_lock lock(m_mutex);
-    return m_storage.pop();
+  std::future<T> readFromStorage() {
+    std::unique_lock lock(mutex);
+    return storage.pop();
   }
 
-  channel_storage<package_t> m_storage;
+  channel_storage<T> storage;
 
-  mutable std::shared_mutex m_mutex;
+  mutable std::shared_mutex mutex;
 };
 
-}  // namespace cnm::communication
+}  // namespace Cnm::Communication
 
 #endif  // HPP_CNM_LIB_COMMUNICATION_CHANNELS_CHANNEL_HPP

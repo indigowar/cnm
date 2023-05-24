@@ -9,7 +9,7 @@
 #include "context.hpp"
 #include "message.hpp"
 
-namespace cnm::communication {
+namespace Cnm::Communication {
 
 /**
  * @class connection
@@ -90,7 +90,7 @@ class connection {
    *
    * @details
    * This method is async implementation of read method.
-   * It reads the channel for participant(defined by context id),
+   * It reads the Channel for participant(defined by context id),
    * but if there's no available responses you will retrieve an empty
    * std::future.
    * @return
@@ -135,6 +135,6 @@ class connection {
   size_t m_net_speed;
 };
 
-}  // namespace cnm::communication
+}  // namespace Cnm::Communication
 
 #endif  // HPP_CNM_LIB_COMMUNICATION_HPP

@@ -6,14 +6,14 @@
 
 #include "communication/channels/exceptions.hpp"
 
-using namespace cnm::communication;
+using namespace Cnm::Communication;
 
-TEST(channel_storage, normal_operation) {
+TEST(ChannelStorage, NormalOperation) {
   // Test with a limit of 3
   channel_storage<int> cs(3);
   ASSERT_EQ(cs.size(), 0);
 
-  // Push 3 values, no exceptions should be thrown
+  // Push 3 values, no Exceptions should be thrown
   cs.push(1);
   ASSERT_EQ(cs.size(), 1);
   cs.push(2);
@@ -22,7 +22,7 @@ TEST(channel_storage, normal_operation) {
   ASSERT_EQ(cs.size(), 3);
 
   // The fourth value should throw an exception
-  EXPECT_THROW(cs.push(4), exceptions::channel_overflowed_error);
+  EXPECT_THROW(cs.push(4), Exceptions::ChannelIsOverflowed);
   ASSERT_EQ(cs.size(), 3);
 
   // Pop values from the storage
@@ -35,7 +35,7 @@ TEST(channel_storage, normal_operation) {
   EXPECT_EQ(f3.get(), 3);
 }
 
-TEST(channel_storage, future_should_wait_for_value) {
+TEST(ChannelStorage, FutureShouldWaitForAValue) {
   // Test with a limit of 1
   channel_storage<int> cs(1);
   ASSERT_EQ(cs.size(), 0);
@@ -58,11 +58,11 @@ TEST(channel_storage, future_should_wait_for_value) {
   t.join();
 }
 
-TEST(channel_storage, unbuffered_storage) {
-  // Test with an unbuffered channel (limit = 0)
+TEST(ChannelStorage, UnbufferedStorage) {
+  // Test with an unbuffered Channel (limit = 0)
   channel_storage<int> cs;
 
-  // Push values, no exceptions should be thrown and all of them should be
+  // Push values, no Exceptions should be thrown and all of them should be
   // immediately available
   cs.push(1);
   ASSERT_EQ(cs.size(), 1);

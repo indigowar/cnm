@@ -2,9 +2,9 @@
 
 #include "connection.hpp"
 
-using namespace cnm::communication;
+using namespace Cnm::Communication;
 
-context::context(cnm::communication::connection &con, int id)
+context::context(Cnm::Communication::connection &con, int id)
     : m_connection{con},
       m_id{id},
       m_happened_first_read{},
@@ -15,7 +15,7 @@ void context::abort() {
   m_connection.abort(m_id);
 }
 
-void context::write(cnm::communication::message &&write_msg) {
+void context::write(Cnm::Communication::message &&write_msg) {
   if (m_happened_first_write && !buffered_write_channel_check(m_connection)) {
     throw std::runtime_error(
         "the only available message already has been sent to the participant");

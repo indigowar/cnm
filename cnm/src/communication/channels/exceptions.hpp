@@ -5,16 +5,15 @@
 #include <sstream>
 #include <string>
 
-namespace cnm::communication::exceptions {
+namespace Cnm::Communication::Exceptions {
 
-class channel_unbuffered_error : public std::exception {};
+class ChannelUnbuffered : public std::exception {};
 
+class ChannelIsClosed : public std::exception {};
 
-class channel_closed_error : public std::exception {};
-
-class channel_overflowed_error : public std::exception {
+class ChannelIsOverflowed : public std::exception {
  public:
-  explicit channel_overflowed_error(size_t limit) {
+  explicit ChannelIsOverflowed(size_t limit) {
     std::stringstream ss;
     ss << "Channel is overflowed. It's max value is: " << limit << ".";
     msg = ss.str();
@@ -27,6 +26,6 @@ class channel_overflowed_error : public std::exception {
  private:
   std::string msg;
 };
-}  // namespace cnm::communication::exceptions
+}  // namespace Cnm::Communication::Exceptions
 
 #endif  // HPP_CNM_LIB_COMMUNICATION_CHANNELS_HPP

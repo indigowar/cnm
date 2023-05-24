@@ -1,13 +1,12 @@
 #ifndef HPP_CNM_LIB_ENTITIES_RUNNERS_PERSONAL_COMPUTER_HPP
 #define HPP_CNM_LIB_ENTITIES_RUNNERS_PERSONAL_COMPUTER_HPP
 
-#include "utils/thread_safe_queue.hpp"
-#include "runner.hpp"
+#include "machines/machine.hpp"
 
-namespace cnm::entities::runners {
+namespace Cnm::Machines {
 
-class personal_computer : public base_runner {};
+class PersonalComputer : public Machine {};
 
-}  // namespace cnm::entities::runners
+}  // namespace Cnm::Machines
 
 #endif  // HPP_CNM_LIB_ENTITIES_RUNNERS_PERSONAL_COMPUTER_HPP

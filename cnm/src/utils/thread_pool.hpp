@@ -9,7 +9,7 @@
 #include <thread>
 #include <vector>
 
-namespace cnm::utils {
+namespace Cnm::utils {
 
 class thread_pool {
   using task_type = std::function<void()>;
@@ -78,5 +78,5 @@ class thread_pool {
   std::condition_variable task_cond_;
 };
 
-}  // namespace cnm::utils
+}  // namespace Cnm::utils
 #endif  // HPP_CNM_LIB_UTILS_THREAD_POOL_HPP

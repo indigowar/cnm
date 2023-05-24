@@ -4,7 +4,7 @@
 #include "connection.hpp"
 #include "context.hpp"
 
-namespace cnm::communication {
+namespace Cnm::Communication {
 
 class slave_ctx : public context {
  public:
@@ -19,6 +19,6 @@ class slave_ctx : public context {
   }
 };
 
-}  // namespace cnm::communication
+}  // namespace Cnm::Communication
 
 #endif // HPP_CNM_LIB_COMMUNICATION_SLAVE_CTX_HPP
