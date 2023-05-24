@@ -10,8 +10,32 @@
 
 namespace cnm::communication {
 
+template <class T>
+class base_chan_t {
+ public:
+  virtual ~base_chan_t() = default;
+  [[nodiscard]] virtual bool is_buffered() const noexcept = 0;
+  [[nodiscard]] virtual bool is_closed() const noexcept = 0;
+  [[nodiscard]] virtual size_t get_limit() const = 0;
+  [[nodiscard]] virtual size_t get_amount_of_contained() const noexcept = 0;
+};
+
+template <class T>
+class read_chan_t : public base_chan_t<T> {
+ public:
+  virtual read_chan_t<T>& operator>>(T& value) = 0;
+  virtual read_chan_t<T>& operator>>(std::future<T>& value) = 0;
+};
+
+template <class T>
+class write_chan_t : public base_chan_t<T> {
+ public:
+  virtual write_chan_t<T>& operator<<(T value) = 0;
+};
+
 template <class package_t>
-class channel final {
+class channel final : public read_chan_t<package_t>,
+                      public write_chan_t<package_t> {
  public:
   static channel<package_t> make_with_limit(size_t limit_value) {
     return channel<package_t>(channel_storage<package_t>(limit_value));
@@ -26,17 +50,17 @@ class channel final {
 
   ~channel() = default;
 
-  [[nodiscard]] bool is_buffered() const noexcept {
+  [[nodiscard]] bool is_buffered() const noexcept override {
     std::shared_lock lock(m_mutex);
     return m_storage.has_limit();
   }
 
-  [[nodiscard]] bool is_closed() const noexcept {
+  [[nodiscard]] bool is_closed() const noexcept override {
     std::shared_lock lock(m_mutex);
     return m_storage.is_closed();
   }
 
-  [[nodiscard]] size_t get_limit() const {
+  [[nodiscard]] size_t get_limit() const override {
     std::shared_lock lock(m_mutex);
     if (!m_storage.has_limit()) {
       throw exceptions::channel_unbuffered_error();
@@ -44,7 +68,7 @@ class channel final {
     return m_storage.limit();
   }
 
-  [[nodiscard]] size_t get_amount_of_contained() const noexcept {
+  [[nodiscard]] size_t get_amount_of_contained() const noexcept override {
     std::shared_lock lock(m_mutex);
     return m_storage.size();
   }
@@ -58,14 +82,14 @@ class channel final {
   }
 
   // write method
-  channel<package_t>& operator<<(package_t value) {
+  write_chan_t<package_t>& operator<<(package_t value) override {
     std::unique_lock lock(m_mutex);
     m_storage.push(value);
     return *this;
   }
 
   // sync read
-  channel<package_t>& operator>>(package_t& value) {
+  read_chan_t<package_t>& operator>>(package_t& value) override {
     auto future = read_from_storage();
     future.wait();
     value = future.get();
@@ -73,7 +97,7 @@ class channel final {
   }
 
   // async read
-  channel<package_t>& operator>>(std::future<package_t>& value) {
+  read_chan_t<package_t>& operator>>(std::future<package_t>& value) override {
     value = std::move(read_from_storage());
     return *this;
   }
