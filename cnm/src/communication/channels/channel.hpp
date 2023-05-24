@@ -34,8 +34,7 @@ class write_chan_t : public base_chan_t<T> {
 };
 
 template <class package_t>
-class channel final : public read_chan_t<package_t>,
-                      public write_chan_t<package_t> {
+class channel : public read_chan_t<package_t>, public write_chan_t<package_t> {
  public:
   static channel<package_t> make_with_limit(size_t limit_value) {
     return channel<package_t>(channel_storage<package_t>(limit_value));
