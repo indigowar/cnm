@@ -3,7 +3,7 @@
 
 #include <string_view>
 
-#include "communication/slave_ctx.hpp"
+#include "connection/server_ctx.hpp"
 
 namespace Cnm::Machines {
 
@@ -26,7 +26,7 @@ class Machine {
    * because the connections are not ready and
    * there's no need in specifying of runner's behavior.
    */
-  virtual void serve(Communication::slave_ctx&&) noexcept = 0;
+  virtual void serve(std::unique_ptr<Connection::ServerCtx>&&) noexcept = 0;
 
  protected:
   // this method provides the logic of termination the runner

@@ -1,64 +1,160 @@
 #include "connection.hpp"
 
+#include <random>
+
+#include "communication/channels/channel.hpp"
+#include "connection/exceptions.hpp"
 #include "connection/requester_ctx.hpp"
 #include "connection/server_ctx.hpp"
 
-using Cnm::Communication::Channel;
-using Cnm::Communication::Message;
-using Cnm::Connection::RequesterCtx;
-using Cnm::Connection::ServerCtx;
-using Cnm::Connection::Exceptions::ContextAlreadyCreated;
+using chan_t =
+    std::shared_ptr<Cnm::Communication::Channel<Cnm::Communication::Message>>;
 
-// enum class ConStates {
-//   Created,      // created, but the server is not found
-//   Established,  // the server is established, but the request isn't  sent
-//   yet. Serving,      // the request is sent and waits for response Ended, //
-//   exchange of information is ended
-// };
+namespace {
 
-Cnm::Connection::Connection::Connection(
-    size_t net_speed, std::shared_ptr<Channel<Message>>&& req_chan,
-    std::shared_ptr<Channel<Message>>&& res_chan)
-    : request_channel_(std::move(req_chan)),
-      response_channel_(std::move(res_chan)),
-      net_speed_(net_speed),
-      has_requester_{},
-      has_server_{} {}
-
-Cnm::Connection::Connection::~Connection() {
-  // todo: implement Connection::~Connection()
+static int generateRandomInt() {
+  std::random_device device;
+  std::mt19937 rng(device());
+  std::uniform_int_distribution<int> distribution(1, 10'000'000);
+  return distribution(rng);
 }
 
-size_t Cnm::Connection::Connection::getNetSpeed() const noexcept {
-  std::shared_lock lock(mutex_);
-  return net_speed_;
-}
+}  // namespace
 
-void Cnm::Connection::Connection::setSpeed(size_t speed) {
+namespace Cnm::Connection {
+
+Connection::Connection(chan_t&& request_chan, chan_t&& response_chan)
+    : id_{::generateRandomInt()},
+      request_chan_{request_chan},
+      response_chan_{response_chan} {}
+
+Connection::~Connection() {}
+
+size_t Connection::getNetSpeed() const noexcept { return net_speed_; }
+
+void Connection::setSpeed(size_t new_value) { net_speed_ = new_value; }
+
+void Connection::abort() {
   std::unique_lock lock(mutex_);
-  net_speed_ = speed;
+
+  if (has_requester_ && !request_chan_->isClosed()) {
+    request_chan_->close();
+  }
+
+  if (!response_chan_->isClosed()) {
+    response_chan_->close();
+  }
+
+  cond_var_.notify_all();
 }
 
-std::unique_ptr<RequesterCtx>
-Cnm::Connection::Connection::Connection::makeRequester() {
+std::unique_ptr<RequesterCtx> Connection::makeRequester() {
   std::unique_lock lock(mutex_);
   if (has_requester_) {
-    throw ContextAlreadyCreated();
+    throw Cnm::Connection::Exceptions::ContextAlreadyCreated(getId(),
+                                                             "requester");
   }
   has_requester_ = true;
-  return std::make_unique<RequesterCtx>(*this);
+  return std::make_unique<RequesterCtx>(*this, this->requester_);
 }
 
-std::unique_ptr<ServerCtx>
-Cnm::Connection::Connection::Connection::makeServer() {
+std::unique_ptr<ServerCtx> Connection::makeServer() {
   std::unique_lock lock(mutex_);
-  if (has_server_) {
-    throw ContextAlreadyCreated();
+  if (!stateIsCreated()) {
+    throw Cnm::Connection::Exceptions::ConnectionStateError(
+        getId(), "makeServer requires connection to be created state");
   }
+
+  if (has_server_) {
+    throw Cnm::Connection::Exceptions::ContextAlreadyCreated(getId(), "server");
+  }
+
+  if (stateIsEstablished()) {
+    cond_var_.notify_all();
+  }
+
   has_server_ = true;
-  return std::make_unique<ServerCtx>(*this);
+  return std::make_unique<ServerCtx>(*this, server_);
 }
 
-void Cnm::Connection::Connection::abort() {
-  // TODO: implement Cnm::Connection::Connection::abort()
+chan_t Connection::getRequestChannel() { return request_chan_; }
+chan_t Connection::getResponseChannel() { return response_chan_; }
+
+void Connection::waitForEstablished() {
+  std::unique_lock lock(mutex_);
+
+  if (stateIsEstablished()) {
+    return;
+  }
+
+  if (!stateIsCreated()) {
+    throw Cnm::Connection::Exceptions::ConnectionStateError(
+        getId(), "this connection cannot change to `Established` state");
+  }
+
+  cond_var_.wait(lock, [this] { return stateIsEstablished(); });
+
+  if (!stateIsEstablished()) {
+    throw Cnm::Connection::Exceptions::WaiterGotDifferentState(
+        getId(), "Established", "Another one");
+  }
 }
+
+void Connection::waitForServing() {
+  std::unique_lock lock(mutex_);
+
+  if (stateIsServing()) {
+    return;
+  }
+
+  if (!stateIsEstablished()) {
+    throw Cnm::Connection::Exceptions::ConnectionStateError(
+        getId(), "this connection cannot change to `Established` state");
+  }
+
+  cond_var_.wait(lock, [this] { return stateIsServing(); });
+
+  if (!stateIsServing()) {
+    throw Cnm::Connection::Exceptions::WaiterGotDifferentState(
+        getId(), "Serving", "Another one");
+  }
+}
+
+void Connection::waitForClosed() {
+  std::unique_lock lock(mutex_);
+
+  if (stateIsClosed()) {
+    return;
+  }
+
+  cond_var_.wait(lock, [this] { return stateIsClosed(); });
+
+  if (!stateIsServing()) {
+    throw Cnm::Connection::Exceptions::WaiterGotDifferentState(
+        getId(), "Closed", "Another one");
+  }
+}
+
+void Connection::stopRequesting() {
+  std::unique_lock lock(mutex_);
+  if (!stateIsEstablished()) {
+    throw Cnm::Connection::Exceptions::ConnectionStateError(
+        getId(), "this connection is not in `Established` state");
+  }
+
+  request_chan_->close();
+  cond_var_.notify_all();
+}
+
+void Connection::stopServing() {
+  std::unique_lock lock(mutex_);
+  if (!stateIsServing()) {
+    throw Cnm::Connection::Exceptions::ConnectionStateError(
+        getId(), "this connection is not in `Serving` state");
+  }
+
+  response_chan_->close();
+  cond_var_.notify_all();
+}
+
+}  // namespace Cnm::Connection

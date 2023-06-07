@@ -22,23 +22,31 @@ std::shared_ptr<Channel<Message>> makeChannelForMany() {
 Builder::Builder(size_t net_speed) : net_speed_{net_speed} {}
 
 std::unique_ptr<Connection> Builder::makeOneToOne() {
-  return std::make_unique<Connection>(net_speed_, makeChannelForOne(),
-                                      makeChannelForOne());
+  auto result =
+      std::make_unique<Connection>(makeChannelForOne(), makeChannelForOne());
+  result->setSpeed(net_speed_);
+  return result;
 }
 
 std::unique_ptr<Connection> Builder::makeOneToMany() {
-  return std::make_unique<Connection>(net_speed_, makeChannelForOne(),
-                                      makeChannelForMany());
+  auto result =
+      std::make_unique<Connection>(makeChannelForOne(), makeChannelForMany());
+  result->setSpeed(net_speed_);
+  return result;
 }
 
 std::unique_ptr<Connection> Builder::makeManyToOne() {
-  return std::make_unique<Connection>(net_speed_, makeChannelForMany(),
-                                      makeChannelForOne());
+  auto result =
+      std::make_unique<Connection>(makeChannelForMany(), makeChannelForOne());
+  result->setSpeed(net_speed_);
+  return result;
 }
 
 std::unique_ptr<Connection> Builder::makeManyToMany() {
-  return std::make_unique<Connection>(net_speed_, makeChannelForMany(),
-                                      makeChannelForMany());
+  auto result =
+      std::make_unique<Connection>(makeChannelForMany(), makeChannelForMany());
+  result->setSpeed(net_speed_);
+  return result;
 }
 
 }  // namespace Cnm::Connection
