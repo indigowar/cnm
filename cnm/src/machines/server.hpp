@@ -3,22 +3,23 @@
 
 #include <memory>
 
-#include "communication/slave_ctx.hpp"
-#include "machine.hpp"
+#include "connection/server_ctx.hpp"
+#include "machines/machine.hpp"
 #include "utils/thread_pool.hpp"
 
 namespace Cnm::Machines {
 
 class Server : public Machine {
  public:
-  using logic_t = std::function<void(Communication::slave_ctx&&)>;
+  using logic_t = std::function<void(std::unique_ptr<Connection::ServerCtx>&&)>;
 
   Server(std::string_view host, size_t concurrent_capabilities,
          logic_t handler);
 
   ~Server() noexcept;
 
-  virtual void serve(Communication::slave_ctx&&) noexcept override;
+  virtual void serve(
+      std::unique_ptr<Connection::ServerCtx>&&) noexcept override;
 
  private:
   void onTermination() noexcept final;
