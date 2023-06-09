@@ -11,9 +11,9 @@
 namespace Cnm::Communication {
 
 template <class T>
-class IBaseChannel {
+class BaseChannel {
  public:
-  virtual ~IBaseChannel() = default;
+  virtual ~BaseChannel() = default;
   [[nodiscard]] virtual bool isBuffered() const noexcept = 0;
   [[nodiscard]] virtual bool isClosed() const noexcept = 0;
   [[nodiscard]] virtual size_t getLimit() const = 0;
@@ -21,20 +21,20 @@ class IBaseChannel {
 };
 
 template <class T>
-class IReadableChannel : public IBaseChannel<T> {
+class ReadableChannel : public BaseChannel<T> {
  public:
-  virtual IReadableChannel<T>& operator>>(T& value) = 0;
-  virtual IReadableChannel<T>& operator>>(std::future<T>& value) = 0;
+  virtual ReadableChannel<T>& operator>>(T& value) = 0;
+  virtual ReadableChannel<T>& operator>>(std::future<T>& value) = 0;
 };
 
 template <class T>
-class IWritableChannel : public IBaseChannel<T> {
+class WritableChannel : public BaseChannel<T> {
  public:
-  virtual IWritableChannel<T>& operator<<(T value) = 0;
+  virtual WritableChannel<T>& operator<<(T value) = 0;
 };
 
 template <class T>
-class Channel : public IReadableChannel<T>, public IWritableChannel<T> {
+class Channel : public ReadableChannel<T>, public WritableChannel<T> {
  public:
   static Channel<T> makeWithLimit(size_t limit_value) {
     return Channel<T>(channel_storage<T>(limit_value));
@@ -81,14 +81,14 @@ class Channel : public IReadableChannel<T>, public IWritableChannel<T> {
   }
 
   // write method
-  IWritableChannel<T>& operator<<(T value) override {
+  WritableChannel<T>& operator<<(T value) override {
     std::unique_lock lock(mutex);
     storage.push(value);
     return *this;
   }
 
   // sync read
-  IReadableChannel<T>& operator>>(T& value) override {
+  ReadableChannel<T>& operator>>(T& value) override {
     auto future = readFromStorage();
     future.wait();
     value = future.get();
@@ -96,7 +96,7 @@ class Channel : public IReadableChannel<T>, public IWritableChannel<T> {
   }
 
   // async read
-  IReadableChannel<T>& operator>>(std::future<T>& value) override {
+  ReadableChannel<T>& operator>>(std::future<T>& value) override {
     value = std::move(readFromStorage());
     return *this;
   }

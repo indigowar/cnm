@@ -8,7 +8,7 @@ Server::Server(std::string_view host, size_t concurrent_capabilities,
 
 Server::~Server() noexcept { onTermination(); }
 
-void Server::serve(Communication::slave_ctx &&ctx) noexcept {
+void Server::serve(std::unique_ptr<Connection::ServerCtx>&& ctx) noexcept {
   auto task = [this, &ctx] { logic(std::move(ctx)); };
   pool.push(task);
 }
