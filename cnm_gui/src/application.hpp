@@ -7,9 +7,10 @@ class Application {
 
   ~Application();
 
-  void makeMenuBar();
+  void render();
 
  private:
+  void makeMenuBar();
 };
 
 #endif  // HPP_CNM_GUI_APPLICATION_HPP

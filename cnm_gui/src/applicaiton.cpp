@@ -2,10 +2,16 @@
 #include <spdlog/spdlog.h>
 
 #include "application.hpp"
+#include "helpers/fps_window.hpp"
 
 Application::Application() {}
 
 Application::~Application() {}
+
+void Application::render() {
+  helpers::renderFPSWindow();
+  makeMenuBar();
+}
 
 void Application::makeMenuBar() {
   bool my_tool_active = true;

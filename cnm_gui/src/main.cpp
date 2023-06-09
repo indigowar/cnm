@@ -3,8 +3,6 @@
 
 #include <iostream>
 
-#include "application.hpp"
-
 #if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
 #include <GL/gl3w.h>  // Initialize with gl3wInit()
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
@@ -28,7 +26,7 @@ using namespace gl;
 
 #include <GLFW/glfw3.h>
 
-#include "helpers/fps_window.hpp"
+#include "application.hpp"
 
 static void glfw_error_callback(int error, const char* description) {
   fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -80,9 +78,7 @@ int main(int argc, char** argv) {
 
     // my code begin
 
-    helpers::renderFPSWindow();
-
-    app.makeMenuBar();
+    app.render();
 
     // my code end
 
