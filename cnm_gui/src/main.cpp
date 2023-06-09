@@ -3,10 +3,12 @@
 
 #include <iostream>
 
+#include "application.hpp"
+
 #if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
-#include <GL/gl3w.h>    // Initialize with gl3wInit()
+#include <GL/gl3w.h>  // Initialize with gl3wInit()
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
-#include <GL/glew.h>    // Initialize with glewInit()
+#include <GL/glew.h>  // Initialize with glewInit()
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD)
 #include <glad/glad.h>  // Initialize with gladLoadGL()
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLBINDING2)
@@ -67,6 +69,8 @@ int main(int argc, char** argv) {
 
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.6f, 1.0f);
 
+  Application app;
+
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
 
@@ -77,6 +81,8 @@ int main(int argc, char** argv) {
     // my code begin
 
     helpers::renderFPSWindow();
+
+    app.makeMenuBar();
 
     // my code end
 
