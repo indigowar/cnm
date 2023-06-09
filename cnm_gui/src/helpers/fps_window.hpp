@@ -6,9 +6,11 @@
 namespace helpers {
 
 void renderFPSWindow() {
-  ImGui::Begin("FPS Info");
-  ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-              1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+  auto is_open{true};
+  constexpr ImVec2 size = {100, 10};
+  ImGui::Begin("FPS Info", &is_open, ImGuiWindowFlags_NoTitleBar);
+  ImGui::Text("FPS: %0.1f", ImGui::GetIO().Framerate);
+  ImGui::SetWindowSize(size);
   ImGui::End();
 }
 
