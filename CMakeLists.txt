@@ -13,4 +13,5 @@ set(CMAKE_CXX_EXTENSIONS None)
 include(cmake/get_gtest.cmake)
 include(cmake/get_spdlog.cmake)
 
-add_subdirectory(cnm) 
+add_subdirectory(cnm)
+add_subdirectory(cnm_gui)
