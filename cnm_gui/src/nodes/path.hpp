@@ -5,14 +5,14 @@
 
 #include "nodes/view.hpp"
 
-class NodePath {
+class NodePath final {
  public:
   NodePath(NodeView& first, NodeView& second)
       : first_{first}, second_{second} {}
 
   void render() {
-    ImVec2 first_coords = first_.getCoords();
-    ImVec2 second_coords = second_.getCoords();
+    auto first_coords = getCenterOfNodeView(first_);
+    auto second_coords = getCenterOfNodeView(second_);
 
     auto draw_list = ImGui::GetBackgroundDrawList();
 
@@ -21,6 +21,13 @@ class NodePath {
   }
 
  private:
+  ImVec2 getCenterOfNodeView(NodeView& view) {
+    auto window_pos = view.getCoords();
+    auto window_size = view.getSize();
+    return ImVec2(window_pos.x + window_size.x / 2,
+                  window_pos.y + window_size.y / 2);
+  }
+
   NodeView& first_;
   NodeView& second_;
 };
