@@ -28,4 +28,20 @@ class NodeView final {
   ImVec2 size_;
 };
 
+class View {
+ public:
+  virtual void render() = 0;
+  virtual ImVec2 getCoords() const noexcept = 0;
+  virtual ImVec2 getSize() const noexcept = 0;
+
+  virtual void setCoords(ImVec2) const noexcept = 0;
+  virtual void setSize(ImVec2) const noexcept = 0;
+};
+
+class ViewFactory {
+ public:
+  virtual View make(
+      std::shared_ptr<Cnm::Topology::Common::Node>) const noexcept = 0;
+};
+
 #endif  // HPP_CNM_GUI_NODES_VIEW_HPP
