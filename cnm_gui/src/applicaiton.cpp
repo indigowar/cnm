@@ -9,10 +9,13 @@
 
 #include "helpers/fps_window.hpp"
 #include "helpers/menu.hpp"
+#include "nodes/path.hpp"
 
 Application::Application()
     : view_{std::make_shared<Cnm::Topology::Ring::Node>(nullptr, nullptr,
                                                         nullptr, "127.0.0.1")},
+      view1_{std::make_shared<Cnm::Topology::Ring::Node>(
+          nullptr, nullptr, nullptr, "654.211.123")},
       menu_{makeMenuBar()} {}
 
 Application::~Application() { spdlog::info("application destr"); }
@@ -20,7 +23,11 @@ Application::~Application() { spdlog::info("application destr"); }
 void Application::render() {
   helpers::renderFPSWindow();
   menu_.render();
-  view_.render()
+  view_.render();
+  view1_.render();
+
+  NodePath path(view_, view1_);
+  path.render();
 }
 
 helpers::Menu Application::makeMenuBar() {

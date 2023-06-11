@@ -18,6 +18,7 @@ class Application {
   helpers::Menu makeMenuBar();
 
   NodeView view_;
+  NodeView view1_;
 
   helpers::Menu menu_;
 };

@@ -12,6 +12,7 @@ void NodeView::render() {
   auto name = makeWindowName();
 
   if (ImGui::Begin(name.c_str())) {
+    coords_ = ImGui::GetWindowPos();
     if (ImGui::Button("Kill Machine")) {
       spdlog::info("Kill button is called, for ", node_->getAddress());
     }
@@ -22,12 +23,7 @@ void NodeView::render() {
   }
 }
 
-ImVec2 NodeView::getViewCoords() const noexcept {
-  // auto name = makeWindowName();
-  // ImVec2 coords = ImGui::GetWindowPos(name.data());
-  // return coords;
-  return {0, 0};
-}
+ImVec2 NodeView::getCoords() const noexcept { return coords_; }
 
 std::string NodeView::makeWindowName() const noexcept {
   std::stringstream ss;
