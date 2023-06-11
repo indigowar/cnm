@@ -7,9 +7,8 @@
 namespace helpers {
 
 void renderFPSWindow() {
-  auto is_open{true};
   constexpr ImVec2 size = {100, 10};
-  ImGui::Begin("FPS Info", &is_open, ImGuiWindowFlags_NoTitleBar);
+  ImGui::Begin("FPS Info", nullptr, ImGuiWindowFlags_NoTitleBar);
   ImGui::Text("FPS: %0.1f", ImGui::GetIO().Framerate);
   ImGui::SetWindowSize(size);
   ImGui::End();

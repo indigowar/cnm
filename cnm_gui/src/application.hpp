@@ -1,6 +1,11 @@
 #ifndef HPP_CNM_GUI_APPLICATION_HPP
 #define HPP_CNM_GUI_APPLICATION_HPP
 
+// #include <topology/common/node.hpp>
+
+#include "helpers/menu.hpp"
+#include "nodes/view.hpp"
+
 class Application {
  public:
   explicit Application();
@@ -10,7 +15,11 @@ class Application {
   void render();
 
  private:
-  void makeMenuBar();
+  helpers::Menu makeMenuBar();
+
+  NodeView view_;
+
+  helpers::Menu menu_;
 };
 
 #endif  // HPP_CNM_GUI_APPLICATION_HPP

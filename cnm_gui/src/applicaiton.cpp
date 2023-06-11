@@ -1,69 +1,59 @@
+// x
+#include "application.hpp"
+/// x
+
 #include <imgui.h>
 #include <spdlog/spdlog.h>
 
-#include "application.hpp"
+#include <topology/ring/node.hpp>
+
 #include "helpers/fps_window.hpp"
+#include "helpers/menu.hpp"
 
-Application::Application() {}
+Application::Application()
+    : view_{std::make_shared<Cnm::Topology::Ring::Node>(nullptr, nullptr,
+                                                        nullptr, "127.0.0.1")},
+      menu_{makeMenuBar()} {}
 
-Application::~Application() {}
+Application::~Application() { spdlog::info("application destr"); }
 
 void Application::render() {
   helpers::renderFPSWindow();
-  makeMenuBar();
+  menu_.render();
+  view_.render()
 }
 
-void Application::makeMenuBar() {
-  bool my_tool_active = true;
+helpers::Menu Application::makeMenuBar() {
+  /**
+   * TODO: Add the actual logic for every MenuField
+   */
 
-  if (ImGui::BeginMainMenuBar()) {
-    if (ImGui::BeginMenu("System")) {
-      if (ImGui::MenuItem("Exit")) {
-        spdlog::info("System->Exit clicked!");
-      }
-      if (ImGui::MenuItem("Clear")) {
-        spdlog::info("System->Clear clicked!");
-      }
-      ImGui::EndMenu();
-    }
+  auto test = [](std::string_view first, std::string_view second) {
+    spdlog::info("{}->{} clicked!", first, second);
+  };
 
-    if (ImGui::BeginMenu("Topology")) {
-      if (ImGui::MenuItem("Ring")) {
-        spdlog::info("Topology->Ring clicked!");
-        // TODO: add logic for creating Ring topology
-      }
+  auto system = helpers::MenuItem(
+      "System",
+      {helpers::MenuField("Exit", std::bind(test, "System", "Exit")),
+       helpers::MenuField("Clear", std::bind(test, "System", "Clear"))});
 
-      if (ImGui::MenuItem("Star")) {
-        spdlog::info("Topology->Star clicked!");
+  auto topology = helpers::MenuItem(
+      "Topology",
+      {helpers::MenuField("Ring", std::bind(test, "Topology", "Ring")),
+       helpers::MenuField("Star", std::bind(test, "Topology", "Star")),
+       helpers::MenuField("Mesh", std::bind(test, "Topology", "Mesh"))});
 
-        // TODO: add logic for creating Star topology
-      }
+  auto view = helpers::MenuItem(
+      "View", {helpers::MenuField("Test", std::bind(test, "View", "Test"))});
 
-      if (ImGui::MenuItem("Mesh")) {
-        spdlog::info("Topology->Mesh clicked!");
-        // TODO: add logic for creating Mesh topology
-      }
-      ImGui::EndMenu();
-    }
+  auto machine = helpers::MenuItem(
+      "Machine",
+      {helpers::MenuField("PC", std::bind(test, "Machine", "PC")),
+       helpers::MenuField("Server", std::bind(test, "Machine", "Server")),
+       helpers::MenuField("Office Equipment",
+                          std::bind(test, "Machine", "Office Equipment"))});
 
-    if (ImGui::BeginMenu("Machines")) {
-      if (ImGui::MenuItem("PC")) {
-        spdlog::info("Machines->PC clicked!");
-        // TODO: add logic for creating PC Machine
-      }
+  auto menu = helpers::Menu({system, view, topology, machine});
 
-      if (ImGui::MenuItem("Server")) {
-        spdlog::info("Machines->Server clicked!");
-        // TODO: add logic for creating Server Machine
-      }
-
-      if (ImGui::MenuItem("Office Equipment")) {
-        spdlog::info("Machines->OfficeEquipment  clicked!");
-        // TODO: add logic for creating OfficeEquipment Machine
-      }
-      ImGui::EndMenu();
-    }
-  }
-
-  ImGui::EndMainMenuBar();
+  return menu;
 }

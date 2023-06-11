@@ -4,55 +4,29 @@
 #include <memory>
 
 #include "machines/machine.hpp"
+#include "topology/common/node.hpp"
 
 namespace Cnm::Topology::Ring {
 
-struct Node final {
+class Node : public Common::Node {
+ public:
   Node(std::unique_ptr<Machines::Machine>&& machine, std::shared_ptr<Node> left,
        std::shared_ptr<Node> right, std::string_view address)
-      : machine_{std::move(machine)},
+      : Common::Node(address, std::move(machine)),
+
         left_{std::move(left)},
-        right_{std::move(right)},
-        address_{address} {
-    // todo: add here call of machine_->setHost(address_);
-  }
+        right_{std::move(right)} {}
 
-  [[nodiscard]] std::string_view getName() const noexcept {
-    return "machine_name";  // TODO: replace with machine_->getName()
-  }
+  std::shared_ptr<Node> getLeft() const noexcept { return left_; }
+  std::shared_ptr<Node> getRight() const noexcept { return right_; }
 
-  [[nodiscard]] std::string_view getType() const noexcept {
-    return "machine_type";  // TODO: replace with machine_->getType()
-  }
-
-  [[nodiscard]] std::string_view getAddress() const noexcept {
-    return address_;
-  }
-
-  void serve(std::unique_ptr<Connection::ServerCtx>&& ctx) {
-    machine_->serve(std::move(ctx));
-  }
-
-  [[nodiscard]] std::shared_ptr<Node> getLeft() const noexcept { return left_; }
-
-  void setLeft(std::shared_ptr<Node> left) { left_ = left; }
-
-  [[nodiscard]] std::shared_ptr<Node> getRight() const noexcept {
-    return right_;
-  }
-
-  void setRight(std::shared_ptr<Node> right) { right_ = right; }
-
-  void abort() {}
+  void setRight(std::shared_ptr<Node> v) { right_ = v; }
+  void setLeft(std::shared_ptr<Node> v) { left_ = v; }
 
  private:
-  std::string_view address_;
-  std::unique_ptr<Machines::Machine> machine_;
-
   std::shared_ptr<Node> left_;
   std::shared_ptr<Node> right_;
 };
-
 }  // namespace Cnm::Topology::Ring
 
 #endif  // HPP_CNM_LIB_TOPOLOGY_RING_NODE_HPP

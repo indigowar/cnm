@@ -1,8 +1,6 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 
-#include <iostream>
-
 #if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
 #include <GL/gl3w.h>  // Initialize with gl3wInit()
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
@@ -25,17 +23,19 @@ using namespace gl;
 #endif
 
 #include <GLFW/glfw3.h>
+#include <spdlog/spdlog.h>
 
 #include "application.hpp"
 
-static void glfw_error_callback(int error, const char* description) {
-  fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+static void glfwErrorCallback(int error, const char* description) {
+  spdlog::critical("Got critical GLFW error {}: {}", error, description);
 }
 
 int main(int argc, char** argv) {
-  glfwSetErrorCallback(glfw_error_callback);
+  glfwSetErrorCallback(glfwErrorCallback);
 
   if (!glfwInit()) {
+    spdlog::critical("Failed to load GLFW");
     return EXIT_FAILURE;
   }
 
@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
       glfwCreateWindow(1280, 720, "Computer Networks", nullptr, nullptr);
 
   if (!window) {
+    spdlog::critical("Failed to create a GLFW Window");
     return EXIT_FAILURE;
   }
 
@@ -54,7 +55,7 @@ int main(int argc, char** argv) {
   glfwSwapInterval(1);
 
   if (!gladLoadGL()) {
-    std::cerr << "Failed to initialize OpenGL loader " << std::endl;
+    spdlog::critical("Failed to initialize OpenGL loader(glad)");
     return EXIT_FAILURE;
   }
 
@@ -77,9 +78,7 @@ int main(int argc, char** argv) {
     ImGui::NewFrame();
 
     // my code begin
-
     app.render();
-
     // my code end
 
     ImGui::Render();
@@ -94,11 +93,10 @@ int main(int argc, char** argv) {
   }
 
   ImGui_ImplOpenGL3_Shutdown();
+
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
-
   glfwDestroyWindow(window);
   glfwTerminate();
-
   return 0;
 }
