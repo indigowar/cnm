@@ -10,8 +10,6 @@ namespace Cnm::Machines {
 struct HostInfo final {
   std::string_view address;
   std::string_view name;
-  std::string_view topology;
-  size_t current_speed;
 };
 
 class Machine {
