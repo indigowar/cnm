@@ -7,37 +7,33 @@
 
 namespace Cnm::Machines {
 
-class Machine {
- public:
-  explicit Machine(std::string_view host) : host{host} {}
-
-  virtual ~Machine() = default;
-
-  // calling this method should start a termination process
-  // so all threads that runner contains should be destroyed
-  void terminate() noexcept { onTermination(); }
-
-  [[nodiscard]] std::string_view getHost() const noexcept { return host; }
-
-  /**
-   * @brief serve the given connection(task)
-   *
-   * Currently as an argument we give serve_object_mock
-   * because the connections are not ready and
-   * there's no need in specifying of runner's behavior.
-   */
-  virtual void serve(std::unique_ptr<Connection::ServerCtx>&&) noexcept = 0;
-
- protected:
-  // this method provides the logic of termination the runner
-  virtual void onTermination() noexcept = 0;
-
- private:
-  // this is the value contains an address
-  // that, in network, is given to every node
-  std::string_view host;
+struct HostInfo final {
+  std::string_view address;
+  std::string_view name;
+  std::string_view topology;
+  size_t current_speed;
 };
 
+class Machine {
+ public:
+  explicit Machine(HostInfo host_info) : info_{host_info} {}
+
+  virtual size_t getServingAmount() const noexcept = 0;
+
+  virtual std::string_view getName() const noexcept { return info_.name; }
+  std::string_view getAddress() const noexcept { return info_.name; }
+
+  virtual std::string_view getType() const noexcept = 0;
+
+  virtual void serve(std::unique_ptr<Connection::ServerCtx>&& ctx) = 0;
+
+  virtual void terminate() = 0;
+
+  virtual void setHost(HostInfo info) final { info_ = info; }
+
+ protected:
+  HostInfo info_;
+};
 }  // namespace Cnm::Machines
 
 #endif  // HPP_CNM_LIB_ENTITIES_RUNNERS_RUNNER_HPP

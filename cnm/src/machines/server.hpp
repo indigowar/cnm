@@ -11,21 +11,22 @@ namespace Cnm::Machines {
 
 class Server : public Machine {
  public:
-  using logic_t = std::function<void(std::unique_ptr<Connection::ServerCtx>&&)>;
+  using Logic = std::function<void(const HostInfo&,
+                                   std::unique_ptr<Connection::ServerCtx>&&)>;
 
-  Server(std::string_view host, size_t concurrent_capabilities,
-         logic_t handler);
+  Server(HostInfo info, size_t max_connection, Logic logic);
 
-  ~Server() noexcept;
+  ~Server();
 
-  virtual void serve(
-      std::unique_ptr<Connection::ServerCtx>&&) noexcept override;
+  std::string_view getType() const noexcept override;
+
+  void serve(std::unique_ptr<Connection::ServerCtx>&&) override;
+
+  void terminate() override;
 
  private:
-  void onTermination() noexcept final;
-
-  const logic_t logic;
-  utils::thread_pool pool;
+  Logic logic_;
+  utils::thread_pool pool_;
 };
 
 }  // namespace Cnm::Machines

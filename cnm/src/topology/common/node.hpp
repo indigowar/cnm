@@ -53,5 +53,4 @@ class Node {
   std::unique_ptr<Machines::Machine> machine_;
 };
 }  // namespace Cnm::Topology::Common
-
 #endif  // HPP_CNM_TOPOLOGY_COMMON_NODE_HPP
