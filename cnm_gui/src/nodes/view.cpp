@@ -10,7 +10,7 @@ using Node = std::shared_ptr<Cnm::Topology::Common::Node>;
 
 void NodeView::render() {
   auto name = makeWindowName();
-
+  ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
   if (ImGui::Begin(name.c_str())) {
     retrieveWindowInfo();
     if (ImGui::Button("Kill Machine")) {
@@ -21,6 +21,7 @@ void NodeView::render() {
     }
     ImGui::End();
   }
+  ImGui::PopStyleColor();
 }
 
 ImVec2 NodeView::getCoords() const noexcept { return coords_; }

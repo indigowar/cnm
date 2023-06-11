@@ -17,7 +17,7 @@ class NodePath final {
     auto draw_list = ImGui::GetBackgroundDrawList();
 
     draw_list->AddLine(first_coords, second_coords,
-                       ImGui::GetColorU32(ImVec4(160, 160, 160, 1)));
+                       ImGui::GetColorU32(ImVec4(160, 160, 160, 1)), 5);
   }
 
  private:
