@@ -14,6 +14,29 @@ struct HostInfo final {
 
 class Machine {
  public:
+  // The Interactor probably should be moved from Machines to the topologies,
+  // and be renamed to DNS or something like that.
+  //
+  // But due to the lack of time to implement it properly, it's an interface
+  // here.
+  //
+  // If this project will be continued( which  I doubt), then:
+  // TODO: Move from Machine to topology/common and rename to DNS.
+  struct Interactor {
+    virtual std::vector<std::tuple<std::string_view, std::string_view>>
+    getMachinesInNetwork() = 0;
+
+    virtual std::vector<std::tuple<std::string_view, std::string_view>>
+    getServersInNetwork() = 0;
+
+    virtual std::vector<std::tuple<std::string_view, std::string_view>>
+    getOfficeEquipmentInNetwork() = 0;
+
+    bool isConnected();
+    std::unique_ptr<Connection::RequesterCtx> makeConnection();
+    void disconnect();
+  };
+
   explicit Machine(HostInfo host_info) : info_{host_info} {}
 
   virtual size_t getServingAmount() const noexcept = 0;
