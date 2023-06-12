@@ -36,6 +36,9 @@ class View {
 
   virtual void setCoords(ImVec2) const noexcept = 0;
   virtual void setSize(ImVec2) const noexcept = 0;
+
+  std::vector<std::shared_ptr<Cnm::Topology::Common::Node>> getConnectedNodes()
+      const noexcept;
 };
 
 class ViewFactory {
