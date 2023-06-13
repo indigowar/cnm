@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 
   Application app;
 
-  while (!glfwWindowShouldClose(window)) {
+  while (!glfwWindowShouldClose(window) && !app.shouldClose()) {
     glfwPollEvents();
 
     ImGui_ImplOpenGL3_NewFrame();
