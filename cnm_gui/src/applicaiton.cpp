@@ -1,13 +1,10 @@
-// x
-#include "application.hpp"
-/// x
-
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <spdlog/spdlog.h>
 
 #include <topology/ring/node.hpp>
 
+#include "application.hpp"
 #include "helpers/fps_window.hpp"
 #include "helpers/menu.hpp"
 

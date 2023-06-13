@@ -1,10 +1,6 @@
 # This file fetches all requirements for Dear ImGUI library.
-#
-# The only system dependency is OpenGL.
-# All others will be downloaded from Github.
 
-
-find_package(OpenGL)
+find_package(Vulkan REQUIRED FATAL_ERROR)
 
 FetchContent_Declare(
         glad
@@ -40,8 +36,8 @@ if (NOT imgui_POPULATED)
             ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.h
             ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
 
-            ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.h
-            ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+            ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.h
+            ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp
             )
     file(GLOB IMGUI_SOURCES ${imgui_SOURCE_DIR}/*.cpp)
     file(GLOB IMGUI_HEADERS ${imgui_SOURCE_DIR}/*.h)
