@@ -15,3 +15,4 @@ include(cmake/get_spdlog.cmake)
 
 add_subdirectory(cnm)
 add_subdirectory(cnm_gui)
+add_subdirectory(guitest)

@@ -1,15 +1,25 @@
+#include <X11/XKBlib.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <imgui.h>
+#include <math.h>
+#include <regex.h>
+
+#include <algorithm>
+#include <iterator>
+
+#include "spdlog/fmt/bundled/core.h"
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <bits/stdc++.h>
 #include <vulkan/vulkan.h>
 
+#include <array>
 #include <cstdio>
 #include <cstdlib>
-
-#include "application.hpp"
+#include <string>
+#include <vector>
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && \
     !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
@@ -394,6 +404,9 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd) {
       wd->ImageCount;  // Now we can use the next set of semaphores
 }
 
+class SceneManager;
+class Scene;
+
 // Main code
 int main(int, char**) {
   glfwSetErrorCallback(glfw_error_callback);
@@ -462,33 +475,6 @@ int main(int, char**) {
   init_info.CheckVkResultFn = check_vk_result;
   ImGui_ImplVulkan_Init(&init_info, wd->RenderPass);
 
-  // Load Fonts
-  // - If no fonts are loaded, dear imgui will use the default font. You can
-  // also load multiple fonts and use ImGui::PushFont()/PopFont() to select
-  // them.
-  // - AddFontFromFileTTF() will return the ImFont* so you can store it if you
-  // need to select the font among multiple.
-  // - If the file cannot be loaded, the function will return a nullptr. Please
-  // handle those errors in your application (e.g. use an assertion, or display
-  // an error and quit).
-  // - The fonts will be rasterized at a given size (w/ oversampling) and stored
-  // into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which
-  // ImGui_ImplXXXX_NewFrame below will call.
-  // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype
-  // for higher quality font rendering.
-  // - Read 'docs/FONTS.md' for more instructions and details.
-  // - Remember that in C/C++ if you want to include a backslash \ in a string
-  // literal you need to write a double backslash \\ !
-  // io.Fonts->AddFontDefault();
-  // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-  // ImFont* font =
-  // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f,
-  // nullptr, io.Fonts->GetGlyphRangesJapanese()); IM_ASSERT(font != nullptr);
-
-  // Upload Fonts
   {
     // Use any command queue
     VkCommandPool command_pool = wd->Frames[wd->FrameIndex].CommandPool;
@@ -523,22 +509,9 @@ int main(int, char**) {
   bool show_another_window = false;
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-  Application app;
-
-  // Main loop
-  while (!glfwWindowShouldClose(window) && !app.shouldClose()) {
-    // Poll and handle events (inputs, window resize, etc.)
-    // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to
-    // tell if dear imgui wants to use your inputs.
-    // - When io.WantCaptureMouse is true, do not dispatch mouse input data to
-    // your main application, or clear/overwrite your copy of the mouse data.
-    // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input
-    // data to your main application, or clear/overwrite your copy of the
-    // keyboard data. Generally you may always pass all inputs to dear imgui,
-    // and hide them from your application based on those two flags.
+  while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
 
-    // Resize swap chain?
     if (g_SwapChainRebuild) {
       int width, height;
       glfwGetFramebufferSize(window, &width, &height);
@@ -552,12 +525,9 @@ int main(int, char**) {
       }
     }
 
-    // Start the Dear ImGui frame
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-
-    app.render();
 
     // Rendering
     ImGui::Render();
@@ -589,3 +559,81 @@ int main(int, char**) {
 
   return 0;
 }
+
+void load(SceneManager* manager, std::string scene);
+
+// Scene is the state that can be rendered, but should be separated.
+// it's an abstract class.
+class Scene {
+ public:
+  explicit Scene(std::string name) : name_{name} {}
+
+  std::string name() const noexcept { return name_; }
+
+  // this codes executes once, at start of this scene
+  virtual void start() { toggle_started(); }
+
+  // this code executes when the scene was loaded before and replaced, and now
+  // it's back
+  virtual void invoke() {}
+
+  // this code executes when the scene is rendered
+  virtual void render() {}
+
+  virtual void update() {}
+
+  bool is_running() const noexcept { return started_; }
+
+  void set_manager(SceneManager* manager) { manager_ = manager; }
+
+ protected:
+  void toggle_started() { started_ = true; }
+
+  void load(std::string name) { ::load(manager_, name); }
+
+ private:
+  std::string name_;
+
+  SceneManager* manager_;
+
+  bool started_;
+};
+
+class SceneManager final {
+ public:
+  explicit SceneManager() = default;
+
+  void add(Scene scene) {
+    if (scenes_.contains(scene.name())) {
+      return;
+    }
+    scenes_[scene.name()] = scene;
+  }
+
+  void run() {
+    auto& scene = scenes_[active_];
+    scene.update();
+    scene.render();
+  }
+
+  void load(std::string scene_name) {
+    if (scenes_.contains(scene_name)) {
+      active_ = scene_name;
+      auto& scene = scenes_[scene_name];
+      if (!scene.is_running()) {
+        scene.start();
+      } else {
+        scene.invoke();
+      }
+    }
+  }
+
+ private:
+  std::map<std::string, Scene> scenes_;
+
+  std::string active_;
+};
+
+void load(SceneManager* manager, std::string scene) { manager->load(scene); }
+
+class SceneA : public Scene {};

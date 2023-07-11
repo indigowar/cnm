@@ -5,12 +5,7 @@
 
 namespace Cnm::Machines::Logic {
 
-Server::Logic server_ftp();
+Server::Logic makeFTPServerLogic();
 
-Server::Logic http_server();
-
-Server::Logic task_passer();
-
-}  // namespace Cnm::Machines::Logic
-
+}
 #endif  // HPP_CNM_MACHINES_LOGIC_SERVER_HPP
