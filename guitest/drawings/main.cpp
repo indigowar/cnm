@@ -1,25 +1,12 @@
-#include <X11/XKBlib.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <imgui.h>
-#include <math.h>
-#include <regex.h>
-
-#include <algorithm>
-#include <iterator>
 
 #include "spdlog/fmt/bundled/core.h"
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <bits/stdc++.h>
 #include <vulkan/vulkan.h>
-
-#include <array>
-#include <cstdio>
-#include <cstdlib>
-#include <string>
-#include <vector>
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && \
     !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
@@ -30,6 +17,8 @@
 #ifdef _DEBUG
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif
+
+#include "drawings.hpp"
 
 // Data
 static VkAllocationCallbacks* g_Allocator = nullptr;
@@ -404,9 +393,6 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd) {
       wd->ImageCount;  // Now we can use the next set of semaphores
 }
 
-class SceneManager;
-class Scene;
-
 // Main code
 int main(int, char**) {
   glfwSetErrorCallback(glfw_error_callback);
@@ -509,6 +495,10 @@ int main(int, char**) {
   bool show_another_window = false;
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+  // init
+  work work;
+  work.init();
+
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
 
@@ -528,6 +518,9 @@ int main(int, char**) {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    // cycle
+    work.cycle();
 
     // Rendering
     ImGui::Render();
@@ -559,81 +552,3 @@ int main(int, char**) {
 
   return 0;
 }
-
-void load(SceneManager* manager, std::string scene);
-
-// Scene is the state that can be rendered, but should be separated.
-// it's an abstract class.
-class Scene {
- public:
-  explicit Scene(std::string name) : name_{name} {}
-
-  std::string name() const noexcept { return name_; }
-
-  // this codes executes once, at start of this scene
-  virtual void start() { toggle_started(); }
-
-  // this code executes when the scene was loaded before and replaced, and now
-  // it's back
-  virtual void invoke() {}
-
-  // this code executes when the scene is rendered
-  virtual void render() {}
-
-  virtual void update() {}
-
-  bool is_running() const noexcept { return started_; }
-
-  void set_manager(SceneManager* manager) { manager_ = manager; }
-
- protected:
-  void toggle_started() { started_ = true; }
-
-  void load(std::string name) { ::load(manager_, name); }
-
- private:
-  std::string name_;
-
-  SceneManager* manager_;
-
-  bool started_;
-};
-
-class SceneManager final {
- public:
-  explicit SceneManager() = default;
-
-  void add(Scene scene) {
-    if (scenes_.contains(scene.name())) {
-      return;
-    }
-    scenes_[scene.name()] = scene;
-  }
-
-  void run() {
-    auto& scene = scenes_[active_];
-    scene.update();
-    scene.render();
-  }
-
-  void load(std::string scene_name) {
-    if (scenes_.contains(scene_name)) {
-      active_ = scene_name;
-      auto& scene = scenes_[scene_name];
-      if (!scene.is_running()) {
-        scene.start();
-      } else {
-        scene.invoke();
-      }
-    }
-  }
-
- private:
-  std::map<std::string, Scene> scenes_;
-
-  std::string active_;
-};
-
-void load(SceneManager* manager, std::string scene) { manager->load(scene); }
-
-class SceneA : public Scene {};

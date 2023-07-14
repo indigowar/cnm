@@ -9,8 +9,6 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "application.hpp"
-
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && \
     !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
@@ -394,6 +392,8 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd) {
       wd->ImageCount;  // Now we can use the next set of semaphores
 }
 
+#include "app/application.hpp"
+
 // Main code
 int main(int, char**) {
   glfwSetErrorCallback(glfw_error_callback);
@@ -524,9 +524,10 @@ int main(int, char**) {
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
   Application app;
+  app.init();
 
   // Main loop
-  while (!glfwWindowShouldClose(window) && !app.shouldClose()) {
+  while (!glfwWindowShouldClose(window) && !app.shouldBeClosed()) {
     // Poll and handle events (inputs, window resize, etc.)
     // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to
     // tell if dear imgui wants to use your inputs.
@@ -557,6 +558,7 @@ int main(int, char**) {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    app.update();
     app.render();
 
     // Rendering
@@ -572,7 +574,11 @@ int main(int, char**) {
       FrameRender(wd, draw_data);
       FramePresent(wd);
     }
+
+    app.post_render();
   }
+
+  app.cleanup();
 
   // Cleanup
   err = vkDeviceWaitIdle(g_Device);
