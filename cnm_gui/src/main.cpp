@@ -1,6 +1,9 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <imgui.h>
+
+#include "spdlog/common.h"
+#include "spdlog/spdlog.h"
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -439,6 +442,7 @@ int main(int, char**) {
       ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
 
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+  io.ConfigDockingWithShift = false;
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();

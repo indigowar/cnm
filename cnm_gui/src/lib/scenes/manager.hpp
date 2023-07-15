@@ -47,30 +47,34 @@ class Manager final {
 
   void update() {
     if (active_scene == next_scene) {
-      scenes.at(active_scene)->call_update();
+      scenes.at(active_scene)->update();
       return;
     }
 
-    scenes.at(active_scene)->call_froze();
+    if (scenes.contains(active_scene)) scenes.at(active_scene)->froze();
     active_scene = next_scene;
 
     auto current = scenes.at(active_scene);
 
     if (current->has_started()) {
-      current->call_invoke();
+      current->invoke();
     } else {
       current->call_start();
     }
   }
 
-  void render() { scenes.at(active_scene)->call_render(); }
+  void render() { scenes.at(active_scene)->render(); }
 
-  void post_render() { scenes.at(active_scene)->call_post_render(); }
+  void post_render() { scenes.at(active_scene)->post_render(); }
 
   void cleanup() {
     for (const auto& [name, scene] : scenes) {
-      scene->call_cleanup();
+      scene->cleanup();
     }
+  }
+
+  void set_next_scene(std::string_view scene_name) {
+    scene_switcher.switch_scene(scene_name);
   }
 
  private:

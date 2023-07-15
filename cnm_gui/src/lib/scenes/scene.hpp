@@ -27,33 +27,19 @@ class Scene {
         IExitter* exitter = nullptr)
       : name{name}, scene_switcher{switcher}, exitter{exitter}, started{} {}
 
+  virtual ~Scene() = default;
+
   // get_name() - returns the name of this scene
   std::string_view get_name() const noexcept { return name; }
 
   // has_started() - returns true, if the start() method has been called
   bool has_started() const noexcept { return started; }
 
-  void call_start() {
+  virtual void call_start() final {
     start();
     started = true;
   }
 
-  void call_update() { update(); }
-
-  void call_render() { render(); }
-
-  void call_post_render() { post_render(); }
-
-  void call_cleanup() { cleanup(); }
-
-  void call_froze() { froze(); }
-
-  void call_invoke() { invoke(); }
-
-  void set_exitter(IExitter* exitter) { this->exitter = exitter; }
-  void set_switcher(ISceneSwitcher* switcher) { scene_switcher = switcher; }
-
- protected:
   virtual void start() {}
 
   virtual void update() {}
@@ -62,11 +48,14 @@ class Scene {
 
   virtual void post_render() {}
 
-  virtual void cleanup() = 0;
+  virtual void cleanup() {}
 
-  virtual void froze() = 0;
+  virtual void froze() {}
 
-  virtual void invoke() = 0;
+  virtual void invoke() {}
+
+  void set_exitter(IExitter* exitter) { this->exitter = exitter; }
+  void set_switcher(ISceneSwitcher* switcher) { scene_switcher = switcher; }
 
   void call_exit_program() { exitter->exit(); }
 
