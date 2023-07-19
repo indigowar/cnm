@@ -41,7 +41,7 @@ class Machine {
 
   virtual size_t getServingAmount() const noexcept = 0;
 
-  virtual std::string_view getName() const noexcept { return info_.name; }
+  std::string_view getName() const noexcept { return info_.name; }
   std::string_view getAddress() const noexcept { return info_.name; }
 
   virtual std::string_view getType() const noexcept = 0;
@@ -50,10 +50,16 @@ class Machine {
 
   virtual void terminate() = 0;
 
-  virtual void setHost(HostInfo info) final { info_ = info; }
+  void setHost(HostInfo info) { info_ = info; }
+
+  void set_interactor(Interactor* interactor) { interactor_ = interactor; }
+
+  virtual void start() = 0;
+  virtual void stop() = 0;
 
  protected:
   HostInfo info_;
+  Interactor* interactor_;
 };
 }  // namespace Cnm::Machines
 

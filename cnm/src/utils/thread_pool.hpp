@@ -1,83 +1,107 @@
 #ifndef HPP_CNM_LIB_UTILS_THREAD_POOL_HPP
 #define HPP_CNM_LIB_UTILS_THREAD_POOL_HPP
 
+#include <any>
+#include <atomic>
+#include <cassert>
 #include <condition_variable>
 #include <functional>
 #include <future>
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <stdexcept>
 #include <thread>
+#include <type_traits>
 #include <vector>
 
-namespace Cnm::utils {
+namespace Cnm::Utils {
 
-class thread_pool {
-  using task_type = std::function<void()>;
-
+class ThreadPool final {
  public:
-  explicit thread_pool(size_t num) {
-    for (size_t i{}; i < num; i++) {
-      workers_.emplace_back([this] {
-        while (true) {
-          task_type task;
-          {
-            std::unique_lock<std::mutex> lock(task_mutex_);
-            task_cond_.wait(lock, [this] { return !tasks_.empty(); });
-            task = std::move(tasks_.front());
-            tasks_.pop();
-          }
-          if (!task) {
-            push_stop_task();
-            return;
-          }
-          task();
-        }
-      });
+  ThreadPool(size_t workers)
+      : workers(workers), tasks(), runningTasks{}, stop{}, shutdown{} {
+    for (auto& w : this->workers) {
+      w = std::thread([this] { worker_func(); });
     }
   }
 
-  ~thread_pool() { stop(); }
+  ~ThreadPool() { kill(); }
 
-  void stop() {
-    push_stop_task();
-    for (auto& worker : workers_) {
-      if (worker.joinable()) {
-        worker.join();
-      }
+  template <typename Func, typename... Args>
+  auto push(Func&& f, Args&&... args) -> std::future<decltype(func(args...))> {
+    if (shutdown) {
+      throw std::runtime_error("ThreadPool is dead");
     }
-    std::queue<task_type> empty{};
-    std::swap(tasks_, empty);
+    using result_t = decltype(func(args...));
+
+    auto task = std::make_shared<std::packaged_task<result_t()>>(
+        std::bind(std::forward<Func>(f), std::forward<Args>(args)...));
+
+    auto result = task->get_future();
+
+    std::unique_lock lock(mutex);
+    tasks.emplace([task] { (*task)(); });
+    thread_notifier.notify_one();
+
+    return result;
   }
 
-  template <typename F, typename... Args>
-  auto push(F&& f, Args&&... args) {
-    using return_type = std::invoke_result_t<F, Args...>;
-    auto task = std::make_shared<std::packaged_task<return_type()>>(
-        std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-    auto res = task->get_future();
+  void freeze() {
+    std::unique_lock lock(mutex);
+    stop = true;
+  }
 
-    {
-      std::lock_guard<std::mutex> lock(task_mutex_);
-      tasks_.emplace([task] { (*task)(); });
+  void invoke() {
+    std::unique_lock lock(mutex);
+    if (stop && shutdown) {
+      throw std::runtime_error("ThreadPool is dead");
     }
-    task_cond_.notify_one();
+    if (!stop) {
+      throw std::runtime_error("ThreadPool is already active");
+    }
+    stop = false;
+  }
 
-    return res;
+  void kill() {
+    std::unique_lock lock(mutex);
+    stop = shutdown = true;
   }
 
  private:
-  void push_stop_task() {
-    std::lock_guard<std::mutex> lock(task_mutex_);
-    tasks_.emplace();
-    task_cond_.notify_one();
+  void worker_func() {
+    for (;;) {
+      std::function<void()> task;
+      {
+        std::unique_lock lock(mutex);
+        thread_notifier.wait(lock, [this] { return stop || !tasks.empty(); });
+        if (stop && tasks.empty()) {
+          return;
+        }
+        task = std::move(tasks.front());
+        tasks.pop();
+        runningTasks--;
+      }
+      task();
+      runningTasks--;
+      if (shutdown) {
+        return;
+      }
+    }
   }
 
-  std::vector<std::thread> workers_{};
-  std::queue<task_type> tasks_{};
-  std::mutex task_mutex_;
-  std::condition_variable task_cond_;
+  std::vector<std::thread> workers;
+
+  std::queue<std::function<void()>> tasks;
+  std::mutex mutex;
+
+  std::condition_variable thread_notifier;
+
+  std::atomic<int> runningTasks;
+
+  bool stop;
+  bool shutdown;
 };
 
-}  // namespace Cnm::utils
+}  // namespace Cnm::Utils
 #endif  // HPP_CNM_LIB_UTILS_THREAD_POOL_HPP

@@ -5,10 +5,9 @@
 #include <imgui_internal.h>
 #include <spdlog/spdlog.h>
 
-#include <algorithm>
-#include <iostream>
-#include <map>
-#include <vector>
+#include <machines/server.hpp>
+#include <memory>
+#include <topology/ring/ring.hpp>
 
 #include "lib/scenes/scene.hpp"
 
@@ -18,21 +17,19 @@ class TestScene final : public scene::Scene {
             scene::IExitter* exitter = nullptr)
       : Scene("test_scene", switcher, exitter) {}
 
-  void start() override { spdlog::info("TestScene::start()"); }
+  void start() override {
+    spdlog::info("TestScene::start()");
+
+    topology_ = std::make_unique<Cnm::Topology::Ring::Topology>();
+    {
+      auto logic = [](const Cnm::Machines::HostInfo& info,
+                      std::unique_ptr<Cnm::Connection::ServerCtx>&& ctx) {};
+    }
+  }
 
   void update() override {}
 
-  void render() override {
-    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(),
-                                 ImGuiDockNodeFlags_PassthruCentralNode);
-
-    ImGui::Begin("lfw");
-    ImGui::End();
-
-    ImGui::DockBuilderDockWindow("lfw", ImGuiDir_Left);
-    ImGui::Begin("bpw");
-    ImGui::End();
-  }
+  void render() override {}
 
   void post_render() override {}
 
@@ -41,6 +38,9 @@ class TestScene final : public scene::Scene {
   void froze() override { spdlog::info("TestScene::froze()"); }
 
   void invoke() override { spdlog::info("TestScene::invoke()"); }
+
+ private:
+  std::unique_ptr<Cnm::Topology::Ring::Topology> topology_;
 };
 
 #endif  // HPP_TEST_SCENE_HPP;
