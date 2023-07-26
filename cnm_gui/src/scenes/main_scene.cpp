@@ -70,7 +70,7 @@ void MainScene::froze() { spdlog::info("TestScene::froze()"); }
 
 void MainScene::invoke() { spdlog::info("TestScene::invoke()"); }
 
-helpers::Menu makeMenuBar() {
+helpers::Menu MainScene::makeMenuBar() {
   /**
    * TODO: Add the actual logic for every MenuField
    */
