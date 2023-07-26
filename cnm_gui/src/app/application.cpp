@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "scenes/test_scene.hpp"
+#include "scenes/main_scene.hpp"
 
 Application::Application()
     : scene_manager{}, exitter(*this), should_be_closed{} {}
@@ -10,7 +10,7 @@ Application::Application()
 void Application::init() {
   scene_manager = std::make_unique<scene::Manager>(&exitter);
 
-  auto scene = std::make_shared<TestScene>();
+  auto scene = std::make_shared<MainScene>();
 
   scene_manager->add(scene);
   scene_manager->set_next_scene(scene->get_name());

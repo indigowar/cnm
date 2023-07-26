@@ -1,5 +1,8 @@
+
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
+
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
 #include "spdlog/common.h"
