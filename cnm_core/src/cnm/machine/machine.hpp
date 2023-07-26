@@ -1,25 +1,33 @@
 #ifndef HPP_CNM_CORE_MACHINE_MACHINE_HPP
 #define HPP_CNM_CORE_MACHINE_MACHINE_HPP
 
-#include <string_view>
+#include <memory>
+
+#include "cnm/core/message.hpp"
+#include "cnm/core/object.hpp"
+#include "cnm/machine/host_info.hpp"
+#include "cnm/machine/interactor.hpp"
+#include "cnm/utils/result.hpp"
+
 namespace Cnm {
 
-struct ConnectionEntity {};
-
-class Machine {
+// Base class for all running machines in the network
+class Machine : public Object {
  public:
-  Machine(std::string_view name) : name_{name} {}
+  Machine(HostInfo host_info, std::shared_ptr<Interactor> interactor)
+      : host{host_info}, interactor{std::move(interactor)} {}
 
-  virtual void serve(ConnectionEntity) = 0;
+  virtual ~Machine() { interactor->disconnect(host); }
 
-  virtual bool is_running() const noexcept = 0;
-  virtual bool is_serving() const noexcept = 0;
-  virtual bool is_frozen() const noexcept = 0;
+  HostInfo getHostInfo() const noexcept { return host; }
 
-  std::string_view name() const noexcept { return name_; }
+  void setHostInfo(HostInfo info) { host = info; }
+
+  virtual result_t<MessageBatch> serve(MessageBatch) = 0;
 
  private:
-  std::string_view name_;
+  HostInfo host;
+  std::shared_ptr<Interactor> interactor;
 };
 
 }  // namespace Cnm

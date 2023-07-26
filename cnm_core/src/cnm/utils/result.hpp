@@ -1,31 +1,38 @@
 #ifndef HPP_CNM_CORE_UTILS_RESULT_HPP
 #define HPP_CNM_CORE_UTILS_RESULT_HPP
 
+#include <string_view>
+#include <type_traits>
 #include <utility>
 #include <variant>
 
+namespace Utils {
+
+// Template class for return type.
+// It is used to minimize the usage of exceptions, because they do not provide
+// a clear and robust way to deal with errors.
 template <typename Value, typename Error>
 class Result final {
  public:
-  static constexpr Result<Value, Error> Ok(Value&& v) {
+  static constexpr Result<Value, Error> Ok(Value &&v) {
     return Result(ValueObj(std::move(v)));
   }
 
-  static constexpr Result<Value, Error> Err(Error&& err) {
+  static constexpr Result<Value, Error> Err(Error &&err) {
     return Result(ErrorObj(std::move(err)));
   }
 
-  constexpr bool is_ok() const noexcept {
+  constexpr bool isOk() const noexcept {
     return std::holds_alternative<ValueObj>(value_);
   }
 
-  constexpr bool is_err() const noexcept {
+  constexpr bool isErr() const noexcept {
     return std::holds_alternative<ErrorObj>(value_);
   }
 
-  constexpr Value&& unwrap() { return std::move(std::get<ValueObj>(value_).v); }
+  constexpr Value &&unwrap() { return std::move(std::get<ValueObj>(value_).v); }
 
-  constexpr Error&& unwrap_err() {
+  constexpr Error &&unwrapErr() {
     return std::move(std::get<ErrorObj>(value_).err);
   }
 
@@ -37,7 +44,7 @@ class Result final {
 
   struct ErrorObj {
     Error err;
-    ErrorObj(Error&& e) : err{std::move(e)} {}
+    ErrorObj(Error &&e) : err{std::move(e)} {}
   };
 
   using VariantT = std::variant<ValueObj, ErrorObj>;
@@ -47,5 +54,12 @@ class Result final {
 
   VariantT value_;
 };
+
+}  // namespace Utils
+
+// This is alias to Result<T, std::string_view>,
+// here string_view is used as Error.
+template <typename T>
+using result_t = Utils::Result<T, std::string_view>;
 
 #endif  // HPP_CNM_CORE_UTILS_RESULT_HPP
