@@ -6,7 +6,7 @@ file(GLOB_RECURSE CNM_CORE_tests test/**.cpp)
 
 add_library(cnm_core STATIC ${CNM_CORE_headers} ${CNM_CORE_sources})
 
-target_include_directories(cnm_core PUBLIC ${cnm_core_includes})
+target_include_directories(cnm_core PUBLIC ${CNM_CORE_includes})
 target_link_libraries(cnm_core spdlog::spdlog)
 
 enable_testing()
