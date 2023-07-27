@@ -50,6 +50,24 @@ void MainScene::render() {
   ImNodes::EndOutputAttribute();
 
   ImNodes::EndNode();
+
+  ImNodes::BeginNode(2);
+
+  ImNodes::BeginNodeTitleBar();
+  ImGui::TextUnformatted("hello");
+  ImNodes::EndNodeTitleBar();
+
+  ImNodes::BeginInputAttribute(5);
+  ImGui::Text("left");
+  ImNodes::EndInputAttribute();
+
+  ImNodes::BeginOutputAttribute(6);
+  ImGui::Indent(40);
+  ImGui::Text("right");
+  ImNodes::EndOutputAttribute();
+
+  ImNodes::EndNode();
+
   ImNodes::EndNodeEditor();
 
   ImGui::End();
