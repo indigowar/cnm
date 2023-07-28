@@ -16,7 +16,9 @@ class Application final {
   };
 
  public:
-  Application();
+  Application(std::string_view name);
+
+  std::string_view getName() const noexcept;
 
   void init();
   void update();
@@ -31,6 +33,8 @@ class Application final {
 
   ApplicationExitter exitter;
   bool should_be_closed;
+
+  std::string_view name;
 };
 
 #endif  // HPP_CNM_GUI_APP_APPLICATION_HPP

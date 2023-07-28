@@ -4,8 +4,11 @@
 
 #include "scenes/main_scene.hpp"
 
-Application::Application()
-    : scene_manager{}, exitter(*this), should_be_closed{} {}
+Application::Application(std::string_view name)
+    : scene_manager{},
+      exitter(*this),
+      should_be_closed{},
+      name{std::move(name)} {}
 
 void Application::init() {
   scene_manager = std::make_unique<scene::Manager>(&exitter);
@@ -15,6 +18,8 @@ void Application::init() {
   scene_manager->add(scene);
   scene_manager->set_next_scene(scene->get_name());
 }
+
+std::string_view Application::getName() const noexcept { return name; }
 
 void Application::update() { scene_manager->update(); }
 

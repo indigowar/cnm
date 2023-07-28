@@ -5,8 +5,6 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
-#include "spdlog/common.h"
-#include "spdlog/spdlog.h"
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -405,10 +403,12 @@ int main(int, char**) {
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit()) return 1;
 
+  Application app("Computer Network Modeling");
+
   // Create window with Vulkan context
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  GLFWwindow* window = glfwCreateWindow(
-      1280, 720, "Dear ImGui GLFW+Vulkan example", nullptr, nullptr);
+  GLFWwindow* window =
+      glfwCreateWindow(1280, 720, app.getName().data(), nullptr, nullptr);
   if (!glfwVulkanSupported()) {
     printf("GLFW: Vulkan Not Supported\n");
     return 1;
@@ -530,7 +530,6 @@ int main(int, char**) {
   bool show_another_window = false;
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-  Application app;
   app.init();
 
   // Main loop
