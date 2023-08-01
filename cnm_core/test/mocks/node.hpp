@@ -6,7 +6,7 @@
 #include <cnm/connection/internal/connection.hpp>
 
 class MockNode : public Cnm::Connections::_Node {
-  MOCK_METHOD(Cnm::HostInfo, getHOstInfo, (), (const, noexcept, override));
+  MOCK_METHOD(Cnm::HostInfo, getHostInfo, (), (const, noexcept, override));
 };
 
 #endif  // HPP_CNM_TEST_MOCK_NODE_HPP

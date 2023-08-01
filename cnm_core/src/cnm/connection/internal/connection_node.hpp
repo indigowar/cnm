@@ -6,14 +6,16 @@
 
 #include "cnm/connection/internal/connection.hpp"
 #include "cnm/core/message.hpp"
+#include "cnm/utils/sleep_wrapper.hpp"
 
 namespace Cnm::Connections {
 
 // ConnectionNode is base class for connection's nodes.
 class ConnectionNode {
  public:
-  ConnectionNode(Connection& connection, std::shared_ptr<_Node> node)
-      : owner{connection}, node{std::move(node)} {}
+  ConnectionNode(Connection& connection, std::shared_ptr<_Node> node,
+                 const Utils::SleepWrapper& sw)
+      : owner{connection}, node{std::move(node)}, sleepWrapper(sw) {}
 
   virtual ~ConnectionNode() = default;
 
@@ -32,21 +34,22 @@ class ConnectionNode {
     return std::unique_lock(mutex);
   }
 
-  virtual std::shared_ptr<_Node> getNetworkNode() const noexcept {
-    return node;
-  }
+  std::shared_ptr<_Node> getNetworkNode() const noexcept { return node; }
 
   void setOwner(Connection& new_owner) { owner = new_owner; }
 
-  Connection& getOwner() const noexcept {
-    auto lock = makeLock();
-    return owner;
+  Connection& getOwner() const noexcept { return owner; }
+
+  const Utils::SleepWrapper& getSleepWrapper() const noexcept {
+    return sleepWrapper;
   }
 
  private:
   Connection& owner;
 
   std::shared_ptr<_Node> node;
+
+  const Utils::SleepWrapper sleepWrapper;
 
   mutable std::mutex mutex;
 };

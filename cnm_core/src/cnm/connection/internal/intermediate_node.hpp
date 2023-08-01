@@ -7,6 +7,7 @@
 #include "cnm/connection/internal/connection.hpp"
 #include "cnm/connection/internal/connection_node.hpp"
 #include "cnm/core/message.hpp"
+#include "cnm/utils/sleep_wrapper.hpp"
 
 namespace Cnm::Connections {
 
@@ -14,9 +15,10 @@ namespace Cnm::Connections {
 // other IntermediateNodes or Client/Server nodes).
 class IntermediateNode final : public ConnectionNode {
  public:
-  explicit IntermediateNode(Connection& connection, std::shared_ptr<_Node> node,
-                            std::shared_ptr<ConnectionNode> prev = nullptr,
-                            std::shared_ptr<ConnectionNode> next = nullptr);
+  IntermediateNode(Connection& connection, std::shared_ptr<_Node> node,
+                   const Utils::SleepWrapper& sleeper,
+                   std::shared_ptr<ConnectionNode> prev = nullptr,
+                   std::shared_ptr<ConnectionNode> next = nullptr);
 
   ~IntermediateNode() override;
 
@@ -41,4 +43,4 @@ class IntermediateNode final : public ConnectionNode {
 
 }  // namespace Cnm::Connections
 
-#endif // HPP_CNM_CORE_CONNECTION_INTERNAL_INTERMEDIATE_NODE_HPP
+#endif  // HPP_CNM_CORE_CONNECTION_INTERNAL_INTERMEDIATE_NODE_HPP
