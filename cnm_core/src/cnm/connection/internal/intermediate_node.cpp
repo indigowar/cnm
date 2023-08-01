@@ -77,9 +77,15 @@ void IntermediateNode::sendBackward(Message&& msg) {
 
 void IntermediateNode::abort() {
   auto lock = makeLock();
-  if (previous) previous = nullptr;
-  if (next) next = nullptr;
+  getOwner().abort();
 
-  // TODO: IntermediateNode::abort() add call for deactivation of the
-  // node.
+  if (previous) {
+    previous->abort();
+    previous.reset();
+  }
+
+  if (next) {
+    next->abort();
+    next.reset();
+  }
 }
