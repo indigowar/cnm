@@ -37,6 +37,8 @@ class IntermediateNode final : public ConnectionNode {
   void abort() override;
 
  private:
+  void callAbort();
+
   std::shared_ptr<ConnectionNode> previous;
   std::shared_ptr<ConnectionNode> next;
 };

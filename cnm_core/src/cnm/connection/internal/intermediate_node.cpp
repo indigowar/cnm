@@ -1,13 +1,6 @@
 #include "intermediate_node.hpp"
 
-#include <chrono>
 #include <future>
-#include <iterator>
-#include <thread>
-
-#include "cnm/connection/internal/connection.hpp"
-#include "cnm/connection/internal/connection_node.hpp"
-#include "cnm/core/message.hpp"
 
 using namespace Cnm;
 using namespace Cnm::Connections;
@@ -56,7 +49,7 @@ void IntermediateNode::sendForward(Message&& msg) {
         [this](Message&& msg) { next->sendForward(std::move(msg)); },
         std::move(msg));
   } else {
-    this->abort();
+    callAbort();
   }
 }
 
@@ -71,12 +64,16 @@ void IntermediateNode::sendBackward(Message&& msg) {
         [this](Message&& msg) { previous->sendBackward(std::move(msg)); },
         std::move(msg));
   } else {
-    this->abort();
+    callAbort();
   }
 }
 
 void IntermediateNode::abort() {
   auto lock = makeLock();
+  callAbort();
+}
+
+void IntermediateNode::callAbort() {
   getOwner().abort();
 
   if (previous) {
