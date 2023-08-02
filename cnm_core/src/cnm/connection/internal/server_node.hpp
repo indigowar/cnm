@@ -9,21 +9,32 @@ namespace Cnm::Connections {
 class ServerNode final : public ConnectionNode {
  public:
   ServerNode(Connection& connection, std::shared_ptr<_Node> node,
-             std::shared_ptr<ConnectionNode> prev);
+             const Utils::SleepWrapper& sw);
+
+  ~ServerNode() override;
 
   void setNextNode(std::shared_ptr<ConnectionNode>) override;
 
   std::shared_ptr<ConnectionNode> getNextNode() const noexcept override;
 
   void setPreviousNode(std::shared_ptr<ConnectionNode>) override;
+
   std::shared_ptr<ConnectionNode> getPreviousNode() const noexcept override;
 
   void sendForward(Message&&) override;
+
   void sendBackward(Message&&) override;
 
   void abort() override;
 
+  const std::vector<Message>& getBuffer() const noexcept;
+
  private:
+  void callAbort();
+
+  std::shared_ptr<ConnectionNode> previous;
+
+  std::vector<Message> retrieved;
 };
 
 }  // namespace Cnm::Connections
