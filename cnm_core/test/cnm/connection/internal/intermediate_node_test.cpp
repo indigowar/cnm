@@ -4,7 +4,6 @@
 #include <cnm/connection/internal/intermediate_node.hpp>
 
 #include "mocks/connection.hpp"
-#include "mocks/connection_node.hpp"
 #include "mocks/node.hpp"
 #include "mocks/sleep_wrapper.hpp"
 
@@ -50,12 +49,11 @@ TEST_F(IntermediateNodeTest, SetPreviousNode) {
   EXPECT_EQ(intermediate_node->getPreviousNode(), previous);
 }
 
-TEST_F(IntermediateNodeTest, SendForward) {
-  Message msg{};
-  auto next_node = std::make_shared<testing::NiceMock<MockConnectionNode>>(
-      *connection, node, MockSleepWrapper());
+TEST_F(IntermediateNodeTest, getNextNode) {
+  auto next =
+      std::make_shared<IntermediateNode>(*connection, node, MockSleepWrapper());
 
-  intermediate_node->setNextNode(next_node);
+  intermediate_node->setNextNode(next);
 
-  EXPECT_CALL(*sleep_wrapper, sleep);
+  EXPECT_EQ(intermediate_node->getNextNode(), next);
 }
