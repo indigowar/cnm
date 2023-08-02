@@ -4,15 +4,7 @@
 #include <memory>
 #include <mutex>
 
-#include "cnm/machine/host_info.hpp"
-
 namespace Cnm::Connections {
-
-// TODO: replace with Node from topology.
-class _Node {
- public:
-  virtual HostInfo getHostInfo() const noexcept = 0;
-};
 
 class ConnectionNode;
 

@@ -8,7 +8,7 @@ namespace Cnm::Connections {
 // ServerNode - is the end node of the connection.
 class ServerNode final : public ConnectionNode {
  public:
-  ServerNode(Connection& connection, std::shared_ptr<_Node> node,
+  ServerNode(Connection& connection, std::shared_ptr<Node> node,
              const Utils::SleepWrapper& sw);
 
   ~ServerNode() override;

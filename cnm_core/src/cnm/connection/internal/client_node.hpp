@@ -12,7 +12,7 @@ namespace Cnm::Connections {
 // in specific buffer.
 class ClientNode final : public ConnectionNode {
  public:
-  ClientNode(Connection&, std::shared_ptr<_Node>, const Utils::SleepWrapper&);
+  ClientNode(Connection&, std::shared_ptr<Node>, const Utils::SleepWrapper&);
 
   ~ClientNode() override;
 

@@ -6,7 +6,7 @@ using namespace Cnm;
 using namespace Cnm::Connections;
 
 IntermediateNode::IntermediateNode(Connection& connection,
-                                   std::shared_ptr<_Node> node,
+                                   std::shared_ptr<Node> node,
                                    const Utils::SleepWrapper& sleeper,
                                    std::shared_ptr<ConnectionNode> prev,
                                    std::shared_ptr<ConnectionNode> next)

@@ -3,10 +3,8 @@
 
 #include <gmock/gmock.h>
 
-#include <cnm/connection/internal/connection.hpp>
+#include <cnm/topology/base/node.hpp>
 
-class MockNode : public Cnm::Connections::_Node {
-  MOCK_METHOD(Cnm::HostInfo, getHostInfo, (), (const, noexcept, override));
-};
+class MockNode : public Cnm::Node {};
 
 #endif  // HPP_CNM_TEST_MOCK_NODE_HPP

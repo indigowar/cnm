@@ -5,7 +5,7 @@
 using namespace Cnm;
 using namespace Cnm::Connections;
 
-ServerNode::ServerNode(Connection &connection, std::shared_ptr<_Node> node,
+ServerNode::ServerNode(Connection &connection, std::shared_ptr<Node> node,
                        const Utils::SleepWrapper &sw)
     : ConnectionNode(connection, std::move(node), sw) {}
 

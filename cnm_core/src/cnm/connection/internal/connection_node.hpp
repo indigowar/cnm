@@ -6,6 +6,7 @@
 
 #include "cnm/connection/internal/connection.hpp"
 #include "cnm/core/message.hpp"
+#include "cnm/topology/base/node.hpp"
 #include "cnm/utils/sleep_wrapper.hpp"
 
 namespace Cnm::Connections {
@@ -13,7 +14,7 @@ namespace Cnm::Connections {
 // ConnectionNode is base class for connection's nodes.
 class ConnectionNode {
  public:
-  ConnectionNode(Connection& connection, std::shared_ptr<_Node> node,
+  ConnectionNode(Connection& connection, std::shared_ptr<Node> node,
                  const Utils::SleepWrapper& sw)
       : owner{connection}, node{std::move(node)}, sleepWrapper(sw) {}
 
@@ -34,7 +35,7 @@ class ConnectionNode {
     return std::unique_lock(mutex);
   }
 
-  std::shared_ptr<_Node> getNetworkNode() const noexcept { return node; }
+  std::shared_ptr<Node> getNetworkNode() const noexcept { return node; }
 
   void setOwner(Connection& new_owner) { owner = new_owner; }
 
@@ -47,7 +48,7 @@ class ConnectionNode {
  private:
   Connection& owner;
 
-  std::shared_ptr<_Node> node;
+  std::shared_ptr<Node> node;
 
   const Utils::SleepWrapper sleepWrapper;
 

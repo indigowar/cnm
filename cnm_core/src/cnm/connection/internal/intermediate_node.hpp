@@ -15,7 +15,7 @@ namespace Cnm::Connections {
 // other IntermediateNodes or Client/Server nodes).
 class IntermediateNode final : public ConnectionNode {
  public:
-  IntermediateNode(Connection& connection, std::shared_ptr<_Node> node,
+  IntermediateNode(Connection& connection, std::shared_ptr<Node> node,
                    const Utils::SleepWrapper& sleeper,
                    std::shared_ptr<ConnectionNode> prev = nullptr,
                    std::shared_ptr<ConnectionNode> next = nullptr);
