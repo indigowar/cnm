@@ -6,11 +6,15 @@
 #include <type_traits>
 #include <vector>
 
+#include "cnm/connection/client_ctx.hpp"
 #include "cnm/connection/internal/client_node.hpp"
 #include "cnm/connection/internal/connection.hpp"
 #include "cnm/connection/internal/connection_node.hpp"
 #include "cnm/connection/internal/server_node.hpp"
+#include "cnm/connection/server_ctx.hpp"
 #include "cnm/topology/base/node.hpp"
+#include "cnm/utils/one_time_builder.hpp"
+#include "cnm/utils/result.hpp"
 
 namespace Cnm {
 
@@ -49,6 +53,10 @@ class Connection final : public Connections::Connection {
     return nodes.end();
   }
 
+  result_t<ClientCtx> createClientContext();
+
+  result_t<ServerCtx> createServerContext();
+
  private:
   void callAbort();
 
@@ -61,6 +69,9 @@ class Connection final : public Connections::Connection {
 
   bool is_aborted;
   SendingDirection current_direction;
+
+  Utils::OneTimeBuilder<ClientContext> client_ctx_builder;
+  Utils::OneTimeBuilder<ServerContext> server_ctx_builder;
 
   mutable std::mutex mutex;
 };
