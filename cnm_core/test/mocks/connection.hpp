@@ -10,8 +10,12 @@ class MockConnection : public Cnm::Connections::Connection {
   MOCK_METHOD(void, abort, (), (override));
   MOCK_METHOD(bool, isRequesting, (), (const, noexcept, override));
   MOCK_METHOD(bool, isServing, (), (const, noexcept, override));
-  MOCK_METHOD(std::unique_lock<std::mutex>, lock, (), (override));
+  MOCK_METHOD(bool, isAborted, (), (const, noexcept, override));
+  MOCK_METHOD(std::unique_lock<std::mutex>, makeLock, (),
+              (const, noexcept, override));
   MOCK_METHOD(size_t, getSpeed, (), (const, noexcept, override));
+  MOCK_METHOD(void, stopRequesting, (), (override));
+  MOCK_METHOD(void, stopServing, (), (override));
 };
 
 #endif  // HPP_CNM_CORE_TEST_MOCKS_CONNECTION_HPP

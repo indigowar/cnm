@@ -18,18 +18,27 @@ class Connection {
   virtual void abort() = 0;
 
   // returns true, if client can send requests.
-  virtual bool isRequesting() const noexcept = 0;
+  [[nodiscard]] virtual bool isRequesting() const noexcept = 0;
 
   // returns true, if server can send responses.
-  virtual bool isServing() const noexcept = 0;
+  [[nodiscard]] virtual bool isServing() const noexcept = 0;
 
-  // lock() - lock the connection to ensure that the action will not be
+  // returns true, if the connection is aborted.
+  [[nodiscard]] virtual bool isAborted() const noexcept = 0;
+
+  // makeLock() - lock the connection to ensure that the action will not be
   // interrupted.
-  virtual std::unique_lock<std::mutex> lock() = 0;
+  virtual std::unique_lock<std::mutex> makeLock() const noexcept = 0;
 
   // getSpeed() - retrieve the speed of the network( how many ms required to
   // pass one Message from one node to another).
-  virtual size_t getSpeed() const noexcept = 0;
+  [[nodiscard]] virtual size_t getSpeed() const noexcept = 0;
+
+  // stopRequesting() - forbids sending from client to server.
+  virtual void stopRequesting() = 0;
+
+  // stopServing() - forbids sending from server to client.
+  virtual void stopServing() = 0;
 };
 
 }  // namespace Cnm::Connections
