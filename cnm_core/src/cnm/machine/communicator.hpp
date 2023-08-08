@@ -1,5 +1,5 @@
-#ifndef HPP_CNM_CORE_MACHINE_INTERACTOR_HPP
-#define HPP_CNM_CORE_MACHINE_INTERACTOR_HPP
+#ifndef HPP_CNM_CORE_MACHINE_COMMUNICATOR_HPP
+#define HPP_CNM_CORE_MACHINE_COMMUNICATOR_HPP
 
 #include <string_view>
 #include <vector>
@@ -8,7 +8,8 @@
 
 namespace Cnm {
 
-class Interactor {
+// Communicator - is an interface for communication with the network by machine.
+class Communicator {
  public:
   virtual std::vector<HostInfo> getOfficeEquipments(
       bool filter_unavailable = false) = 0;
@@ -24,4 +25,4 @@ class Interactor {
 
 }  // namespace Cnm
 
-#endif  // HPP_CNM_CORE_MACHINE_INTERACTOR_HPP
+#endif  // HPP_CNM_CORE_MACHINE_COMMUNICATOR_HPP

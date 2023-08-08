@@ -13,18 +13,18 @@ class Object {
   // after constructor.
   virtual void start() = 0;
 
-  // stop() is killing the object completly,
+  // stop() is killing the object completely,
   // after this call the object can not work.
   virtual void stop() = 0;
 
   // invoke() is used to start the object again,
-  // if previously it was stopped by froze().
+  // if previously it was stopped by freeze().
   virtual void invoke() = 0;
 
-  // froze() is used to hold the execution of the object for some time.
-  // it does not completly kill the Object like stop(),
+  // freeze() is used to hold the execution of the object for some time.
+  // it does not completely kill the Object like stop(),
   // Object can run again after calling invoke().
-  virtual void froze() = 0;
+  virtual void freeze() = 0;
 };
 
 }  // namespace Cnm

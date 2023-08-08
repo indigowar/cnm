@@ -84,7 +84,7 @@ void MainScene::post_render() {}
 
 void MainScene::cleanup() { spdlog::info("TestScene::cleanup()"); }
 
-void MainScene::froze() { spdlog::info("TestScene::froze()"); }
+void MainScene::froze() { spdlog::info("TestScene::freeze()"); }
 
 void MainScene::invoke() { spdlog::info("TestScene::invoke()"); }
 
