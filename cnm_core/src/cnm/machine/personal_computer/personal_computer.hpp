@@ -18,7 +18,7 @@ class PersonalComputer final : public Machine {
   PersonalComputer(PersonalComputerLogic&&, HostInfo,
                    std::shared_ptr<Communicator>);
 
-  ~PersonalComputer();
+  ~PersonalComputer() override;
 
   [[nodiscard]] size_t getCurrentServingAmount() const noexcept override;
 
