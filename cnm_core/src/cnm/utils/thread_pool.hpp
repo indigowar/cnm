@@ -8,61 +8,135 @@
 #include <queue>
 #include <shared_mutex>
 #include <thread>
+#include <type_traits>
 #include <vector>
+
+#include "cnm/utils/thread_safe_queue.hpp"
 
 namespace Utils {
 
 class ThreadPool final {
+  using FunctionType = std::function<void()>;
+
+  struct TaskItem {
+    ThreadSafeQueue<FunctionType> tasks;
+    std::binary_semaphore signal{0};
+  };
+
  public:
-  ThreadPool(size_t workers_amount) {
-    for (size_t i{}; i < workers_amount; i++) {
-      workers.emplace_back(std::bind(&ThreadPool::worker, this));
+  explicit ThreadPool(size_t amountOfWorkers) : tasks(amountOfWorkers) {
+    size_t current{};
+    for (size_t i{}; i < amountOfWorkers; i++) {
+      priority_queue.pushBack(size_t(current));
+      try {
+        threads.emplace_back([this, &current](const std::stop_token& token) {
+          threadRunner(token, current);
+        });
+        current++;
+      } catch (...) {
+        tasks.pop_back();
+      }
     }
   }
+
+  ThreadPool(const ThreadPool&) = delete;
+  ThreadPool& operator=(const ThreadPool&) = delete;
 
   ~ThreadPool() {
-    // TODO: call stop()
-    stop();
+    for (size_t i{}; i < threads.size(); i++) {
+      threads[i].request_stop();
+      tasks[i].signal.release();
+      threads[i].join();
+    }
   }
 
-  template <typename F, typename... Args>
-  auto execute(F&& func, Args&&... args)
-      -> std::future<decltype(func(args...))> {
-    using ReturnType = decltype(func(args...));
+  size_t size() const noexcept { return threads.size(); }
 
-    auto task = std::make_shared<std::packaged_task<ReturnType()>>(
-        std::bind(std::forward<F>(func), std::forward<Args>(args)...));
+  template <typename Function, typename... Args>
+  auto add(Function f, Args... args) -> std::future<decltype(f(args...))> {
+    using ReturnType = decltype(f(args...));
 
-    auto future = task->get_future();
+    auto promise = std::make_shared<std::promise<ReturnType>>();
+    auto task = [func = std::move(f), ... args = std::move(args),
+                 promise = promise] {
+      try {
+        if constexpr (std::is_same_v<ReturnType, void>) {
+          func(args...);
+          promise->set_value();
+        } else {
+          promise->set_value(func(args...));
+        }
+      } catch (...) {
+        promise->set_exception(std::current_exception());
+      }
+    };
 
-    {
-      std::unique_lock lock(mutex);
-      tasks.push([task] { task(); });
-    }
+    auto future = promise->get_future();
+    addTask(std::move(task));
 
     return future;
   }
 
-  void stop() {
-    {
-      std::unique_lock lock(mutex);
-      is_stopped = true;
-    }
-    condition.notify_all();
-    for (auto& i : workers) {
-      i.request_stop();
-    }
+  template <typename Function, typename... Args>
+    requires std::invocable<Function, Args...> &&
+             std::is_same_v<void, std::invoke_result_t<Function&&, Args&&...>>
+  void addDetach(Function function, Args... args) {
+    this->add(std::move([f = std::forward<Function>(function),
+                         ... a = std::forward<Args>(args)] {
+      try {
+        std::invoke(f, a...);
+      } catch (...) {
+      }
+    }));
   }
 
  private:
-  void worker() {}
+  template <typename Function>
+  void addTask(Function&& f) {
+    auto i_opt = priority_queue.copyFrontAndRotateToBack();
+    if (!i_opt.has_value()) {
+      return;
+    }
 
-  std::shared_mutex mutex;
-  std::vector<std::jthread> workers;
-  std::queue<std::function<void()>> tasks;
-  std::condition_variable condition;
+    auto i = *i_opt;
+    pending_tasks.fetch_add(1, std::memory_order_relaxed);
+    tasks[i].tasks.pushBack(std::forward<Function>(f));
+    tasks[i].signal.release();
+  }
 
-  bool is_stopped;
+  void threadRunner(const std::stop_token& stop_token, size_t id) {
+    do {
+      tasks[id].signal.acquire();
+
+      do {
+        while (auto task = tasks[id].tasks.popFront()) {
+          try {
+            pending_tasks.fetch_sub(1, std::memory_order_release);
+            std::invoke(std::move(task.value()));
+          } catch (...) {
+          }
+        }
+
+        for (size_t i = 1; i < tasks.size(); ++i) {
+          const size_t index = (id + i) % tasks.size();
+          if (auto task = tasks[index].tasks.steal()) {
+            pending_tasks.fetch_sub(1, std::memory_order_release);
+            std::invoke(std::move(task.value()));
+            break;
+          }
+        }
+
+      } while (pending_tasks.load(std::memory_order_acquire) > 0);
+
+      priority_queue.rotateToFront(id);
+
+    } while (stop_token.stop_requested());
+  }
+
+  std::vector<std::jthread> threads;
+  std::deque<TaskItem> tasks;
+  ThreadSafeQueue<size_t> priority_queue;
+  std::atomic_int_fast64_t pending_tasks{};
 };
 
 }  // namespace Utils
