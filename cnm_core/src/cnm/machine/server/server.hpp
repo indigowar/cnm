@@ -7,39 +7,37 @@
 
 namespace Cnm {
 
+// Server - is a machine that serves something to clients.
 class Server final : public Machine {
  public:
-  Server(ServerLogic&&, size_t limit, HostInfo host_info,
-         std::shared_ptr<Communicator> communicator)
-      : Machine("server", limit, host_info, std::move(communicator)),
-        thread_pool{} {}
+  Server(ServerLogic&& logic, size_t limit, HostInfo host_info,
+         std::shared_ptr<Communicator> communicator);
 
-  ~Server() override { stop(); }
+  ~Server() override;
 
-  void start() override {
-    // we initialize the thread_pool.
-  }
+  void start() override;
 
-  void stop() override {
-    // delete all tasks.
-    // signal to end all threads.
-    // delete the thread_pool
-  }
+  void stop() override;
 
-  void invoke() override {
-    // send signal to continue the execution of thread_pool
-  }
+  void invoke() override;
 
-  void freeze() override {
-    // send signal to stop the execution of the thread_pool.
-  }
+  void freeze() override;
 
-  size_t getCurrentServingAmount() const noexcept override { return 0; }
+  size_t getCurrentServingAmount() const noexcept override;
 
-  result_t<MessageBatch> serve(MessageBatch) override {}
+  result_t<MessageBatch> serve(MessageBatch msg) override;
 
  private:
+  std::future<result_t<MessageBatch>> addRequestToThreadPool(MessageBatch);
+
+  // thread_pool is where the serving logic executes in.
   std::unique_ptr<Utils::ThreadPool> thread_pool;
+
+  // is_accepting does the server accepts new requests.
+  bool is_accepting;
+
+  // ServerLogic object contains a custom logic for servers.
+  ServerLogic logic;
 };
 
 }  // namespace Cnm

@@ -3,7 +3,13 @@
 
 namespace Cnm {
 
-class ServerLogic {};
+class ServerLogic {
+ public:
+  void init() {}
+  result_t<MessageBatch> execute(MessageBatch msg) {
+    return result_t<MessageBatch>::Ok(std::move(msg));
+  }
+};
 
 }  // namespace Cnm
 
