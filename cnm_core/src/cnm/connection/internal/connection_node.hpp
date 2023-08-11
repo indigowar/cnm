@@ -15,7 +15,7 @@ namespace Cnm::Connections {
 class ConnectionNode {
  public:
   ConnectionNode(Connection& connection, std::shared_ptr<Node> node,
-                 const Utils::SleepWrapper& sw)
+                 const std::shared_ptr<Utils::SleepWrapper>& sw)
       : owner{connection}, node{std::move(node)}, sleepWrapper(sw) {}
 
   virtual ~ConnectionNode() = default;
@@ -41,7 +41,7 @@ class ConnectionNode {
 
   Connection& getOwner() const noexcept { return owner; }
 
-  const Utils::SleepWrapper& getSleepWrapper() const noexcept {
+  std::shared_ptr<Utils::SleepWrapper> getSleepWrapper() const noexcept {
     return sleepWrapper;
   }
 
@@ -50,7 +50,7 @@ class ConnectionNode {
 
   std::shared_ptr<Node> node;
 
-  const Utils::SleepWrapper sleepWrapper;
+  const std::shared_ptr<Utils::SleepWrapper> sleepWrapper;
 
   mutable std::mutex mutex;
 };

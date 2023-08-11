@@ -65,6 +65,8 @@ class Connection final : public Connections::Connection {
   std::shared_ptr<Connections::ClientNode> client_node;
   std::shared_ptr<Connections::ServerNode> server_node;
 
+  std::shared_ptr<Utils::SleepWrapper> sleep_wrapper;
+
   size_t speed;
 
   bool is_aborted;

@@ -22,15 +22,17 @@ Connection::Connection(
     throw std::runtime_error("can't create connection with less than 2 nodes.");
   }
 
+  sleep_wrapper = std::make_shared<Utils::SleepWrapper>();
+
   // create the first node - client node.
   client_node = std::make_shared<Connections::ClientNode>(
-      *this, networkNodes.front(), Utils::SleepWrapper());
+      *this, networkNodes.front(), sleep_wrapper);
 
   // create intermediate nodes for the connection.
   std::shared_ptr<Connections::ConnectionNode> previous = client_node;
   for (size_t i{1}; i < networkNodes.size() - 1; i++) {
     auto current = std::make_shared<Connections::IntermediateNode>(
-        *this, networkNodes[i], Utils::SleepWrapper(), previous);
+        *this, networkNodes[i], sleep_wrapper, previous);
     current->setPreviousNode(previous);
     previous->setNextNode(current);
 
@@ -39,7 +41,7 @@ Connection::Connection(
 
   // create the last - server node.
   nodes.back() = server_node = std::make_shared<Connections::ServerNode>(
-      *this, networkNodes.back(), Utils::SleepWrapper());
+      *this, networkNodes.back(), sleep_wrapper);
   server_node->setPreviousNode(previous);
   previous->setNextNode(server_node);
 }

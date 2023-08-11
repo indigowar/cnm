@@ -5,11 +5,10 @@
 using namespace Cnm;
 using namespace Cnm::Connections;
 
-IntermediateNode::IntermediateNode(Connection& connection,
-                                   std::shared_ptr<Node> node,
-                                   const Utils::SleepWrapper& sleeper,
-                                   std::shared_ptr<ConnectionNode> prev,
-                                   std::shared_ptr<ConnectionNode> next)
+IntermediateNode::IntermediateNode(
+    Connection& connection, std::shared_ptr<Node> node,
+    const std::shared_ptr<Utils::SleepWrapper>& sleeper,
+    std::shared_ptr<ConnectionNode> prev, std::shared_ptr<ConnectionNode> next)
     : ConnectionNode(connection, std::move(node), sleeper),
       previous{std::move(prev)},
       next{std::move(next)} {}
@@ -43,7 +42,7 @@ void IntermediateNode::sendForward(Message&& msg) {
   if (next) {
     size_t net_speed = getOwner().getSpeed();
 
-    getSleepWrapper().sleepFor(std::chrono::milliseconds(net_speed));
+    getSleepWrapper()->sleepFor(std::chrono::milliseconds(net_speed));
     auto result = std::async(
         std::launch::async,
         [this](Message&& msg) { next->sendForward(std::move(msg)); },
@@ -57,7 +56,7 @@ void IntermediateNode::sendBackward(Message&& msg) {
   auto lock = makeLock();
   if (previous) {
     size_t net_speed = getOwner().getSpeed();
-    getSleepWrapper().sleepFor(std::chrono::milliseconds(net_speed));
+    getSleepWrapper()->sleepFor(std::chrono::milliseconds(net_speed));
 
     auto result = std::async(
         std::launch::async,

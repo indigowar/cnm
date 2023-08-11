@@ -9,7 +9,7 @@ namespace Cnm::Connections {
 class ServerNode final : public ConnectionNode {
  public:
   ServerNode(Connection& connection, std::shared_ptr<Node> node,
-             const Utils::SleepWrapper& sw);
+             const std::shared_ptr<Utils::SleepWrapper>& sw);
 
   ~ServerNode() override;
 

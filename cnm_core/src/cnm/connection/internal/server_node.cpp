@@ -6,7 +6,7 @@ using namespace Cnm;
 using namespace Cnm::Connections;
 
 ServerNode::ServerNode(Connection &connection, std::shared_ptr<Node> node,
-                       const Utils::SleepWrapper &sw)
+                       const std::shared_ptr<Utils::SleepWrapper> &sw)
     : ConnectionNode(connection, std::move(node), sw) {}
 
 ServerNode::~ServerNode() { this->abort(); }
@@ -32,8 +32,6 @@ std::shared_ptr<ConnectionNode> ServerNode::getPreviousNode() const noexcept {
 void ServerNode::sendForward(Message &&msg) {
   auto lock = makeLock();
   if (getOwner().isRequesting()) {
-    auto delay = std::chrono::milliseconds(getOwner().getSpeed());
-    getSleepWrapper().sleepFor(delay);
     retrieved.push_back(msg);
   }
 }
@@ -44,7 +42,7 @@ void ServerNode::sendBackward(Cnm::Message &&msg) {
   if (getOwner().isServing()) {
     if (previous) {
       auto delay = std::chrono::milliseconds(getOwner().getSpeed());
-      getSleepWrapper().sleepFor(delay);
+      getSleepWrapper()->sleepFor(delay);
 
       auto result = std::async(
           [this](Message &&msg) { previous->sendBackward(std::move(msg)); },

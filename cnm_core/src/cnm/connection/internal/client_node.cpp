@@ -6,7 +6,7 @@ using namespace Cnm;
 using namespace Cnm::Connections;
 
 ClientNode::ClientNode(Connection& con, std::shared_ptr<Node> node,
-                       const Utils::SleepWrapper& sw)
+                       const std::shared_ptr<Utils::SleepWrapper>& sw)
     : ConnectionNode(con, std::move(node), sw) {}
 
 ClientNode::~ClientNode() { abort(); }
@@ -37,7 +37,7 @@ void ClientNode::sendForward(Message&& msg) {
 
     if (next) {
       auto delay = std::chrono::milliseconds(connection.getSpeed());
-      getSleepWrapper().sleepFor(delay);
+      getSleepWrapper()->sleepFor(delay);
 
       (void)std::async(
           std::launch::async,

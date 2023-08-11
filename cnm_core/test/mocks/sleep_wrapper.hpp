@@ -6,6 +6,7 @@
 #include <cnm/utils/sleep_wrapper.hpp>
 
 class MockSleepWrapper : public Utils::SleepWrapper {
+ public:
   MOCK_METHOD(void, sleepFor, (const std::chrono::milliseconds&), (const));
 };
 

@@ -8,8 +8,8 @@
 class MockConnectionNode : public Cnm::Connections::ConnectionNode {
  public:
   MockConnectionNode(Cnm::Connections::Connection& connection,
-                     std::shared_ptr<Cnm::Connections::_Node> node,
-                     const Utils::SleepWrapper& sw)
+                     std::shared_ptr<Cnm::Node> node,
+                     const std::shared_ptr<Utils::SleepWrapper>& sw)
       : ConnectionNode(connection, std::move(node), sw) {}
 
   MOCK_METHOD(void, setNextNode, (std::shared_ptr<ConnectionNode>), (override));
