@@ -1,5 +1,7 @@
 #include "office_equipment.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <utility>
 
 namespace Cnm {
@@ -16,39 +18,75 @@ OfficeEquipment::OfficeEquipment(const OfficeEquipmentLogic& logic,
 OfficeEquipment::~OfficeEquipment() { stop(); }
 
 void OfficeEquipment::start() {
-  // start the execution of the thread and start to accept the requests.
   auto lock = makeLock();
-  is_running = true;
+
+  if (is_running) {
+    spdlog::warn("OfficeEquipment::start(): called when is running already.");
+    return;
+  }
+
+  if (thread) {
+    spdlog::warn(
+        "OfficeEquipment::start(): called when the thread is initialized.");
+    return;
+  }
+
   is_accepting = true;
+  is_running = true;
+
   thread = std::make_unique<std::jthread>(
       [this](const std::stop_token& st) { threadFunction(st); });
 }
 
 void OfficeEquipment::stop() {
-  // kill the thread and stop accepting the requests.
   auto lock = makeLock();
+
+  if (!thread) {
+    spdlog::warn("OfficeEquipment::stop(): called when the thread is dead.");
+    return;
+  }
+
+  is_running = false;
+  is_accepting = false;
+
   thread->request_stop();
-  tasks.clear();
   thread.reset();
 }
 
 void OfficeEquipment::invoke() {
-  // start the execution  of sleeping thread.
   {
     auto lock = makeLock();
-    is_accepting = true;
+
+    if (!thread) {
+      spdlog::warn("OfficeEquipment::invoke(): called on the dead thread.");
+      return;
+    }
+
+    if (is_running) {
+      spdlog::warn("OfficeEquipment::invoke(): called on the running thread.");
+      return;
+    }
+
     is_running = true;
   }
+
   cond_var.notify_one();
 }
 
 void OfficeEquipment::freeze() {
-  // stop the execution of the thread, but without killing it.
-  // and still accepts the requests.
-  {
-    auto lock = makeLock();
-    is_running = false;
+  auto lock = makeLock();
+
+  if (!thread) {
+    spdlog::warn("OfficeEquipment::freeze(): called on the dead thread.");
+    return;
   }
+
+  if (!is_running) {
+    spdlog::warn("OfficeEquipment::freeze(): called on the frozen thread.");
+    return;
+  }
+
+  is_running = false;
 }
 
 size_t OfficeEquipment::getCurrentServingAmount() const noexcept {
