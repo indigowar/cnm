@@ -14,7 +14,7 @@ using namespace Cnm::Connections;
 class IntermediateNodeTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    sleep_wrapper = std::make_shared<MockSleepWrapper>();
+    sleep_wrapper = std::make_shared<testing::NiceMock<MockSleepWrapper>>();
     connection = std::make_shared<testing::NiceMock<MockConnection>>();
     node = std::make_shared<testing::NiceMock<MockNode>>();
 
@@ -65,8 +65,8 @@ TEST_F(IntermediateNodeTest, sendForwardWithNoNext) {
 }
 
 TEST_F(IntermediateNodeTest, sendForwardWithNext) {
-  auto next =
-      std::make_shared<MockConnectionNode>(*connection, node, sleep_wrapper);
+  auto next = std::make_shared<testing::NiceMock<MockConnectionNode>>(
+      *connection, node, sleep_wrapper);
   intermediate_node->setNextNode(next);
 
   EXPECT_CALL(*sleep_wrapper, sleepFor);
@@ -82,8 +82,8 @@ TEST_F(IntermediateNodeTest, sendBackwardWithNoPrevious) {
 }
 
 TEST_F(IntermediateNodeTest, sendBackwardWithPrevious) {
-  auto previous =
-      std::make_shared<MockConnectionNode>(*connection, node, sleep_wrapper);
+  auto previous = std::make_shared<testing::NiceMock<MockConnectionNode>>(
+      *connection, node, sleep_wrapper);
   intermediate_node->setPreviousNode(previous);
 
   EXPECT_CALL(*sleep_wrapper, sleepFor);
