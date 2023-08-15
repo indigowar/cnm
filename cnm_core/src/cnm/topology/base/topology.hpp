@@ -3,19 +3,44 @@
 
 #include <memory>
 
+#include "cnm/core/object.hpp"
 #include "cnm/machine/host_info.hpp"
 #include "cnm/machine/machine.hpp"
+#include "cnm/topology/base/node_iterator.hpp"
 #include "cnm/utils/result.hpp"
 
 namespace Cnm {
 
-class Topology {
+// Topology - an interface to all existing topologies.
+class Topology : public Object {
  public:
-  virtual result_t<HostInfo> addMachine(std::unique_ptr<Machine>&& machine,
-                                        std::string_view host_name = "",
-                                        std::string_view address = "") = 0;
+  // addMachine - adds new machine into topology,
+  // returns the HostInfo of the node or the error.
+  virtual result_t<HostInfo> addMachine(std::unique_ptr<Machine>&&) = 0;
 
-  virtual size_t getAmoutOfConnections() const noexcept = 0;
+  virtual result_t<HostInfo> addMachine(std::unique_ptr<Machine>&&,
+                                        HostInfo) = 0;
+
+  // addMachineWithName - adds new machine into topology, but with specified
+  // name, returns HostInfo of the node or the error.
+  virtual result_t<HostInfo> addMachineWithName(std::unique_ptr<Machine>&&,
+                                                std::string_view name) = 0;
+
+  // addMachineWithAddress - adds new machine into topology, but with specified
+  // address, returns HostInfo of the node or the error.
+  virtual result_t<HostInfo> addMachineWithAddress(
+      std::unique_ptr<Machine>&&, std::string_view address) = 0;
+
+  // deleteMachine - deletes a machine with given HostInfo.
+  virtual result_t<bool> deleteMachine(HostInfo) = 0;
+
+  // validate - checks if the node are connected right.
+  [[nodiscard]] virtual result_t<bool> validate() const noexcept = 0;
+
+  [[nodiscard]] virtual std::string_view getType() const noexcept = 0;
+
+  virtual NodeIterator begin() = 0;
+  virtual NodeIterator end() = 0;
 };
 
 }  // namespace Cnm

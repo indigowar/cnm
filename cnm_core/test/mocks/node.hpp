@@ -5,6 +5,9 @@
 
 #include <cnm/topology/base/node.hpp>
 
-class MockNode : public Cnm::Node {};
+class MockNode : public Cnm::Node {
+ public:
+  MockNode() : Cnm::Node(Cnm::HostInfo{}) {}
+};
 
 #endif  // HPP_CNM_TEST_MOCK_NODE_HPP
