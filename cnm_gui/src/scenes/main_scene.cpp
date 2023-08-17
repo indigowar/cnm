@@ -1,9 +1,13 @@
 #include "main_scene.hpp"
 
+#include <imgui_internal.h>
 #include <spdlog/spdlog.h>
 
+#include <utility>
+
 #include "helpers/fps_window.hpp"
-#include "lib/nodes/imnodes.hpp"
+
+void test() {}
 
 MainScene::MainScene(scene::ISceneSwitcher* switcher, scene::IExitter* exitter)
     : Scene("test_scene", switcher, exitter) {}
@@ -13,71 +17,73 @@ void MainScene::start() {
 
   menu = std::make_unique<helpers::Menu>(makeMenuBar());
 
-  ImNodes::CreateContext();
-
-  ImNodes::SetNodeGridSpacePos(1, ImVec2(200.0f, 200.0f));
-
   ImGui::StyleColorsDark();
-  ImNodes::StyleColorsDark();
 }
 
 void MainScene::update() {}
 
 void MainScene::render() {
   menu->render();
-
-  // docking
-  ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
-
-  ImGui::Begin("Node Editor");
-
-  ImGui::SetNextWindowDockID(ImGuiID(0), ImGuiCond_Always);
-
-  ImNodes::BeginNodeEditor();
-  ImNodes::BeginNode(1);
-
-  ImNodes::BeginNodeTitleBar();
-  ImGui::TextUnformatted("test:)");
-  ImNodes::EndNodeTitleBar();
-
-  ImNodes::BeginInputAttribute(2);
-  ImGui::Text("left");
-  ImNodes::EndInputAttribute();
-
-  ImNodes::BeginOutputAttribute(3);
-  ImGui::Indent(40);
-  ImGui::Text("right");
-  ImNodes::EndOutputAttribute();
-
-  ImNodes::EndNode();
-
-  ImNodes::BeginNode(2);
-
-  ImNodes::BeginNodeTitleBar();
-  ImGui::TextUnformatted("hello");
-  ImNodes::EndNodeTitleBar();
-
-  ImNodes::BeginInputAttribute(5);
-  ImGui::Text("left");
-  ImNodes::EndInputAttribute();
-
-  ImNodes::BeginOutputAttribute(6);
-  ImGui::Indent(40);
-  ImGui::Text("right");
-  ImNodes::EndOutputAttribute();
-
-  ImNodes::EndNode();
-
-  ImNodes::EndNodeEditor();
-
-  ImGui::End();
-
-  ImGui::Begin("hello, world");
-  ImGui::Text("Hey");
-  ImGui::Button("SHAAAA!");
-  ImGui::End();
-
   helpers::renderFPSWindow();
+  // docking over all window
+
+  static auto dock_space_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+
+  static auto window_flags =
+      ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+
+  auto viewport = ImGui::GetMainViewport();
+  ImGui::SetNextWindowPos(viewport->Pos);
+  ImGui::SetNextWindowSize(viewport->Size);
+  ImGui::SetNextWindowViewport(viewport->ID);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+  window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+  window_flags |=
+      ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+  if (dock_space_flags & ImGuiDockNodeFlags_PassthruCentralNode) {
+    window_flags |= ImGuiWindowFlags_NoBackground;
+  }
+
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+  ImGui::Begin("DockSpace", nullptr, window_flags);
+  ImGui::PopStyleVar();
+  ImGui::PopStyleVar(2);
+
+  auto& io = ImGui::GetIO();
+  if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+    auto dock_space_id = ImGui::GetID("DockSpace");
+    ImGui::DockSpace(dock_space_id, ImVec2(0.0f, 0.0f), dock_space_flags);
+
+    static auto first_time = true;
+    if (first_time) {
+      first_time = false;
+      ImGui::DockBuilderRemoveNode(dock_space_id);  // clear any previous layout
+      ImGui::DockBuilderAddNode(
+          dock_space_id, dock_space_flags | ImGuiDockNodeFlags_DockSpace);
+      ImGui::DockBuilderSetNodeSize(dock_space_id, viewport->Size);
+
+      ImGuiID left{}, right{};
+      right = ImGui::DockBuilderSplitNode(dock_space_id, ImGuiDir_Right, 0.3f,
+                                          &right, &left);
+
+      ImGui::DockBuilderDockWindow("Editor", left);
+      ImGui::DockBuilderDockWindow("Properties", right);
+      ImGui::DockBuilderFinish(dock_space_id);
+    }
+  }
+  ImGui::End();
+
+  ImGui::Begin("Editor");
+  ImGui::End();
+
+  ImGui::Begin("Properties");
+  ImGui::End();
+
+  //  ImGui::ShowDemoWindow();
 }
 
 void MainScene::post_render() {}
