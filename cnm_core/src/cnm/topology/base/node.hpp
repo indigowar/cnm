@@ -1,25 +1,50 @@
 #ifndef HPP_CNM_CORE_TOPOLOGY_BASE_NODE_HPP
 #define HPP_CNM_CORE_TOPOLOGY_BASE_NODE_HPP
 
-#include "cnm/machine/host_info.hpp"
+// #include <memory>
+// #include <vector>
+
+// #include "cnm/connection/server_ctx.hpp"
+// #include "cnm/core/object.hpp"
+// #include "cnm/machine/communicator.hpp"
+// #include "cnm/machine/host_info.hpp"
+// #include "cnm/machine/machine.hpp"
 
 namespace Cnm {
 
-// Node is the base class for nodes in network.
-// Every topology should implement it's own node, that derives from this class.
-class Node {
- public:
-  explicit Node(HostInfo host_info) : host_info{host_info} {}
+class Node {};
 
-  virtual ~Node() = default;
-
-  [[nodiscard]] HostInfo getHostInfo() const noexcept { return host_info; }
-
-  void setHostInfo(HostInfo info) { host_info = info; }
-
- private:
-  HostInfo host_info;
-};
+// Node is the base class for the nodes in the network.
+// class Node : public Object {
+//  public:
+//   Node(HostInfo host_info, std::unique_ptr<Machine>&& m,
+//        const std::shared_ptr<Communicator>& communicator);
+//
+//   ~Node() override;
+//
+//   void start() override;
+//
+//   void stop() override;
+//
+//   void invoke() override;
+//
+//   void freeze() override;
+//
+//   [[nodiscard]] HostInfo getHostInfo() const noexcept;
+//
+//   void setHostInfo(HostInfo host_info);
+//
+//   [[nodiscard]] virtual std::vector<std::shared_ptr<Node>>
+//   getConnectedNodes()
+//       const noexcept;
+//
+//   [[nodiscard]] bool isServing() const noexcept;
+//
+//   void serve(ServerCtx&& ctx);
+//
+//  private:
+//   std::unique_ptr<Machine> machine;
+// };
 
 }  // namespace Cnm
 

@@ -7,7 +7,12 @@
 
 class MockNode : public Cnm::Node {
  public:
-  MockNode() : Cnm::Node(Cnm::HostInfo{}) {}
+  MockNode() : Cnm::Node(Cnm::HostInfo("", "")) {}
+
+  MOCK_METHOD(void, start, (), (override));
+  MOCK_METHOD(void, stop, (), (override));
+  MOCK_METHOD(void, invoke, (), (override));
+  MOCK_METHOD(void, freeze, (), (override));
 };
 
 #endif  // HPP_CNM_TEST_MOCK_NODE_HPP
