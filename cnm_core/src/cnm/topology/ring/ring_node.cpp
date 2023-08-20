@@ -71,4 +71,6 @@ void RingNode::stop() { machine->stop(); }
 void RingNode::invoke() { machine->invoke(); }
 void RingNode::freeze() { machine->freeze(); }
 
+void RingNode::serve(std::unique_ptr<ServerContext>&&) {}
+
 }  // namespace Cnm

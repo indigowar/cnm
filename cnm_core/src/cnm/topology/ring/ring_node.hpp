@@ -41,6 +41,8 @@ class RingNode final : public Node {
   void invoke() override;
   void freeze() override;
 
+  void serve(std::unique_ptr<ServerContext>&&) override;
+
  private:
   std::shared_ptr<RingNode> previous_node;
   std::shared_ptr<RingNode> next_node;
