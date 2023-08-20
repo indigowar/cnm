@@ -43,13 +43,11 @@ class Connection final : public Connections::Connection {
 
   void stopServing() override;
 
-  constexpr std::vector<std::shared_ptr<Connections::ConnectionNode>>::iterator
-  begin() {
+  std::vector<std::shared_ptr<Connections::ConnectionNode>>::iterator begin() {
     return nodes.begin();
   }
 
-  constexpr std::vector<std::shared_ptr<Connections::ConnectionNode>>::iterator
-  end() {
+  std::vector<std::shared_ptr<Connections::ConnectionNode>>::iterator end() {
     return nodes.end();
   }
 
