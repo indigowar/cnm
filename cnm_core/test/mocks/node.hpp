@@ -3,11 +3,17 @@
 
 #include <gmock/gmock.h>
 
-#include <cnm/topology/base/node.hpp>
+#include "cnm/topology/base/node.hpp"
 
 class MockNode : public Cnm::Node {
  public:
-  MockNode() : Cnm::Node(Cnm::HostInfo("", "")) {}
+  MOCK_METHOD(Cnm::HostInfo, getHostInfo, (), (const, noexcept, override));
+  MOCK_METHOD(void, setHostInfo, (Cnm::HostInfo), (override));
+
+  MOCK_METHOD(bool, isServing, (), (const, noexcept, override));
+  MOCK_METHOD(std::vector<std::shared_ptr<Cnm::Node>>, getConnectedNodes, (),
+              (const, noexcept, override));
+  MOCK_METHOD(void, serve, (std::unique_ptr<Cnm::ServerContext>&&), (override));
 
   MOCK_METHOD(void, start, (), (override));
   MOCK_METHOD(void, stop, (), (override));
