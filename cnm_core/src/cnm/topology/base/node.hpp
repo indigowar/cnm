@@ -1,50 +1,30 @@
 #ifndef HPP_CNM_CORE_TOPOLOGY_BASE_NODE_HPP
 #define HPP_CNM_CORE_TOPOLOGY_BASE_NODE_HPP
 
-// #include <memory>
-// #include <vector>
+#include <memory>
+#include <vector>
 
-// #include "cnm/connection/server_ctx.hpp"
-// #include "cnm/core/object.hpp"
-// #include "cnm/machine/communicator.hpp"
-// #include "cnm/machine/host_info.hpp"
-// #include "cnm/machine/machine.hpp"
+#include "cnm/core/object.hpp"
+#include "cnm/machine/host_info.hpp"
 
 namespace Cnm {
 
-class Node {};
+class ServerContext;
 
-// Node is the base class for the nodes in the network.
-// class Node : public Object {
-//  public:
-//   Node(HostInfo host_info, std::unique_ptr<Machine>&& m,
-//        const std::shared_ptr<Communicator>& communicator);
-//
-//   ~Node() override;
-//
-//   void start() override;
-//
-//   void stop() override;
-//
-//   void invoke() override;
-//
-//   void freeze() override;
-//
-//   [[nodiscard]] HostInfo getHostInfo() const noexcept;
-//
-//   void setHostInfo(HostInfo host_info);
-//
-//   [[nodiscard]] virtual std::vector<std::shared_ptr<Node>>
-//   getConnectedNodes()
-//       const noexcept;
-//
-//   [[nodiscard]] bool isServing() const noexcept;
-//
-//   void serve(ServerCtx&& ctx);
-//
-//  private:
-//   std::unique_ptr<Machine> machine;
-// };
+class Node;
+
+class Node : public Object {
+ public:
+  [[nodiscard]] virtual HostInfo getHostInfo() const noexcept = 0;
+  virtual void setHostInfo(HostInfo) = 0;
+
+  [[nodiscard]] virtual bool isServing() const noexcept = 0;
+
+  [[nodiscard]] virtual std::vector<std::shared_ptr<Node>> getConnectedNodes()
+      const noexcept = 0;
+
+  virtual void serve(std::unique_ptr<ServerContext>&&) = 0;
+};
 
 }  // namespace Cnm
 
