@@ -43,6 +43,8 @@ class RingNode final : public Node {
 
   void serve(std::unique_ptr<ServerContext>&&) override;
 
+  std::string_view getType() const noexcept override;
+
  private:
   std::shared_ptr<RingNode> previous_node;
   std::shared_ptr<RingNode> next_node;

@@ -2,17 +2,12 @@
 #define HPP_CNM_CORE_TOPOLOGY_RING_RING_HPP
 
 #include <map>
-#include <memory>
-#include <mutex>
-#include <string_view>
 
-#include "cnm/machine/communicator.hpp"
-#include "cnm/machine/host_info.hpp"
-#include "cnm/machine/machine.hpp"
-#include "cnm/topology/base/node_iterator.hpp"
+#include "cnm/machine/office_equipment/office_equipment.hpp"
+#include "cnm/machine/personal_computer/personal_computer.hpp"
+#include "cnm/machine/server/server.hpp"
 #include "cnm/topology/base/topology.hpp"
 #include "cnm/topology/ring/ring_node.hpp"
-#include "cnm/utils/result.hpp"
 
 namespace Cnm {
 
@@ -51,7 +46,33 @@ class Ring final : public Topology {
   NodeIterator end() override;
 
  private:
-  class RingCommunicator final : public Communicator {};
+  class RingCommunicator final : public Communicator {
+   public:
+    explicit RingCommunicator(Ring* ring);
+
+    std::vector<HostInfo> getOfficeEquipments(
+        bool filter_unavailable = false) override {
+      return getSpecificType(OfficeEquipment::Type, filter_unavailable);
+    }
+
+    std::vector<HostInfo> getServers(bool filter_unavailable = false) override {
+      return getSpecificType(Server::Type, filter_unavailable);
+    }
+
+    std::vector<HostInfo> getPCs() override {
+      return getSpecificType(PersonalComputer::Type);
+    }
+
+    void disconnect(HostInfo) override;
+
+    void makeConnection(std::string_view address) override;
+
+   private:
+    Ring* ring;
+
+    std::vector<HostInfo> getSpecificType(std::string_view type,
+                                          bool filteR_unavailable = false);
+  };
 
   result_t<HostInfo> createNode(HostInfo, std::unique_ptr<Machine>&&);
 

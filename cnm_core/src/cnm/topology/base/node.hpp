@@ -24,6 +24,8 @@ class Node : public Object {
       const noexcept = 0;
 
   virtual void serve(std::unique_ptr<ServerContext>&&) = 0;
+
+  [[nodiscard]] virtual std::string_view getType() const noexcept = 0;
 };
 
 }  // namespace Cnm

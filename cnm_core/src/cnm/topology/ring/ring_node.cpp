@@ -1,5 +1,7 @@
 #include "ring_node.hpp"
 
+#include <string_view>
+
 namespace Cnm {
 
 RingNode::RingNode(Cnm::HostInfo host_info, std::unique_ptr<Machine>&& m,
@@ -72,5 +74,9 @@ void RingNode::invoke() { machine->invoke(); }
 void RingNode::freeze() { machine->freeze(); }
 
 void RingNode::serve(std::unique_ptr<ServerContext>&&) {}
+
+std::string_view RingNode::getType() const noexcept {
+  return machine->getType();
+}
 
 }  // namespace Cnm

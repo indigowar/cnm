@@ -1,14 +1,8 @@
 #include "ring.hpp"
 
-#include <algorithm>
-#include <memory>
-#include <mutex>
-#include <set>
+#include <ranges>
 
-#include "cnm/machine/host_info.hpp"
-#include "cnm/machine/machine.hpp"
 #include "cnm/topology/ring/ring_iterator.hpp"
-#include "cnm/utils/result.hpp"
 
 namespace Cnm {
 
@@ -85,5 +79,24 @@ result_t<bool> Ring::validate() const noexcept {
 NodeIterator Ring::begin() { return RingIterator(nodes.begin()->second); }
 
 NodeIterator Ring::end() { return RingIterator(nullptr); }
+
+Ring::RingCommunicator::RingCommunicator(Ring* ring) : ring{ring} {}
+
+std::vector<HostInfo> Ring::RingCommunicator::getSpecificType(
+    std::string_view type, bool filter_unavailable) {
+  std::unique_lock lock(ring->mutex);
+
+  std::vector<HostInfo> result{};
+
+  auto result_range =
+      ring->nodes | std::views::values | std::views::filter([&](const auto& i) {
+        return i->getType() == type && (!filter_unavailable && !i->isBusy());
+      }) |
+      std::views::transform([](const auto& i) { return i->getHostInfo(); });
+
+  std::ranges::copy(result_range, std::back_inserter(result));
+
+  return result;
+}
 
 }  // namespace Cnm
