@@ -32,6 +32,8 @@ class PersonalComputer final : public Machine {
 
   void freeze() override;
 
+  static constexpr std::string_view Type = "personal_computer";
+
  private:
   void threadRunner(std::stop_token);
 

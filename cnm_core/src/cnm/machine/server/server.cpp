@@ -6,7 +6,7 @@ namespace Cnm {
 
 Server::Server(ServerLogic&& logic, size_t limit, HostInfo host_info,
                std::shared_ptr<Communicator> communicator)
-    : Machine("server", limit, host_info, std::move(communicator)),
+    : Machine(Server::Type, limit, host_info, std::move(communicator)),
       thread_pool{},
       is_accepting{},
       logic{logic} {}

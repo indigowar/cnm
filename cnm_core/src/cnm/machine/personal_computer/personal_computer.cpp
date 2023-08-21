@@ -7,14 +7,12 @@ namespace Cnm {
 PersonalComputer::PersonalComputer(Cnm::PersonalComputerLogic &&logic,
                                    Cnm::HostInfo host_info,
                                    std::shared_ptr<Communicator> communicator)
-    : Machine("pc", 0, host_info, std::move(communicator)),
+    : Machine(PersonalComputer::Type, 0, host_info, std::move(communicator)),
       logic(std::move(logic)),
       thread{},
       continue_execution{} {}
 
-PersonalComputer::~PersonalComputer() {
-  stop();
-}
+PersonalComputer::~PersonalComputer() { stop(); }
 
 size_t PersonalComputer::getCurrentServingAmount() const noexcept { return 0; }
 

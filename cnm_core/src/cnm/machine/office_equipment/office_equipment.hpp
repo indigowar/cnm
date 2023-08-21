@@ -37,6 +37,8 @@ class OfficeEquipment final : public Machine {
 
   result_t<MessageBatch> serve(MessageBatch) override;
 
+  static constexpr std::string_view Type = "office_equipment";
+
  private:
   void threadFunction(const std::stop_token& stop_token);
 

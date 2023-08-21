@@ -27,6 +27,8 @@ class Server final : public Machine {
 
   result_t<MessageBatch> serve(MessageBatch msg) override;
 
+  static constexpr std::string_view Type = "server";
+
  private:
   std::future<result_t<MessageBatch>> addRequestToThreadPool(MessageBatch);
 
