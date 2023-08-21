@@ -20,7 +20,7 @@ class RingIterator final : public NodeIterator {
     return *this;
   }
 
-  NodeIterator& operator--() {
+  NodeIterator& operator--() override {
     if (node) {
       node = node->getPreviousNode();
     }
