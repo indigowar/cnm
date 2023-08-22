@@ -99,4 +99,22 @@ std::vector<HostInfo> Ring::RingCommunicator::getSpecificType(
   return result;
 }
 
+void Ring::RingCommunicator::disconnect(HostInfo host_info) {
+  std::unique_lock lock(ring->mutex);
+
+  if (!ring->nodes.contains(host_info.getAddress())) {
+    return;
+  }
+
+  auto node = ring->nodes.at(host_info.getAddress());
+
+  auto next = node->getNextNode();
+  auto prev = node->getPreviousNode();
+
+  if (next) next->setPreviousNode(nullptr);
+  if (prev) prev->setNextNode(nullptr);
+
+  ring->nodes.erase(host_info.getAddress());
+}
+
 }  // namespace Cnm
