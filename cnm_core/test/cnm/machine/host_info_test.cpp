@@ -7,12 +7,13 @@
 using namespace Cnm;
 
 TEST(HostInfoTest, generate) {
-  const std::string_view name = "test";
+  const std::string name = "test";
   const uint8_t first = 125, second = 134, third = 55, fourth = 11;
 
   std::ostringstream ss;
-  ss << first << "." << second << "." << third << "." << fourth;
-  std::string address = ss.str();
+  ss << (int)first << "." << (int)second << "." << (int)third << "."
+     << (int)fourth;
+  std::string address = std::move(ss).str();
 
   auto info = HostInfo::generate(name, first, second, third, fourth);
 
