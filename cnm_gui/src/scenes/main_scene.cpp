@@ -1,13 +1,10 @@
 #include "main_scene.hpp"
 
+#include <imgui.h>
 #include <imgui_internal.h>
 #include <spdlog/spdlog.h>
 
-#include <utility>
-
 #include "helpers/fps_window.hpp"
-
-void test() {}
 
 MainScene::MainScene(scene::ISceneSwitcher* switcher, scene::IExitter* exitter)
     : Scene("test_scene", switcher, exitter) {}
@@ -27,7 +24,8 @@ void MainScene::render() {
   helpers::renderFPSWindow();
   // docking over all window
 
-  static auto dock_space_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+  static auto dock_space_flags =
+      ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoTabBar;
 
   static auto window_flags =
       ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -61,13 +59,13 @@ void MainScene::render() {
     static auto first_time = true;
     if (first_time) {
       first_time = false;
-      ImGui::DockBuilderRemoveNode(dock_space_id);  // clear any previous layout
+      ImGui::DockBuilderRemoveNode(dock_space_id);  // clear any previous
       ImGui::DockBuilderAddNode(
           dock_space_id, dock_space_flags | ImGuiDockNodeFlags_DockSpace);
       ImGui::DockBuilderSetNodeSize(dock_space_id, viewport->Size);
 
       ImGuiID left{}, right{};
-      right = ImGui::DockBuilderSplitNode(dock_space_id, ImGuiDir_Right, 0.3f,
+      right = ImGui::DockBuilderSplitNode(dock_space_id, ImGuiDir_Right, 0.2f,
                                           &right, &left);
 
       ImGui::DockBuilderDockWindow("Editor", left);
@@ -77,13 +75,8 @@ void MainScene::render() {
   }
   ImGui::End();
 
-  ImGui::Begin("Editor");
-  ImGui::End();
-
-  ImGui::Begin("Properties");
-  ImGui::End();
-
-  //  ImGui::ShowDemoWindow();
+  render_props();
+  render_editor();
 }
 
 void MainScene::post_render() {}
@@ -125,4 +118,68 @@ helpers::Menu MainScene::makeMenuBar() {
                           std::bind(test, "Machine", "Office Equipment"))});
 
   return helpers::Menu({app, view, topology, machine});
+}
+
+void MainScene::render_editor() {
+  ImGui::Begin("Editor", nullptr,
+               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
+
+  static ImVec2 scrolling(0.0f, 0.0f);
+
+  auto canvas_begin = ImGui::GetCursorScreenPos();
+  auto canvas_size = ImGui::GetContentRegionAvail();
+
+  if (canvas_size.x < 100.0f) canvas_size.x = 100.0f;
+  if (canvas_size.y < 100.0f) canvas_size.y = 100.0f;
+
+  ImVec2 canvas_end(canvas_begin.x + canvas_size.x,
+                    canvas_begin.y + canvas_size.y);
+
+  auto& io = ImGui::GetIO();
+  auto draw_list = ImGui::GetWindowDrawList();
+  draw_list->AddRectFilled(canvas_begin, canvas_end, IM_COL32(50, 50, 50, 255));
+  draw_list->AddRect(canvas_begin, canvas_end, IM_COL32_BLACK);
+
+  ImGui::InvisibleButton(
+      "canvas", canvas_size,
+      ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
+
+  const bool is_hovered = ImGui::IsItemHovered();
+  const bool is_active = ImGui::IsItemActive();
+
+  // draw grid
+  draw_list->PushClipRect(canvas_begin, canvas_end, true);
+  const auto GRID_STEP = 64.0f;
+  for (auto x = fmodf(scrolling.x, GRID_STEP); x < canvas_size.x;
+       x += GRID_STEP) {
+    draw_list->AddLine(ImVec2(canvas_begin.x + x, canvas_begin.y),
+                       ImVec2(canvas_begin.x + x, canvas_end.y),
+                       IM_COL32(200, 200, 200, 40));
+  }
+
+  for (auto y = fmodf(scrolling.y, GRID_STEP); y < canvas_size.y;
+       y += GRID_STEP) {
+    draw_list->AddLine(ImVec2(canvas_begin.x, canvas_begin.y + y),
+                       ImVec2(canvas_end.x, canvas_begin.y + y),
+                       IM_COL32(200, 200, 200, 40));
+  }
+
+  ImGui::Begin("node A", nullptr, ImGuiWindowFlags_NoDocking);
+  ImGui::End();
+
+  ImGui::Begin("node B", nullptr, ImGuiWindowFlags_NoDocking);
+  ImGui::End();
+
+  ImGui::Begin("node C", nullptr, ImGuiWindowFlags_NoDocking);
+  ImGui::End();
+
+  ImGui::End();
+}
+
+void MainScene::render_props() {
+  ImGui::Begin("Properties", nullptr,
+               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                   ImGuiWindowFlags_NoResize);
+
+  ImGui::End();
 }
