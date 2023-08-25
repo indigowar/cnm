@@ -161,6 +161,24 @@ void render_node(const std::string& name) {
   ImGui::End();
 }
 
+ImVec2 get_window_center(const ImGuiWindow* window) {
+  auto pos = window->Pos;
+  auto size = window->Size;
+  return {pos.x + (size.x / 2), pos.y + (size.y / 2)};
+}
+
+void draw_connection(ImDrawList* draw_list, const char* first_node_name,
+                     const char* second_node_name) {
+  auto first_node = ImGui::FindWindowByName(first_node_name);
+  auto second_node = ImGui::FindWindowByName(second_node_name);
+
+  auto first_center = get_window_center(first_node);
+  auto second_center = get_window_center(second_node);
+
+  draw_list->AddLine(first_center, second_center, IM_COL32(255, 0, 0, 255),
+                     3.0f);
+}
+
 void MainScene::render_editor() {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
@@ -214,6 +232,9 @@ void MainScene::render_editor() {
   render_node("Node B");
 
   render_node("Node C");
+
+  draw_connection(ImGui::GetWindowDrawList(), "Node A", "Node B");
+  draw_connection(ImGui::GetWindowDrawList(), "Node A", "Node C");
 
   ImGui::End();
 }
