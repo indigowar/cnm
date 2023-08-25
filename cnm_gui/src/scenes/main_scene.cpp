@@ -4,6 +4,8 @@
 #include <imgui_internal.h>
 #include <spdlog/spdlog.h>
 
+#include <string_view>
+
 #include "helpers/fps_window.hpp"
 
 MainScene::MainScene(scene::ISceneSwitcher* switcher, scene::IExitter* exitter)
@@ -120,9 +122,52 @@ helpers::Menu MainScene::makeMenuBar() {
   return helpers::Menu({app, view, topology, machine});
 }
 
+void render_node(const std::string& name) {
+  ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
+
+  auto this_window = ImGui::GetCurrentWindow();
+  auto parent_window = ImGui::FindWindowByName("Editor");
+
+  IM_ASSERT(parent_window != nullptr);
+
+  // On moving the window, checks if it goes out of Editor window.
+  if (ImGui::IsWindowHovered() &&
+      ImGui::IsMouseDragging(ImGuiMouseButton_Left, -1.0f)) {
+    auto this_pos = ImGui::GetWindowPos();
+    auto this_size = ImGui::GetWindowSize();
+
+    auto parent_pos = parent_window->Pos;
+    auto parent_size = parent_window->Size;
+
+    if (parent_pos.x > this_pos.x) {
+      this_pos.x = parent_pos.x;
+    }
+
+    if (parent_pos.y > this_pos.y) {
+      this_pos.y = parent_pos.y;
+    }
+
+    if (parent_pos.x + parent_size.x < this_pos.x + this_size.x) {
+      this_pos.x = parent_pos.x + parent_size.x - this_size.x;
+    }
+
+    if (parent_pos.y + parent_size.y < this_pos.y + this_size.y) {
+      this_pos.y = parent_pos.y + parent_size.y - this_size.y;
+    }
+
+    ImGui::SetWindowPos(this_pos);
+  }
+
+  ImGui::End();
+}
+
 void MainScene::render_editor() {
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
   ImGui::Begin("Editor", nullptr,
                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
+
+  ImGui::PopStyleVar();
 
   static ImVec2 scrolling(0.0f, 0.0f);
 
@@ -164,14 +209,11 @@ void MainScene::render_editor() {
                        IM_COL32(200, 200, 200, 40));
   }
 
-  ImGui::Begin("node A", nullptr, ImGuiWindowFlags_NoDocking);
-  ImGui::End();
+  render_node("Node A");
 
-  ImGui::Begin("node B", nullptr, ImGuiWindowFlags_NoDocking);
-  ImGui::End();
+  render_node("Node B");
 
-  ImGui::Begin("node C", nullptr, ImGuiWindowFlags_NoDocking);
-  ImGui::End();
+  render_node("Node C");
 
   ImGui::End();
 }
