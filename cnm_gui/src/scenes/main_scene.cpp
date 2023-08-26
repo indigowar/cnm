@@ -14,7 +14,7 @@ MainScene::MainScene(scene::ISceneSwitcher* switcher, scene::IExitter* exitter)
 void MainScene::start() {
   spdlog::info("TestScene::start()");
 
-  menu = std::make_unique<helpers::Menu>(makeMenuBar());
+  menu = std::make_unique<Menu::Menu>(makeMenuBar());
 
   ImGui::StyleColorsDark();
 }
@@ -89,7 +89,7 @@ void MainScene::froze() { spdlog::info("TestScene::freeze()"); }
 
 void MainScene::invoke() { spdlog::info("TestScene::invoke()"); }
 
-helpers::Menu MainScene::makeMenuBar() {
+Menu::Menu MainScene::makeMenuBar() {
   /**
    * TODO: Add the actual logic for every MenuField
    */
@@ -98,28 +98,26 @@ helpers::Menu MainScene::makeMenuBar() {
     spdlog::info("{}->{} clicked!", first, second);
   };
 
-  auto app = helpers::MenuItem(
+  auto app = Menu::SubMenu(
       "Applicaition",
-      {helpers::MenuField("Exit", std::bind(test, "Application", "Close")),
-       helpers::MenuField("Clear", std::bind(test, "Application", "Clear"))});
+      {Menu::Item("Exit", std::bind(test, "Application", "Close")),
+       Menu::Item("Clear", std::bind(test, "Application", "Clear"))});
 
-  auto view = helpers::MenuItem(
-      "View", {helpers::MenuField("Test", std::bind(test, "View", "Test"))});
+  auto view = Menu::SubMenu(
+      "View", {Menu::Item("Test", std::bind(test, "View", "Test"))});
 
-  auto topology = helpers::MenuItem(
-      "Topology",
-      {helpers::MenuField("Ring", std::bind(test, "Topology", "Ring")),
-       helpers::MenuField("Star", std::bind(test, "Topology", "Star")),
-       helpers::MenuField("Mesh", std::bind(test, "Topology", "Mesh"))});
+  auto topology = Menu::SubMenu(
+      "Topology", {Menu::Item("Ring", std::bind(test, "Topology", "Ring")),
+                   Menu::Item("Star", std::bind(test, "Topology", "Star")),
+                   Menu::Item("Mesh", std::bind(test, "Topology", "Mesh"))});
 
-  auto machine = helpers::MenuItem(
-      "Machine",
-      {helpers::MenuField("PC", std::bind(test, "Machine", "PC")),
-       helpers::MenuField("Server", std::bind(test, "Machine", "Server")),
-       helpers::MenuField("Office Equipment",
-                          std::bind(test, "Machine", "Office Equipment"))});
+  auto machine = Menu::SubMenu(
+      "Machine", {Menu::Item("PC", std::bind(test, "Machine", "PC")),
+                  Menu::Item("Server", std::bind(test, "Machine", "Server")),
+                  Menu::Item("Office Equipment",
+                             std::bind(test, "Machine", "Office Equipment"))});
 
-  return helpers::Menu({app, view, topology, machine});
+  return Menu::Menu({app, view, topology, machine});
 }
 
 void render_node(const std::string& name) {

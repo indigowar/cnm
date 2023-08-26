@@ -1,11 +1,9 @@
 #ifndef HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
 #define HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
 
-#include <imgui_internal.h>
-
 #include <memory>
 
-#include "helpers/menu.hpp"
+#include "lib/menu/menu.hpp"
 #include "lib/scenes/scene.hpp"
 
 class MainScene final : public scene::Scene {
@@ -31,9 +29,9 @@ class MainScene final : public scene::Scene {
 
   void render_props();
 
-  helpers::Menu makeMenuBar();
+  Menu::Menu makeMenuBar();
 
-  std::unique_ptr<helpers::Menu> menu;
+  std::unique_ptr<Menu::Menu> menu;
 };
 
 #endif  // HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
