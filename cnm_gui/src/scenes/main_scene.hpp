@@ -4,30 +4,32 @@
 #include <memory>
 
 #include "lib/menu/menu.hpp"
+#include "lib/scenes/exiter.hpp"
 #include "lib/scenes/scene.hpp"
+#include "lib/scenes/switcher.hpp"
 
-class MainScene final : public scene::Scene {
+class MainScene final : public Scenes::Scene {
  public:
-  MainScene(scene::ISceneSwitcher* switcher = nullptr,
-            scene::IExitter* exitter = nullptr);
+  MainScene(Scenes::Switcher* switcher = nullptr,
+            Scenes::Exiter* exitter = nullptr);
   void start() override;
 
   void update() override;
 
   void render() override;
 
-  void post_render() override;
+  void postRender() override;
 
   void cleanup() override;
 
-  void froze() override;
+  void freeze() override;
 
   void invoke() override;
 
  private:
-  void render_editor();
+  void renderEditor();
 
-  void render_props();
+  void renderProperties();
 
   Menu::Menu makeMenuBar();
 

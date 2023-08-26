@@ -1,40 +1,43 @@
 #ifndef HPP_CNM_GUI_APP_APPLICATION_HPP
 #define HPP_CNM_GUI_APP_APPLICATION_HPP
 
+#include <memory>
+
+#include "lib/scenes/exiter.hpp"
 #include "lib/scenes/manager.hpp"
-#include "lib/scenes/scene.hpp"
 
 class Application final {
-  class ApplicationExitter final : public scene::IExitter {
-   public:
-    ApplicationExitter(Application& app) : app(app) {}
-
-    void exit() override { app.should_be_closed = true; }
-
-   private:
-    Application& app;
-  };
-
  public:
-  Application(std::string_view name);
+  Application(std::string name);
 
-  std::string_view getName() const noexcept;
+  [[nodiscard]] const std::string& getName() const noexcept;
 
   void init();
+
   void update();
+
   void render();
-  void post_render();
+
+  void postRender();
+
   void cleanup();
 
-  bool shouldBeClosed() const noexcept;
+  [[nodiscard]] bool shouldBeClosed() const noexcept;
 
  private:
-  std::unique_ptr<scene::Manager> scene_manager;
+  class AppExiter final : public Scenes::Exiter {
+    Application& app;
 
-  ApplicationExitter exitter;
+   public:
+    AppExiter(Application& a) : app{a} {}
+
+    void exit() override { app.should_be_closed = true; }
+  };
+
+  std::unique_ptr<Scenes::Manager> scene_manager;
   bool should_be_closed;
-
-  std::string_view name;
+  AppExiter exiter;
+  std::string name;
 };
 
 #endif  // HPP_CNM_GUI_APP_APPLICATION_HPP

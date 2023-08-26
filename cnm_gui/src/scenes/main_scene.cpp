@@ -8,11 +8,11 @@
 
 #include "helpers/fps_window.hpp"
 
-MainScene::MainScene(scene::ISceneSwitcher* switcher, scene::IExitter* exitter)
-    : Scene("test_scene", switcher, exitter) {}
+MainScene::MainScene(Scenes::Switcher* switcher, Scenes::Exiter* exiter)
+    : Scene("MainScene", switcher, exiter) {}
 
 void MainScene::start() {
-  spdlog::info("TestScene::start()");
+  spdlog::info("MainScene::start()");
 
   menu = std::make_unique<Menu::Menu>(makeMenuBar());
 
@@ -77,15 +77,15 @@ void MainScene::render() {
   }
   ImGui::End();
 
-  render_props();
-  render_editor();
+  renderEditor();
+  renderProperties();
 }
 
-void MainScene::post_render() {}
+void MainScene::postRender() {}
 
 void MainScene::cleanup() { spdlog::info("TestScene::cleanup()"); }
 
-void MainScene::froze() { spdlog::info("TestScene::freeze()"); }
+void MainScene::freeze() { spdlog::info("TestScene::freeze()"); }
 
 void MainScene::invoke() { spdlog::info("TestScene::invoke()"); }
 
@@ -177,7 +177,7 @@ void draw_connection(ImDrawList* draw_list, const char* first_node_name,
                      3.0f);
 }
 
-void MainScene::render_editor() {
+void MainScene::renderEditor() {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
   ImGui::Begin("Editor", nullptr,
@@ -237,7 +237,7 @@ void MainScene::render_editor() {
   ImGui::End();
 }
 
-void MainScene::render_props() {
+void MainScene::renderProperties() {
   ImGui::Begin("Properties", nullptr,
                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
                    ImGuiWindowFlags_NoResize);

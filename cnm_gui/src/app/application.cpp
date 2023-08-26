@@ -1,31 +1,27 @@
 #include "application.hpp"
 
-#include <memory>
-
 #include "scenes/main_scene.hpp"
 
-Application::Application(std::string_view name)
-    : scene_manager{},
-      exitter(*this),
+Application::Application(std::string name)
+    : scene_manager(),
+      exiter(*this),
       should_be_closed{},
-      name{std::move(name)} {}
+      name(std::move(name)) {}
 
 void Application::init() {
-  scene_manager = std::make_unique<scene::Manager>(&exitter);
-
+  scene_manager = std::make_unique<Scenes::Manager>(&exiter);
   auto scene = std::make_shared<MainScene>();
-
   scene_manager->add(scene);
-  scene_manager->set_next_scene(scene->get_name());
+  scene_manager->setNextScene(scene->getName());
 }
 
-std::string_view Application::getName() const noexcept { return name; }
+const std::string& Application::getName() const noexcept { return name; }
 
 void Application::update() { scene_manager->update(); }
 
 void Application::render() { scene_manager->render(); }
 
-void Application::post_render() { scene_manager->post_render(); }
+void Application::postRender() { scene_manager->postRender(); }
 
 void Application::cleanup() { scene_manager->cleanup(); }
 

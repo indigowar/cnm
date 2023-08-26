@@ -1,77 +1,79 @@
 #ifndef HPP_CNM_GUI_SCENES_SCENE_HPP
 #define HPP_CNM_GUI_SCENES_SCENE_HPP
 
-#include <string_view>
+#include "lib/scenes/exiter.hpp"
+#include "lib/scenes/switcher.hpp"
 
-namespace scene {
-
-// ISceneSwitcher - is interface to an object that can switch the scene.
-// It is in-use inside Scene class for specifying the next scene.
-class ISceneSwitcher {
- public:
-  // switch_scene - specifies the next scene that will be active by it's name
-  virtual void switch_scene(std::string_view scene_name) = 0;
-};
-
-// IExitter - is an object that can handle the exit initiated inside the Scene
-class IExitter {
- public:
-  virtual void exit() = 0;
-};
+namespace Scenes {
 
 // Scene is an object that contains state and logic for specific "sub-program",
 // that can be loaded into main application.
 class Scene {
  public:
-  Scene(std::string_view name, ISceneSwitcher* switcher = nullptr,
-        IExitter* exitter = nullptr)
-      : name{name}, scene_switcher{switcher}, exitter{exitter}, started{} {}
+  Scene(std::string name, Switcher* switcher = nullptr,
+        Exiter* exiter = nullptr)
+      : name{name}, switcher{switcher}, exiter{exiter}, started{} {}
 
   virtual ~Scene() = default;
 
-  // get_name() - returns the name of this scene
-  std::string_view get_name() const noexcept { return name; }
+  // getName() - returns the name of this scene
+  std::string getName() const noexcept { return name; }
 
-  // has_started() - returns true, if the start() method has been called
-  bool has_started() const noexcept { return started; }
+  // hasStarted() - returns true, if the start() method has been called
+  bool hasStarted() const noexcept { return started; }
 
-  virtual void call_start() final {
+  void callStart() {
     start();
     started = true;
   }
 
+  // start() - executes on the first invoke of the scene(one-time).
   virtual void start() {}
 
+  // update() - executes every update before rendering.
   virtual void update() {}
 
+  // render() - executes to render the scene.
   virtual void render() {}
 
-  virtual void post_render() {}
+  // postRender() - executes after rendering the frame.
+  virtual void postRender() {}
 
+  // cleanup() - called when the Scene is no longer needed.
   virtual void cleanup() {}
 
-  virtual void froze() {}
+  // freeze() - when the Manager switches scenes, the previous running scene is
+  // calling it's freeze method.
+  virtual void freeze() {}
 
+  // invoke() - called when this scene is switching with previous.
   virtual void invoke() {}
 
-  void set_exitter(IExitter* exitter) { this->exitter = exitter; }
-  void set_switcher(ISceneSwitcher* switcher) { scene_switcher = switcher; }
+  // setExiter(Exiter*) - sets the exiter for scene.
+  void setExiter(Exiter* exiter) { this->exiter = exiter; }
 
-  void call_exit_program() { exitter->exit(); }
+  // setSwitcher(Switcher*) - sets the switcher object for this scene.
+  void setSwitcher(Switcher* switcher) { this->switcher = switcher; }
 
-  void specify_next_scene(std::string_view scene_name) {
-    scene_switcher->switch_scene(scene_name);
+  // callExit() - is used to call exit for an application from the scene.
+  void callExit() { exiter->exit(); }
+
+  // setNextScene(std::string) - signals to the manager, that after execution
+  // this scene's cycle step(update,render,postRender) will be started the
+  // process of switching scenes with given scene.
+  void setNextScene(std::string scene_name) {
+    switcher->switchScene(scene_name);
   }
 
  private:
-  std::string_view name;
+  std::string name;
 
   bool started;
 
-  ISceneSwitcher* scene_switcher;
-  IExitter* exitter;
+  Switcher* switcher;
+  Exiter* exiter;
 };
 
-}  // namespace scene
+}  // namespace Scenes
 
 #endif  // HPP_CNM_GUI_SCENES_SCENE_HPP

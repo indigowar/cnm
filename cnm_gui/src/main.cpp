@@ -581,7 +581,7 @@ int main(int, char**) {
       FramePresent(wd);
     }
 
-    app.post_render();
+    app.postRender();
   }
 
   app.cleanup();

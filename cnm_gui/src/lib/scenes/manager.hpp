@@ -1,92 +1,61 @@
 #ifndef HPP_CNM_GUI_SCENES_LOADER_HPP
 #define HPP_CNM_GUI_SCENES_LOADER_HPP
 
-#ifdef _DEBUG
-#include <spdlog/spdlog.h>
-#endif
-
 #include <map>
 #include <memory>
 
+#include "lib/scenes/exiter.hpp"
 #include "lib/scenes/scene.hpp"
+#include "lib/scenes/switcher.hpp"
 
-namespace scene {
+namespace Scenes {
 
+// Manager handles the scenes for application.
 class Manager final {
-  class SceneSwitcher final : public ISceneSwitcher {
-   public:
-    explicit SceneSwitcher(Manager& m) : m{m} {}
+ public:
+  explicit Manager(Exiter* exiter);
 
-    void switch_scene(std::string_view next_scene_name) {
-      m.next_scene = next_scene_name;
+  // add(std::shared_ptr<Scene>) - adds new scene to the pool of scenes for this
+  // manager, after adding the scene can be set to be next by setNextScene call.
+  void add(std::shared_ptr<Scene> new_scene);
+
+  // update() - executes before creating the frame.
+  void update();
+
+  // render() - executes after update call and renders current scene.
+  void render();
+
+  // postRender() - handles the post render work, defined by Scene.
+  void postRender();
+
+  // cleanup() - cleans all Scenes.
+  void cleanup();
+
+  // setNextScene(std::string) - specifies the next scene by it's name.
+  void setNextScene(std::string scene_name);
+
+ private:
+  class ManagerSwitcher final : public Scenes::Switcher {
+   public:
+    explicit ManagerSwitcher(Manager& m) : m{m} {}
+
+    void switchScene(const std::string& scene) override {
+      m.next_scene = scene;
     }
 
    private:
     Manager& m;
   };
 
- public:
-  explicit Manager(IExitter* exitter)
-      : scene_switcher(*this),
-        exitter(exitter),
-        next_scene{},
-        active_scene{},
-        scenes() {}
+  std::string current_scene;
+  std::string next_scene;
 
-  void add(std::shared_ptr<Scene> new_scene) {
-    if (scenes.contains(new_scene->get_name())) {
-#ifdef _DEBUG
-      spdlog::warn("tried to add already existing scene");
-#endif
-      return;
-    }
-    new_scene->set_exitter(exitter);
-    new_scene->set_switcher(&scene_switcher);
-    scenes[new_scene->get_name()] = new_scene;
-  }
+  std::map<std::string, std::shared_ptr<Scene>> scenes;
 
-  void update() {
-    if (active_scene == next_scene) {
-      scenes.at(active_scene)->update();
-      return;
-    }
-
-    if (scenes.contains(active_scene)) scenes.at(active_scene)->froze();
-    active_scene = next_scene;
-
-    auto current = scenes.at(active_scene);
-
-    if (current->has_started()) {
-      current->invoke();
-    } else {
-      current->call_start();
-    }
-  }
-
-  void render() { scenes.at(active_scene)->render(); }
-
-  void post_render() { scenes.at(active_scene)->post_render(); }
-
-  void cleanup() {
-    for (const auto& [name, scene] : scenes) {
-      scene->cleanup();
-    }
-  }
-
-  void set_next_scene(std::string_view scene_name) {
-    scene_switcher.switch_scene(scene_name);
-  }
-
- private:
-  SceneSwitcher scene_switcher;
-  IExitter* exitter;
-
-  std::string_view next_scene;
-  std::string_view active_scene;
-
-  std::map<std::string_view, std::shared_ptr<Scene>> scenes;
+  Exiter* exiter;
+  ManagerSwitcher switcher;
 };
 
-}  // namespace scene
+}  // namespace Scenes
 
 #endif  // HPP_CNM_GUI_SCENES_LOADER_HPP
