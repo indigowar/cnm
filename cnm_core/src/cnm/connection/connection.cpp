@@ -16,7 +16,7 @@ using namespace Cnm;
 
 Connection::Connection(
     size_t net_speed,
-    const std::vector<std::shared_ptr<Cnm::Node>> networkNodes)
+    const std::vector<std::shared_ptr<Cnm::Node>>& networkNodes)
     : speed{net_speed}, nodes(networkNodes.size()) {
   if (networkNodes.size() < 2) {
     throw std::runtime_error("can't create connection with less than 2 nodes.");

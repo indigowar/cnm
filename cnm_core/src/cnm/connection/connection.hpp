@@ -23,7 +23,7 @@ class Connection final : public Connections::Connection {
 
  public:
   Connection(size_t net_speed,
-             const std::vector<std::shared_ptr<Cnm::Node>> nodes);
+             const std::vector<std::shared_ptr<Cnm::Node>>& nodes);
 
   ~Connection() override;
 
