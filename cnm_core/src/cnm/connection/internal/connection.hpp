@@ -28,7 +28,8 @@ class Connection {
 
   // makeLock() - lock the connection to ensure that the action will not be
   // interrupted.
-  virtual std::unique_lock<std::mutex> makeLock() const noexcept = 0;
+  [[nodiscard]] virtual std::unique_lock<std::mutex> makeLock()
+      const noexcept = 0;
 
   // getSpeed() - retrieve the speed of the network( how many ms required to
   // pass one Message from one node to another).
