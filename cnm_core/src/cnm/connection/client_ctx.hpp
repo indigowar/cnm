@@ -4,7 +4,6 @@
 #include <condition_variable>
 #include <future>
 #include <memory>
-#include <mutex>
 
 #include "cnm/connection/internal/client_node.hpp"
 #include "cnm/utils/result.hpp"
@@ -44,7 +43,6 @@ class ClientContext final {
   Connection* connection;
   std::shared_ptr<Connections::ClientNode> client_node;
 
-  mutable std::mutex mutex;
   std::condition_variable cond_var;
 };
 

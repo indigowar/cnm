@@ -15,10 +15,12 @@ ClientContext::ClientContext(ClientContext &&ctx) noexcept
     : connection{ctx.connection}, client_node{std::move(ctx.client_node)} {}
 
 result_t<bool> ClientContext::waitUntilAccepted() {
-  std::unique_lock lock(mutex);
-  cond_var.wait(lock, [this] {
-    return connection->isAborted() || connection->isRequesting();
-  });
+  {
+    auto lock = connection->makeLock();
+    cond_var.wait(lock, [this] {
+      return connection->isAborted() || connection->isRequesting();
+    });
+  }
 
   if (connection->isAborted()) {
     return result_t<bool>::Err("connection was aborted");
@@ -42,8 +44,10 @@ void ClientContext::sendRequest(Cnm::MessageBatch &&batch) {
 
 std::future<result_t<MessageBatch>> ClientContext::getResponse() {
   return std::async([this] {
-    std::unique_lock lock(mutex);
-    cond_var.wait(lock, [this] { return !connection->isServing(); });
+    {
+      auto lock = connection->makeLock();
+      cond_var.wait(lock, [this] { return !connection->isServing(); });
+    }
 
     if (connection->isAborted()) {
       spdlog::warn(
