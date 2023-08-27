@@ -9,9 +9,7 @@ class OfficeEquipmentLogic {
 
   virtual void init() {}
 
-  virtual result_t<MessageBatch> serve(MessageBatch) {
-    return result_t<MessageBatch>::Ok(MessageBatch{});
-  }
+  virtual void execute(ServerCtx&&) {}
 };
 
 }  // namespace Cnm

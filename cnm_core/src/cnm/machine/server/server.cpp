@@ -83,28 +83,21 @@ size_t Server::getCurrentServingAmount() const noexcept {
   return thread_pool->getNumBusyWorkers();
 }
 
-result_t<MessageBatch> Server::serve(MessageBatch msg) {
+void Server::serve(ServerCtx&& ctx) {
   auto lock = makeLock();
 
   if (is_accepting) {
-    return addRequestToThreadPool(msg).get();
+    addRequestToThreadPool(std::move(ctx));
+    return;
   }
 
   spdlog::warn("Server::serve() called when Server does not accept requests.");
-
-  std::promise<result_t<MessageBatch>> promise;
-  promise.set_value(
-      result_t<MessageBatch>::Err("server does not accept the request"));
-
-  return promise.get_future().get();
+  // ctx->abort();
 }
 
-std::future<result_t<MessageBatch>> Server::addRequestToThreadPool(
-    MessageBatch request) {
-  auto task = [this, &request]() -> result_t<MessageBatch> {
-    return logic.execute(request);
-  };
-  return thread_pool->enqueue(task);
+void Server::addRequestToThreadPool(Cnm::ServerCtx&& ctx) {
+  auto task = [this, &ctx] { logic.execute(std::move(ctx)); };
+  thread_pool->enqueue(task);
 }
 
 }  // namespace Cnm

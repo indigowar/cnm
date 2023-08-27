@@ -5,10 +5,11 @@ namespace Cnm {
 
 class ServerLogic {
  public:
-  void init() {}
-  result_t<MessageBatch> execute(MessageBatch msg) {
-    return result_t<MessageBatch>::Ok(std::move(msg));
-  }
+  virtual ~ServerLogic() = default;
+
+  virtual void init() {}
+
+  virtual void execute(ServerCtx&&) {}
 };
 
 }  // namespace Cnm

@@ -4,7 +4,7 @@
 
 namespace Cnm {
 
-PersonalComputer::PersonalComputer(Cnm::PersonalComputerLogic &&logic,
+PersonalComputer::PersonalComputer(Cnm::PersonalComputerLogic&& logic,
                                    Cnm::HostInfo host_info,
                                    std::shared_ptr<Communicator> communicator)
     : Machine(PersonalComputer::Type, 0, host_info, std::move(communicator)),
@@ -16,9 +16,9 @@ PersonalComputer::~PersonalComputer() { stop(); }
 
 size_t PersonalComputer::getCurrentServingAmount() const noexcept { return 0; }
 
-result_t<MessageBatch> PersonalComputer::serve(MessageBatch) {
+void PersonalComputer::serve(ServerCtx&& ctx) {
   spdlog::warn("PersonalComputer::serve(): was called.");
-  return result_t<MessageBatch>::Err("pc can not serve.");
+  //  return result_t<MessageBatch>::Err("pc can not serve.");
 }
 
 void PersonalComputer::start() {

@@ -25,12 +25,12 @@ class Server final : public Machine {
 
   size_t getCurrentServingAmount() const noexcept override;
 
-  result_t<MessageBatch> serve(MessageBatch msg) override;
+  void serve(ServerCtx&&) override;
 
   static constexpr std::string_view Type = "server";
 
  private:
-  std::future<result_t<MessageBatch>> addRequestToThreadPool(MessageBatch);
+  void addRequestToThreadPool(ServerCtx&&);
 
   // thread_pool is where the serving logic executes in.
   std::unique_ptr<Utils::ThreadPool> thread_pool;

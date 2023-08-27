@@ -93,21 +93,16 @@ size_t OfficeEquipment::getCurrentServingAmount() const noexcept {
   return busy.load() ? 1 : 0;
 }
 
-result_t<MessageBatch> OfficeEquipment::serve(MessageBatch request) {
-  std::shared_ptr<std::promise<result_t<MessageBatch>>> result{};
-  {
-    auto lock = makeLock();
-    if (!is_accepting) {
-      return result_t<MessageBatch>::Err(
-          "office equipment does not accept request right now");
-    }
-    result = std::make_shared<std::promise<result_t<MessageBatch>>>();
-    tasks.emplace_back(request, result);
+void OfficeEquipment::serve(ServerCtx&& ctx) {
+  auto lock = makeLock();
+
+  if (!is_accepting) {
+    spdlog::warn("office equipment does not accept request right now");
+    // ctx->abort();
+    return;
   }
 
-  auto future = result->get_future();
-  future.wait();
-  return future.get();
+  tasks.emplace_back(std::move(ctx));
 }
 
 void OfficeEquipment::threadFunction(const std::stop_token& stop_token) {
@@ -115,8 +110,7 @@ void OfficeEquipment::threadFunction(const std::stop_token& stop_token) {
   logic->init();
 
   while (!stop_token.stop_requested()) {
-    MessageBatch request;
-    std::shared_ptr<std::promise<result_t<MessageBatch>>> promise{};
+    ServerCtx ctx{};
 
     {
       auto lock = makeLock();
@@ -134,13 +128,11 @@ void OfficeEquipment::threadFunction(const std::stop_token& stop_token) {
       if (stop_token.stop_requested()) {
         return;
       }
-      auto [r, p] = tasks.front();
-      request = r;
-      promise = p;
+      ctx = std::move(tasks.front());
     }
 
     busy.store(true);
-    promise->set_value(current_logic->serve(request));
+    current_logic->execute(std::move(ctx));
     busy.store(false);
   }
 }

@@ -35,7 +35,7 @@ class OfficeEquipment final : public Machine {
 
   size_t getCurrentServingAmount() const noexcept override;
 
-  result_t<MessageBatch> serve(MessageBatch) override;
+  void serve(ServerCtx&& ctx) override;
 
   static constexpr std::string_view Type = "office_equipment";
 
@@ -49,9 +49,7 @@ class OfficeEquipment final : public Machine {
 
   std::atomic_bool busy;
 
-  std::deque<std::pair<MessageBatch,
-                       std::shared_ptr<std::promise<result_t<MessageBatch>>>>>
-      tasks;
+  std::deque<ServerCtx> tasks;
 
   std::condition_variable cond_var;
   std::unique_ptr<std::jthread> thread;

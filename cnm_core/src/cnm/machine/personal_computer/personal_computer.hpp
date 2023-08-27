@@ -22,7 +22,7 @@ class PersonalComputer final : public Machine {
 
   [[nodiscard]] size_t getCurrentServingAmount() const noexcept override;
 
-  result_t<MessageBatch> serve(MessageBatch) override;
+  void serve(ServerCtx&& ctx) override;
 
   void start() override;
 

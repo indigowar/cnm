@@ -5,6 +5,7 @@
 #include <mutex>
 #include <string_view>
 
+#include "cnm/connection/server_ctx.hpp"
 #include "cnm/core/message.hpp"
 #include "cnm/core/object.hpp"
 #include "cnm/machine/communicator.hpp"
@@ -51,7 +52,7 @@ class Machine : public Object {
     return std::unique_lock(mutex);
   }
 
-  [[nodiscard]] virtual result_t<MessageBatch> serve(MessageBatch) = 0;
+  virtual void serve(ServerCtx&& ctx) = 0;
 
  protected:
   HostInfo host_info;
