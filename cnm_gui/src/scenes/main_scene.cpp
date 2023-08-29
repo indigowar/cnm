@@ -4,8 +4,10 @@
 #include <imgui_internal.h>
 #include <spdlog/spdlog.h>
 
+#include <sstream>
 #include <string_view>
 
+#include "cnm/topology/ring/new_ring.hpp"
 #include "helpers/fps_window.hpp"
 
 MainScene::MainScene(Scenes::Switcher* switcher, Scenes::Exiter* exiter)
@@ -24,14 +26,12 @@ void MainScene::update() {}
 void MainScene::render() {
   menu->render();
   helpers::renderFPSWindow();
-  // docking over all window
 
   static auto dock_space_flags =
       ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoTabBar;
 
   static auto window_flags =
       ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-
   auto viewport = ImGui::GetMainViewport();
   ImGui::SetNextWindowPos(viewport->Pos);
   ImGui::SetNextWindowSize(viewport->Size);
@@ -44,14 +44,9 @@ void MainScene::render() {
   window_flags |=
       ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-  if (dock_space_flags & ImGuiDockNodeFlags_PassthruCentralNode) {
-    window_flags |= ImGuiWindowFlags_NoBackground;
-  }
-
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
   ImGui::Begin("DockSpace", nullptr, window_flags);
-  ImGui::PopStyleVar();
-  ImGui::PopStyleVar(2);
+  ImGui::PopStyleVar(3);
 
   auto& io = ImGui::GetIO();
   if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
@@ -75,6 +70,7 @@ void MainScene::render() {
       ImGui::DockBuilderFinish(dock_space_id);
     }
   }
+
   ImGui::End();
 
   renderEditor();
@@ -120,6 +116,8 @@ Menu::Menu MainScene::makeMenuBar() {
   return Menu::Menu({app, view, topology, machine});
 }
 
+void keep_window_inside(ImGuiWindow*, ImGuiWindow*);
+
 void render_node(const std::string& name) {
   ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
 
@@ -131,29 +129,7 @@ void render_node(const std::string& name) {
   // On moving the window, checks if it goes out of Editor window.
   if (ImGui::IsWindowHovered() &&
       ImGui::IsMouseDragging(ImGuiMouseButton_Left, -1.0f)) {
-    auto this_pos = ImGui::GetWindowPos();
-    auto this_size = ImGui::GetWindowSize();
-
-    auto parent_pos = parent_window->Pos;
-    auto parent_size = parent_window->Size;
-
-    if (parent_pos.x > this_pos.x) {
-      this_pos.x = parent_pos.x;
-    }
-
-    if (parent_pos.y > this_pos.y) {
-      this_pos.y = parent_pos.y;
-    }
-
-    if (parent_pos.x + parent_size.x < this_pos.x + this_size.x) {
-      this_pos.x = parent_pos.x + parent_size.x - this_size.x;
-    }
-
-    if (parent_pos.y + parent_size.y < this_pos.y + this_size.y) {
-      this_pos.y = parent_pos.y + parent_size.y - this_size.y;
-    }
-
-    ImGui::SetWindowPos(this_pos);
+    keep_window_inside(parent_window, this_window);
   }
 
   ImGui::End();
@@ -175,6 +151,47 @@ void draw_connection(ImDrawList* draw_list, const char* first_node_name,
 
   draw_list->AddLine(first_center, second_center, IM_COL32(255, 0, 0, 255),
                      3.0f);
+}
+
+std::string create_node_name(const std::shared_ptr<Ring::RingNode>& node) {
+  std::stringstream ss;
+  ss << node->getHostInfo().getName() << " "
+     << node->getHostInfo().getAddress();
+  return ss.str();
+}
+
+void keep_window_inside(ImGuiWindow* parent, ImGuiWindow* child) {
+  auto this_pos = child->Pos;
+  auto this_size = child->Size;
+
+  auto parent_pos = parent->Pos;
+  auto parent_size = parent->Size;
+
+  if (parent_pos.x > this_pos.x) {
+    this_pos.x = parent_pos.x;
+  }
+
+  if (parent_pos.y > this_pos.y) {
+    this_pos.y = parent_pos.y;
+  }
+
+  if (parent_pos.x + parent_size.x < this_pos.x + this_size.x) {
+    this_pos.x = parent_pos.x + parent_size.x - this_size.x;
+  }
+
+  if (parent_pos.y + parent_size.y < this_pos.y + this_size.y) {
+    this_pos.y = parent_pos.y + parent_size.y - this_size.y;
+  }
+
+  child->Pos = this_pos;
+}
+
+void render_node(const std::shared_ptr<Ring::RingNode>& node) {
+  auto name = create_node_name(node);
+
+  ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
+
+  ImGui::End();
 }
 
 void MainScene::renderEditor() {
@@ -241,6 +258,12 @@ void MainScene::renderProperties() {
   ImGui::Begin("Properties", nullptr,
                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
                    ImGuiWindowFlags_NoResize);
-
+  ImGui::Text("Properties");
+  ImGui::Button("Do nothing!");
   ImGui::End();
+
+  //  ImGui::Begin("Properties", nullptr,
+  //               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
+  //
+  //  ImGui::End();
 }
