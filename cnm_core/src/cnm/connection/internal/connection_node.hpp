@@ -14,9 +14,9 @@ namespace Cnm::Connections {
 // ConnectionNode is base class for connection's nodes.
 class ConnectionNode {
  public:
-  ConnectionNode(Connection& connection, std::shared_ptr<Node> node,
+  ConnectionNode(Connection& connection, std::shared_ptr<Node> n,
                  const std::shared_ptr<Utils::SleepWrapper>& sw)
-      : owner{connection}, node{std::move(node)}, sleepWrapper(sw) {
+      : owner{connection}, node{std::move(n)}, sleepWrapper(sw) {
     node->attachConnectionNode(this);
   }
 
