@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <mutex>
+#include <set>
 
 #include "cnm/machine/communicator.hpp"
 #include "cnm/machine/machine.hpp"
@@ -45,8 +46,27 @@ class RingNode final : public Node {
 
   std::string_view getType() const noexcept override;
 
-  void attachConnectionNode(Connections::ConnectionNode*) override {}
-  void detachConnectionNode(Connections::ConnectionNode*) override {}
+  void attachConnectionNode(Connections::ConnectionNode* ptr) override {
+    if (!connection_nodes.contains(ptr)) {
+      connection_nodes.emplace(ptr);
+    }
+  }
+  void detachConnectionNode(Connections::ConnectionNode* ptr) override {
+    if (connection_nodes.contains(ptr)) {
+      connection_nodes.erase(ptr);
+    }
+  }
+
+  std::vector<ConnectionInfo> getConnections() const noexcept override {
+    std::vector<ConnectionInfo> result{};
+    std::transform(connection_nodes.begin(), connection_nodes.end(),
+                   std::back_inserter(result),
+                   [](Connections::ConnectionNode* ptr) -> ConnectionInfo {
+                     return {ptr->getOwner().getClientHostInfo(),
+                             ptr->getOwner().getServerHostInfo()};
+                   });
+    return result;
+  }
 
  private:
   std::shared_ptr<RingNode> previous_node;
@@ -55,6 +75,8 @@ class RingNode final : public Node {
   std::unique_ptr<Machine> machine;
 
   mutable std::mutex mutex;
+
+  std::set<Cnm::Connections::ConnectionNode*> connection_nodes;
 };
 
 }  // namespace Cnm

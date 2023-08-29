@@ -28,6 +28,9 @@ class MockNode : public Cnm::Node {
 
   MOCK_METHOD(void, detachConnectionNode, (Cnm::Connections::ConnectionNode*),
               (override));
+
+  MOCK_METHOD(std::vector<Cnm::ConnectionInfo>, getConnections, (),
+              (const, noexcept, override));
 };
 
 #endif  // HPP_CNM_TEST_MOCK_NODE_HPP

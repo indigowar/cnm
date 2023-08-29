@@ -17,6 +17,11 @@ namespace Connections {
 class ConnectionNode;
 }  // namespace Connections
 
+struct ConnectionInfo final {
+  HostInfo client;
+  HostInfo server;
+};
+
 class Node : public Object {
  public:
   [[nodiscard]] virtual HostInfo getHostInfo() const noexcept = 0;
@@ -33,6 +38,8 @@ class Node : public Object {
 
   virtual void attachConnectionNode(Connections::ConnectionNode*) = 0;
   virtual void detachConnectionNode(Connections::ConnectionNode*) = 0;
+
+  virtual std::vector<ConnectionInfo> getConnections() const noexcept = 0;
 };
 
 }  // namespace Cnm
