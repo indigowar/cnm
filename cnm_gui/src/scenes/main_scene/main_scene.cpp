@@ -1,14 +1,13 @@
 #include "main_scene.hpp"
 
-#include <imgui.h>
-#include <imgui_internal.h>
-#include <spdlog/spdlog.h>
-
 #include <sstream>
 #include <string_view>
 
-#include "cnm/topology/ring/new_ring.hpp"
+#include "cnm/topology/base/node.hpp"
 #include "helpers/fps_window.hpp"
+#include "imgui.h"
+#include "imgui_internal.h"
+#include "spdlog/spdlog.h"
 
 MainScene::MainScene(Scenes::Switcher* switcher, Scenes::Exiter* exiter)
     : Scene("MainScene", switcher, exiter) {}
@@ -153,7 +152,7 @@ void draw_connection(ImDrawList* draw_list, const char* first_node_name,
                      3.0f);
 }
 
-std::string create_node_name(const std::shared_ptr<Ring::RingNode>& node) {
+std::string create_node_name(const std::shared_ptr<Cnm::Node>& node) {
   std::stringstream ss;
   ss << node->getHostInfo().getName() << " "
      << node->getHostInfo().getAddress();
@@ -186,7 +185,7 @@ void keep_window_inside(ImGuiWindow* parent, ImGuiWindow* child) {
   child->Pos = this_pos;
 }
 
-void render_node(const std::shared_ptr<Ring::RingNode>& node) {
+void render_node(const std::shared_ptr<Cnm::Node>& node) {
   auto name = create_node_name(node);
 
   ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoDocking);

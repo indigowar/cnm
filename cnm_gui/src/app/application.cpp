@@ -1,6 +1,6 @@
 #include "application.hpp"
 
-#include "scenes/main_scene.hpp"
+#include "scenes/main_scene/main_scene.hpp"
 
 Application::Application(std::string name)
     : scene_manager(),
