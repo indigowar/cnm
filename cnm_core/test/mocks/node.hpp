@@ -22,6 +22,12 @@ class MockNode : public Cnm::Node {
   MOCK_METHOD(void, freeze, (), (override));
 
   MOCK_METHOD(std::string_view, getType, (), (const, noexcept, override));
+
+  MOCK_METHOD(void, attachConnectionNode, (Cnm::Connections::ConnectionNode*),
+              (override));
+
+  MOCK_METHOD(void, detachConnectionNode, (Cnm::Connections::ConnectionNode*),
+              (override));
 };
 
 #endif  // HPP_CNM_TEST_MOCK_NODE_HPP

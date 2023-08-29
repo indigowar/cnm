@@ -16,9 +16,11 @@ class ConnectionNode {
  public:
   ConnectionNode(Connection& connection, std::shared_ptr<Node> node,
                  const std::shared_ptr<Utils::SleepWrapper>& sw)
-      : owner{connection}, node{std::move(node)}, sleepWrapper(sw) {}
+      : owner{connection}, node{std::move(node)}, sleepWrapper(sw) {
+    node->attachConnectionNode(this);
+  }
 
-  virtual ~ConnectionNode() = default;
+  virtual ~ConnectionNode() { node->detachConnectionNode(this); }
 
   virtual void setNextNode(std::shared_ptr<ConnectionNode>) = 0;
   virtual std::shared_ptr<ConnectionNode> getNextNode() const noexcept = 0;

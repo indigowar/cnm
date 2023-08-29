@@ -45,6 +45,9 @@ class RingNode final : public Node {
 
   std::string_view getType() const noexcept override;
 
+  void attachConnectionNode(Connections::ConnectionNode*) override {}
+  void detachConnectionNode(Connections::ConnectionNode*) override {}
+
  private:
   std::shared_ptr<RingNode> previous_node;
   std::shared_ptr<RingNode> next_node;
