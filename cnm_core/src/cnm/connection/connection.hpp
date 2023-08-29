@@ -55,6 +55,10 @@ class Connection final : public Connections::Connection {
 
   result_t<ServerCtx> createServerContext();
 
+  HostInfo getClientHostInfo() const noexcept override;
+
+  HostInfo getServerHostInfo() const noexcept override;
+
  private:
   void callAbort();
 

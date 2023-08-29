@@ -117,3 +117,11 @@ void Connection::callAbort() {
     nodes.shrink_to_fit();
   }
 }
+
+HostInfo Connection::getClientHostInfo() const noexcept {
+  return client_node->getNetworkNode()->getHostInfo();
+}
+
+HostInfo Connection::getServerHostInfo() const noexcept {
+  return server_node->getNetworkNode()->getHostInfo();
+}

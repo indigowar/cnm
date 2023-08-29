@@ -16,6 +16,10 @@ class MockConnection : public Cnm::Connections::Connection {
   MOCK_METHOD(size_t, getSpeed, (), (const, noexcept, override));
   MOCK_METHOD(void, stopRequesting, (), (override));
   MOCK_METHOD(void, stopServing, (), (override));
+  MOCK_METHOD(Cnm::HostInfo, getClientHostInfo, (),
+              (const, noexcept, override));
+  MOCK_METHOD(Cnm::HostInfo, getServerHostInfo, (),
+              (const, noexcept, override));
 };
 
 #endif  // HPP_CNM_CORE_TEST_MOCKS_CONNECTION_HPP

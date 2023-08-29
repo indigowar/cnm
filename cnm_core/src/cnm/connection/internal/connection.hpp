@@ -4,6 +4,8 @@
 #include <memory>
 #include <mutex>
 
+#include "cnm/machine/host_info.hpp"
+
 namespace Cnm::Connections {
 
 class ConnectionNode;
@@ -40,6 +42,12 @@ class Connection {
 
   // stopServing() - forbids sending from server to client.
   virtual void stopServing() = 0;
+
+  // getClientHostInfo() - retrieve the host info of the client.
+  virtual HostInfo getClientHostInfo() const noexcept = 0;
+
+  // getServerHostInfo() - retrieve the host info of the server.
+  virtual HostInfo getServerHostInfo() const noexcept = 0;
 };
 
 }  // namespace Cnm::Connections
