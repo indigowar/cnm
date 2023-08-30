@@ -79,4 +79,26 @@ std::string_view RingNode::getType() const noexcept {
   return machine->getType();
 }
 
+void RingNode::attachConnectionNode(Connections::ConnectionNode* ptr) {
+  if (!connection_nodes.contains(ptr)) {
+    connection_nodes.emplace(ptr);
+  }
+}
+void RingNode::detachConnectionNode(Connections::ConnectionNode* ptr) {
+  if (connection_nodes.contains(ptr)) {
+    connection_nodes.erase(ptr);
+  }
+}
+
+std::vector<ConnectionInfo> RingNode::getConnections() const noexcept {
+  std::vector<ConnectionInfo> result{};
+  std::transform(connection_nodes.begin(), connection_nodes.end(),
+                 std::back_inserter(result),
+                 [](Connections::ConnectionNode* ptr) -> ConnectionInfo {
+                   return {ptr->getOwner().getClientHostInfo(),
+                           ptr->getOwner().getServerHostInfo()};
+                 });
+  return result;
+}
+
 }  // namespace Cnm

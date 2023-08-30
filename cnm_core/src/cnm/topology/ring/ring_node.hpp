@@ -46,27 +46,11 @@ class RingNode final : public Node {
 
   std::string_view getType() const noexcept override;
 
-  void attachConnectionNode(Connections::ConnectionNode* ptr) override {
-    if (!connection_nodes.contains(ptr)) {
-      connection_nodes.emplace(ptr);
-    }
-  }
-  void detachConnectionNode(Connections::ConnectionNode* ptr) override {
-    if (connection_nodes.contains(ptr)) {
-      connection_nodes.erase(ptr);
-    }
-  }
+  void attachConnectionNode(Connections::ConnectionNode* ptr) override;
 
-  std::vector<ConnectionInfo> getConnections() const noexcept override {
-    std::vector<ConnectionInfo> result{};
-    std::transform(connection_nodes.begin(), connection_nodes.end(),
-                   std::back_inserter(result),
-                   [](Connections::ConnectionNode* ptr) -> ConnectionInfo {
-                     return {ptr->getOwner().getClientHostInfo(),
-                             ptr->getOwner().getServerHostInfo()};
-                   });
-    return result;
-  }
+  void detachConnectionNode(Connections::ConnectionNode* ptr) override;
+
+  std::vector<ConnectionInfo> getConnections() const noexcept override;
 
  private:
   std::shared_ptr<RingNode> previous_node;
