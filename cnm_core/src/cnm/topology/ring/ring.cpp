@@ -2,6 +2,7 @@
 
 #include <ranges>
 
+#include "cnm/topology/ring/ring_communicator.hpp"
 #include "cnm/topology/ring/ring_iterator.hpp"
 
 namespace Cnm {
@@ -107,47 +108,6 @@ RingIterator Ring::end() { return RingIterator(nullptr); }
 void Ring::signalNodes(std::function<void(std::shared_ptr<RingNode>&)> func) {
   auto only_nodes = nodes | std::views::values;
   std::for_each(only_nodes.begin(), only_nodes.end(), func);
-}
-
-Ring::RingCommunicator::RingCommunicator(Ring* ring) : ring{ring} {}
-
-std::vector<HostInfo> Ring::RingCommunicator::getSpecificType(
-    std::string_view type, bool filter_unavailable) {
-  std::unique_lock lock(ring->mutex);
-
-  std::vector<HostInfo> result{};
-
-  auto result_range =
-      ring->nodes | std::views::values | std::views::filter([&](const auto& i) {
-        return i->getType() == type && (!filter_unavailable && !i->isBusy());
-      }) |
-      std::views::transform([](const auto& i) { return i->getHostInfo(); });
-
-  std::ranges::copy(result_range, std::back_inserter(result));
-
-  return result;
-}
-
-void Ring::RingCommunicator::disconnect(HostInfo host_info) {
-  std::unique_lock lock(ring->mutex);
-
-  if (!ring->nodes.contains(host_info.getAddress())) {
-    return;
-  }
-
-  auto node = ring->nodes.at(host_info.getAddress());
-
-  auto next = node->getNextNode();
-  auto prev = node->getPreviousNode();
-
-  if (next) next->setPreviousNode(nullptr);
-  if (prev) prev->setNextNode(nullptr);
-
-  ring->nodes.erase(host_info.getAddress());
-}
-
-ClientCtx Ring::RingCommunicator::makeConnection(std::string_view address) {
-  // TODO: Build a connection and return it's context.
 }
 
 }  // namespace Cnm

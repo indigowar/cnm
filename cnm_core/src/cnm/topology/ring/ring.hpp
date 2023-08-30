@@ -47,33 +47,7 @@ class Ring final : public Topology {
   [[nodiscard]] RingIterator end();
 
  private:
-  class RingCommunicator final : public Communicator {
-   public:
-    explicit RingCommunicator(Ring* ring);
-
-    std::vector<HostInfo> getOfficeEquipments(
-        bool filter_unavailable = false) override {
-      return getSpecificType(OfficeEquipment::Type, filter_unavailable);
-    }
-
-    std::vector<HostInfo> getServers(bool filter_unavailable = false) override {
-      return getSpecificType(Server::Type, filter_unavailable);
-    }
-
-    std::vector<HostInfo> getPCs() override {
-      return getSpecificType(PersonalComputer::Type);
-    }
-
-    void disconnect(HostInfo) override;
-
-    ClientCtx makeConnection(std::string_view address) override;
-
-   private:
-    Ring* ring;
-
-    std::vector<HostInfo> getSpecificType(std::string_view type,
-                                          bool filteR_unavailable = false);
-  };
+  friend class RingCommunicator;
 
   result_t<HostInfo> createNode(HostInfo, std::unique_ptr<Machine>&&);
 
