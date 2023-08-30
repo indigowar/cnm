@@ -55,7 +55,7 @@ class Ring final : public Topology {
 
   void signalNodes(std::function<void(std::shared_ptr<RingNode>&)>);
 
-  std::map<std::string_view, std::shared_ptr<RingNode>> nodes;
+  std::map<std::string, std::shared_ptr<RingNode>> nodes;
 
   mutable std::mutex mutex;
 };

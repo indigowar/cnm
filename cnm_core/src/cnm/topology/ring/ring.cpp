@@ -85,20 +85,19 @@ result_t<HostInfo> Ring::createNode(HostInfo host_info,
 }
 
 result_t<bool> Ring::validate() const noexcept {
-  // TODO: Implement Ring::validate()
+  std::set<std::string> found{};
 
-  auto current = nodes.begin()->second;
-  std::set<std::string> s;
-
-  for (; current; current = current->getNextNode()) {
-    if (s.contains(current->getHostInfo().getAddress())) {
-      if (current->getHostInfo().getAddress() == *s.begin()) {
-        break;
-      }
-      return result_t<bool>::Err("");
+  auto node = nodes.begin()->second;
+  auto addr = node->getHostInfo().getAddress();
+  do {
+    if (found.contains(addr)) {
+      return result_t<bool>::Ok(false);
     }
-    s.insert(current->getHostInfo().getAddress());
-  }
+    node = node->getNextNode();
+    addr = node->getHostInfo().getAddress();
+  } while (nodes.begin()->first != addr);
+
+  return result_t<bool>::Ok(true);
 }
 
 RingIterator Ring::begin() { return RingIterator(nodes.begin()->second); }
