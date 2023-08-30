@@ -4,6 +4,7 @@
 #include <string_view>
 #include <vector>
 
+#include "cnm/connection/client_ctx.hpp"
 #include "cnm/machine/host_info.hpp"
 
 namespace Cnm {
@@ -20,7 +21,7 @@ class Communicator {
 
   virtual void disconnect(HostInfo) = 0;
 
-  virtual void makeConnection(std::string_view address) = 0;
+  virtual ClientCtx makeConnection(std::string_view address) = 0;
 };
 
 }  // namespace Cnm

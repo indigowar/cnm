@@ -66,7 +66,7 @@ class Ring final : public Topology {
 
     void disconnect(HostInfo) override;
 
-    void makeConnection(std::string_view address) override;
+    ClientCtx makeConnection(std::string_view address) override;
 
    private:
     Ring* ring;

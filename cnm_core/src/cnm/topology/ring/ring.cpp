@@ -130,4 +130,8 @@ void Ring::RingCommunicator::disconnect(HostInfo host_info) {
   ring->nodes.erase(host_info.getAddress());
 }
 
+ClientCtx Ring::RingCommunicator::makeConnection(std::string_view address) {
+  // TODO: Build a connection and return it's context.
+}
+
 }  // namespace Cnm
