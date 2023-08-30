@@ -6,25 +6,57 @@
 
 namespace Cnm {
 
-class RingIterator final : public NodeIterator {
+// RingIterator - is an iterator for Ring topology.
+class RingIterator final {
  public:
   explicit RingIterator(std::shared_ptr<RingNode> node)
       : node{std::move(node)} {}
 
-  std::shared_ptr<Node> operator*() const override { return node; }
+  ~RingIterator() = default;
 
-  NodeIterator& operator++() override {
+  RingIterator(const RingIterator&) = default;
+  RingIterator& operator=(const RingIterator&) = default;
+
+  RingIterator(RingIterator&&) = default;
+  RingIterator& operator=(RingIterator&&) = default;
+
+  std::shared_ptr<Node> operator*() const noexcept { return node; }
+
+  RingIterator& operator++() {
     if (node) {
       node = node->getNextNode();
     }
     return *this;
   }
 
-  NodeIterator& operator--() override {
+  RingIterator& operator--() {
     if (node) {
       node = node->getPreviousNode();
     }
     return *this;
+  }
+
+  template <NodeIterator I>
+  bool operator==(const I& other) const {
+    auto t = this->operator*();
+    auto o = this->operator*();
+
+    // equal pointers - same node.
+    if (t == o) {
+      return true;
+    }
+
+    // if one of pointers is nullptr and other one is not.
+    if (!t || !o) {
+      return false;
+    }
+
+    return t->getHostInfo() == o->getHostInfo();
+  }
+
+  template <NodeIterator I>
+  bool operator!=(const I& o) const {
+    return !this->operator==(o);
   }
 
  private:

@@ -74,11 +74,24 @@ result_t<HostInfo> Ring::createNode(HostInfo host_info,
 
 result_t<bool> Ring::validate() const noexcept {
   // TODO: Implement Ring::validate()
+
+  auto current = nodes.begin()->second;
+  std::set<std::string> s;
+
+  for (; current; current = current->getNextNode()) {
+    if (s.contains(current->getHostInfo().getAddress())) {
+      if (current->getHostInfo().getAddress() == *s.begin()) {
+        break;
+      }
+      return result_t<bool>::Err("");
+    }
+    s.insert(current->getHostInfo().getAddress());
+  }
 }
 
-NodeIterator Ring::begin() { return RingIterator(nodes.begin()->second); }
+RingIterator Ring::begin() { return RingIterator(nodes.begin()->second); }
 
-NodeIterator Ring::end() { return RingIterator(nullptr); }
+RingIterator Ring::end() { return RingIterator(nullptr); }
 
 Ring::RingCommunicator::RingCommunicator(Ring* ring) : ring{ring} {}
 

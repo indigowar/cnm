@@ -39,8 +39,25 @@ class Topology : public Object {
 
   [[nodiscard]] virtual std::string_view getType() const noexcept = 0;
 
-  virtual NodeIterator begin() = 0;
-  virtual NodeIterator end() = 0;
+  // begin - returns an iterator for the first element.
+  template <typename T, NodeIterator I>
+    requires std::derived_from<T, Topology> || requires(T t) {
+      { t.begin() } -> std::same_as<I>;
+      { t.end() } -> std::same_as<I>;
+    }
+  static auto begin(T& t) {
+    return t.begin();
+  }
+
+  // end - returns an iterator on the place after the last element.
+  template <typename T, NodeIterator I>
+    requires std::derived_from<T, Topology> || requires(T t) {
+      { t.begin() } -> std::same_as<I>;
+      { t.end() } -> std::same_as<I>;
+    }
+  static auto end(T& t) {
+    return t.end();
+  }
 };
 
 }  // namespace Cnm

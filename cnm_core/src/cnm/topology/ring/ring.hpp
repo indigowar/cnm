@@ -7,6 +7,7 @@
 #include "cnm/machine/personal_computer/personal_computer.hpp"
 #include "cnm/machine/server/server.hpp"
 #include "cnm/topology/base/topology.hpp"
+#include "cnm/topology/ring/ring_iterator.hpp"
 #include "cnm/topology/ring/ring_node.hpp"
 
 namespace Cnm {
@@ -42,8 +43,8 @@ class Ring final : public Topology {
 
   std::string_view getType() const noexcept override { return "Ring"; }
 
-  NodeIterator begin() override;
-  NodeIterator end() override;
+  [[nodiscard]] RingIterator begin();
+  [[nodiscard]] RingIterator end();
 
  private:
   class RingCommunicator final : public Communicator {
