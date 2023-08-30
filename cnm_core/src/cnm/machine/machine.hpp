@@ -17,7 +17,7 @@ namespace Cnm {
 class Machine : public Object {
  public:
   Machine(std::string_view type, size_t serving_limit, HostInfo host_info,
-          std::shared_ptr<Communicator> communicator)
+          std::unique_ptr<Communicator> communicator)
       : type{type},
         serving_limit{serving_limit},
         host_info{host_info},
@@ -41,7 +41,7 @@ class Machine : public Object {
     host_info = new_host_info;
   }
 
-  void setCommunicator(std::shared_ptr<Communicator> new_communicator) {
+  void setCommunicator(std::unique_ptr<Communicator>&& new_communicator) {
     auto lock = makeLock();
     communicator = std::move(new_communicator);
   }
@@ -56,7 +56,7 @@ class Machine : public Object {
 
  protected:
   HostInfo host_info;
-  std::shared_ptr<Communicator> communicator;
+  std::unique_ptr<Communicator> communicator;
 
  private:
   const std::string_view type;

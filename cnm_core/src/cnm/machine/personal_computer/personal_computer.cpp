@@ -6,7 +6,7 @@ namespace Cnm {
 
 PersonalComputer::PersonalComputer(Cnm::PersonalComputerLogic&& logic,
                                    Cnm::HostInfo host_info,
-                                   std::shared_ptr<Communicator> communicator)
+                                   std::unique_ptr<Communicator>&& communicator)
     : Machine(PersonalComputer::Type, 0, host_info, std::move(communicator)),
       logic(std::move(logic)),
       thread{},

@@ -76,8 +76,8 @@ result_t<HostInfo> Ring::createNode(HostInfo host_info,
   if (nodes.contains(host_info.getAddress())) {
     return result_t<HostInfo>::Err("given address is already in use.");
   }
-  auto node =
-      std::make_shared<RingNode>(host_info, std::move(machine), communicator);
+  auto node = std::make_shared<RingNode>(
+      host_info, std::move(machine), std::make_unique<RingCommunicator>(this));
   nodes.emplace(node->getHostInfo().getAddress(), node);
 
   return result_t<HostInfo>::Ok(node->getHostInfo());

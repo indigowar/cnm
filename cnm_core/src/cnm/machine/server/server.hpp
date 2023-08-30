@@ -11,7 +11,7 @@ namespace Cnm {
 class Server final : public Machine {
  public:
   Server(ServerLogic&& logic, size_t limit, HostInfo host_info,
-         std::shared_ptr<Communicator> communicator);
+         std::unique_ptr<Communicator> communicator);
 
   ~Server() override;
 

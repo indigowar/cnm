@@ -16,7 +16,7 @@ namespace Cnm {
 class PersonalComputer final : public Machine {
  public:
   PersonalComputer(PersonalComputerLogic&&, HostInfo,
-                   std::shared_ptr<Communicator>);
+                   std::unique_ptr<Communicator>&&);
 
   ~PersonalComputer() override;
 

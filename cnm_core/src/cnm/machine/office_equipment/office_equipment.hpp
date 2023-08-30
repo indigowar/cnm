@@ -21,7 +21,7 @@ namespace Cnm {
 class OfficeEquipment final : public Machine {
  public:
   OfficeEquipment(const OfficeEquipmentLogic&, HostInfo,
-                  std::shared_ptr<Communicator>);
+                  std::unique_ptr<Communicator>);
 
   ~OfficeEquipment() override;
 

@@ -5,10 +5,10 @@
 namespace Cnm {
 
 RingNode::RingNode(Cnm::HostInfo host_info, std::unique_ptr<Machine>&& m,
-                   const std::shared_ptr<Communicator>& communicator)
+                   std::unique_ptr<Communicator>&& communicator)
     : machine{std::move(m)}, previous_node{}, next_node{} {
   machine->setHostInfo(host_info);
-  machine->setCommunicator(communicator);
+  machine->setCommunicator(std::move(communicator));
 }
 
 RingNode::~RingNode() = default;

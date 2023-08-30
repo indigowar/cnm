@@ -14,7 +14,7 @@ namespace Cnm {
 class RingNode final : public Node {
  public:
   RingNode(HostInfo, std::unique_ptr<Machine>&&,
-           const std::shared_ptr<Communicator>&);
+           std::unique_ptr<Communicator>&&);
 
   ~RingNode() override;
 

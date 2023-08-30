@@ -83,8 +83,6 @@ class Ring final : public Topology {
 
   std::map<std::string_view, std::shared_ptr<RingNode>> nodes;
 
-  std::shared_ptr<RingCommunicator> communicator;
-
   mutable std::mutex mutex;
 };
 

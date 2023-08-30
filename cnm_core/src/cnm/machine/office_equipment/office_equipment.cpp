@@ -8,7 +8,7 @@ namespace Cnm {
 
 OfficeEquipment::OfficeEquipment(const OfficeEquipmentLogic& logic,
                                  HostInfo info,
-                                 std::shared_ptr<Communicator> communicator)
+                                 std::unique_ptr<Communicator> communicator)
     : Machine(OfficeEquipment::Type, 1, info, std::move(communicator)),
       logic(std::make_unique<OfficeEquipmentLogic>(logic)),
       is_accepting{},
