@@ -6,10 +6,21 @@
 
 namespace Cnm {
 
-void Ring::start() {}
-void Ring::stop() {}
-void Ring::invoke() {}
-void Ring::freeze() {}
+void Ring::start() {
+  signalNodes([](auto i) { i->start(); });
+}
+
+void Ring::stop() {
+  signalNodes([](auto i) { i->stop(); });
+}
+
+void Ring::invoke() {
+  signalNodes([](auto i) { i->invoke(); });
+}
+
+void Ring::freeze() {
+  signalNodes([](auto i) { i->freeze(); });
+}
 
 result_t<HostInfo> Ring::addMachine(std::unique_ptr<Machine>&& machine) {
   std::unique_lock lock(mutex);
@@ -92,6 +103,11 @@ result_t<bool> Ring::validate() const noexcept {
 RingIterator Ring::begin() { return RingIterator(nodes.begin()->second); }
 
 RingIterator Ring::end() { return RingIterator(nullptr); }
+
+void Ring::signalNodes(std::function<void(std::shared_ptr<RingNode>&)> func) {
+  auto only_nodes = nodes | std::views::values;
+  std::for_each(only_nodes.begin(), only_nodes.end(), func);
+}
 
 Ring::RingCommunicator::RingCommunicator(Ring* ring) : ring{ring} {}
 

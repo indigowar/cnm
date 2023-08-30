@@ -79,6 +79,8 @@ class Ring final : public Topology {
 
   HostInfo generateHostInfo(std::string_view name);
 
+  void signalNodes(std::function<void(std::shared_ptr<RingNode>&)>);
+
   std::map<std::string_view, std::shared_ptr<RingNode>> nodes;
 
   std::shared_ptr<RingCommunicator> communicator;
