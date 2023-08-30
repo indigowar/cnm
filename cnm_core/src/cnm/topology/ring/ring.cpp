@@ -97,7 +97,7 @@ result_t<bool> Ring::validate() const noexcept {
     addr = node->getHostInfo().getAddress();
   } while (nodes.begin()->first != addr);
 
-  return result_t<bool>::Ok(true);
+  return result_t<bool>::Ok(found.size() == nodes.size());
 }
 
 RingIterator Ring::begin() { return RingIterator(nodes.begin()->second); }
