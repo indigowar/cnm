@@ -25,7 +25,7 @@ class RingCommunicator final : public Communicator {
 
   void disconnect(HostInfo) override;
 
-  ClientCtx makeConnection(std::string_view address) override;
+  result_t<ClientCtx> makeConnection(std::string_view address) override;
 
  private:
   Ring* ring;

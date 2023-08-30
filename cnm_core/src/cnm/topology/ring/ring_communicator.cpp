@@ -41,7 +41,7 @@ void RingCommunicator::disconnect(HostInfo host_info) {
   ring->nodes.erase(host_info.getAddress());
 }
 
-ClientCtx RingCommunicator::makeConnection(std::string_view address) {
+result_t<ClientCtx> RingCommunicator::makeConnection(std::string_view address) {
   // TODO: Build a connection and return it's context.
 }
 
