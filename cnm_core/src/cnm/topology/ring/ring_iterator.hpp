@@ -80,14 +80,14 @@ class RingReverseIterator final {
 
   RingReverseIterator& operator++() {
     if (node) {
-      node = node->getNextNode();
+      node = node->getPreviousNode();
     }
     return *this;
   }
 
   RingReverseIterator& operator--() {
     if (node) {
-      node = node->getPreviousNode();
+      node = node->getNextNode();
     }
     return *this;
   }
