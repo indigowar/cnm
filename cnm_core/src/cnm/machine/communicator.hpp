@@ -12,6 +12,10 @@ namespace Cnm {
 // Communicator - is an interface for communication with the network by machine.
 class Communicator {
  public:
+  virtual ~Communicator() = default;
+
+  virtual void setNode(std::shared_ptr<Node>) = 0;
+
   virtual std::vector<HostInfo> getOfficeEquipments(
       bool filter_unavailable = false) = 0;
 
