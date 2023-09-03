@@ -2,6 +2,9 @@
 #define HPP_CNM_CORE_TOPOLOGY_RING_RING_COMMUNICATOR_HPP
 
 #include "cnm/machine/communicator.hpp"
+#include "cnm/machine/office_equipment/office_equipment.hpp"
+#include "cnm/machine/personal_computer/personal_computer.hpp"
+#include "cnm/machine/server/server.hpp"
 #include "cnm/topology/ring/ring.hpp"
 
 namespace Cnm {
@@ -9,6 +12,8 @@ namespace Cnm {
 class RingCommunicator final : public Communicator {
  public:
   explicit RingCommunicator(Ring* ring);
+
+  void setNode(std::shared_ptr<Node>) override;
 
   std::vector<HostInfo> getOfficeEquipments(
       bool filter_unavailable = false) override {
@@ -25,13 +30,17 @@ class RingCommunicator final : public Communicator {
 
   void disconnect(HostInfo) override;
 
-  result_t<ClientCtx> makeConnection(std::string_view address) override;
+  result_t<ClientCtx> makeConnection(std::string address) override;
 
  private:
-  Ring* ring;
-
   std::vector<HostInfo> getSpecificType(std::string_view type,
                                         bool filteR_unavailable = false);
+
+  result_t<std::vector<std::shared_ptr<RingNode>>> findShortestPath(
+      const std::string& from, const std::string& to);
+
+  Ring* ring;
+  std::shared_ptr<Node> node;
 };
 
 }  // namespace Cnm
