@@ -5,46 +5,11 @@
 #include "cnm/connection/client_ctx.hpp"
 #include "cnm/connection/internal/client_node.hpp"
 #include "cnm/connection/internal/connection_node.hpp"
-#include "cnm/connection/internal/intermediate_node.hpp"
-#include "cnm/connection/internal/server_node.hpp"
 #include "cnm/connection/server_ctx.hpp"
 #include "cnm/topology/base/node.hpp"
 #include "cnm/utils/result.hpp"
-#include "cnm/utils/sleep_wrapper.hpp"
 
 using namespace Cnm;
-
-Connection::Connection(
-    size_t net_speed,
-    const std::vector<std::shared_ptr<Cnm::Node>>& networkNodes)
-    : speed{net_speed}, nodes(networkNodes.size()) {
-  if (networkNodes.size() < 2) {
-    throw std::runtime_error("can't create connection with less than 2 nodes.");
-  }
-
-  sleep_wrapper = std::make_shared<Utils::SleepWrapper>();
-
-  // create the first node - client node.
-  client_node = std::make_shared<Connections::ClientNode>(
-      *this, networkNodes.front(), sleep_wrapper);
-
-  // create intermediate nodes for the connection.
-  std::shared_ptr<Connections::ConnectionNode> previous = client_node;
-  for (size_t i{1}; i < networkNodes.size() - 1; i++) {
-    auto current = std::make_shared<Connections::IntermediateNode>(
-        *this, networkNodes[i], sleep_wrapper, previous);
-    current->setPreviousNode(previous);
-    previous->setNextNode(current);
-
-    previous = current;
-  }
-
-  // create the last - server node.
-  nodes.back() = server_node = std::make_shared<Connections::ServerNode>(
-      *this, networkNodes.back(), sleep_wrapper);
-  server_node->setPreviousNode(previous);
-  previous->setNextNode(server_node);
-}
 
 Connection::~Connection() { abort(); }
 
