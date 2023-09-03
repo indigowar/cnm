@@ -3,9 +3,6 @@
 
 #include <map>
 
-#include "cnm/machine/office_equipment/office_equipment.hpp"
-#include "cnm/machine/personal_computer/personal_computer.hpp"
-#include "cnm/machine/server/server.hpp"
 #include "cnm/topology/base/topology.hpp"
 #include "cnm/topology/ring/ring_iterator.hpp"
 #include "cnm/topology/ring/ring_node.hpp"
