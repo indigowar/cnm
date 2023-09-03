@@ -25,7 +25,7 @@ class Communicator {
 
   virtual void disconnect(HostInfo) = 0;
 
-  virtual result_t<ClientCtx> makeConnection(std::string_view address) = 0;
+  virtual result_t<ClientCtx> makeConnection(std::string address) = 0;
 };
 
 }  // namespace Cnm

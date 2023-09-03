@@ -15,7 +15,7 @@ class MockCommunicator : public Cnm::Communicator {
 
   MOCK_METHOD(void, disconnect, (Cnm::HostInfo), (override));
 
-  MOCK_METHOD(void, makeConnection, (std::string_view), (override));
+  MOCK_METHOD(void, makeConnection, (std::string), (override));
 };
 
 #endif  // HPP_CNM_CORE_TEST_MOCKS_COMMUNICATOR_HPP
