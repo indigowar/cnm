@@ -8,6 +8,7 @@
 #include "cnm/topology/base/node.hpp"
 #include "cnm/topology/ring/ring_node.hpp"
 #include "cnm/utils/result.hpp"
+#include "spdlog/common.h"
 
 namespace Cnm {
 
@@ -96,7 +97,29 @@ RingCommunicator::findShortestPath(const std::string& from,
 }
 
 result_t<ClientCtx> RingCommunicator::makeConnection(std::string address) {
-  // TODO: Build a connection and return it's context.
+  auto path_result =
+      findShortestPath(this->node->getHostInfo().getAddress(), address);
+
+  auto path = path_result.unwrap();
+
+  // TODO: replace this constant with member of Ring.
+  constexpr size_t CONNECTION_SPEED = 100;
+
+  Connection conn(CONNECTION_SPEED, path.begin(), path.end());
+
+  // todo: create the server ctx for server
+  std::ignore = std::async([this, &conn] {
+    auto ctx = conn.createServerContext();
+    if (ctx.isErr()) {
+      spdlog::warn("Connection::createServerContext() - %s", ctx.unwrapErr());
+      return;
+    }
+
+    ring->nodes.at(conn.getServerHostInfo().getAddress())
+        ->serve(std::move(ctx.unwrap()));
+  });
+
+  return conn.createClientContext();
 }
 
 }  // namespace Cnm
