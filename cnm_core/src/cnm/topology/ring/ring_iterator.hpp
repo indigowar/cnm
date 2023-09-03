@@ -20,7 +20,7 @@ class RingIterator final {
   RingIterator(RingIterator&&) = default;
   RingIterator& operator=(RingIterator&&) = default;
 
-  std::shared_ptr<Node> operator*() const noexcept { return node; }
+  std::shared_ptr<RingNode> operator*() const noexcept { return node; }
 
   RingIterator& operator++() {
     if (node) {
@@ -32,62 +32,6 @@ class RingIterator final {
   RingIterator& operator--() {
     if (node) {
       node = node->getPreviousNode();
-    }
-    return *this;
-  }
-
-  template <NodeIterator I>
-  bool operator==(const I& other) const {
-    auto t = this->operator*();
-    auto o = this->operator*();
-
-    // equal pointers - same node.
-    if (t == o) {
-      return true;
-    }
-
-    // if one of pointers is nullptr and other one is not.
-    if (!t || !o) {
-      return false;
-    }
-
-    return t->getHostInfo() == o->getHostInfo();
-  }
-
-  template <NodeIterator I>
-  bool operator!=(const I& o) const {
-    return !this->operator==(o);
-  }
-
- private:
-  std::shared_ptr<RingNode> node;
-};
-
-class RingReverseIterator final {
- public:
-  explicit RingReverseIterator(std::shared_ptr<RingNode> node)
-      : node{std::move(node)} {}
-
-  ~RingReverseIterator() = default;
-
-  RingReverseIterator(const RingReverseIterator&) = default;
-  RingReverseIterator& operator=(const RingReverseIterator&) = default;
-
-  RingReverseIterator(RingReverseIterator&&) = default;
-  RingReverseIterator& operator=(RingReverseIterator&&) = default;
-
-  std::shared_ptr<Node> operator*() const noexcept { return node; }
-
-  RingReverseIterator& operator++() {
-    if (node) {
-      node = node->getPreviousNode();
-    }
-    return *this;
-  }
-
-  RingReverseIterator& operator--() {
-    if (node) {
-      node = node->getNextNode();
     }
     return *this;
   }
