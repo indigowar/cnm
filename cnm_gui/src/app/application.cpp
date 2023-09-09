@@ -18,7 +18,7 @@ void Application::init() {
   auto demo_scene = std::make_shared<DemoScene>();
   scene_manager->add(demo_scene);
 
-  scene_manager->setNextScene(demo_scene->getName());
+  scene_manager->setNextScene(main_scene->getName());
 }
 
 const std::string& Application::getName() const noexcept { return name; }
