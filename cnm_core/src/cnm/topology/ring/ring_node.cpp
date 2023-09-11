@@ -73,7 +73,9 @@ void RingNode::stop() { machine->stop(); }
 void RingNode::invoke() { machine->invoke(); }
 void RingNode::freeze() { machine->freeze(); }
 
-void RingNode::serve(std::unique_ptr<ServerContext>&&) {}
+void RingNode::serve(std::unique_ptr<ServerContext>&& ctx) {
+  machine->serve(std::move(ctx));
+}
 
 std::string_view RingNode::getType() const noexcept {
   return machine->getType();
