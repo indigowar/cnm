@@ -12,6 +12,8 @@ class MockNode : public Cnm::Node {
   MOCK_METHOD(void, setHostInfo, (Cnm::HostInfo), (override));
 
   MOCK_METHOD(bool, isServing, (), (const, noexcept, override));
+  MOCK_METHOD(bool, isBusy, (), (const, noexcept, override));
+
   MOCK_METHOD(std::vector<std::shared_ptr<Cnm::Node>>, getConnectedNodes, (),
               (const, noexcept, override));
   MOCK_METHOD(void, serve, (std::unique_ptr<Cnm::ServerContext>&&), (override));

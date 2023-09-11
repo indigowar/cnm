@@ -29,6 +29,8 @@ class Node : public Object {
 
   [[nodiscard]] virtual bool isServing() const noexcept = 0;
 
+  [[nodiscard]] virtual bool isBusy() const noexcept = 0;
+
   [[nodiscard]] virtual std::vector<std::shared_ptr<Node>> getConnectedNodes()
       const noexcept = 0;
 
