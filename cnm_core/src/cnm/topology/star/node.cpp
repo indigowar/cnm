@@ -1,9 +1,9 @@
-#include "star_node.hpp"
+#include "node.hpp"
 
 #include "cnm/connection/server_ctx.hpp"
 #include "cnm/machine/host_info.hpp"
 #include "cnm/machine/machine.hpp"
-#include "cnm/topology/star/star_hub.hpp"
+#include "cnm/topology/star/hub.hpp"
 
 namespace Cnm::Star {
 

@@ -3,7 +3,7 @@
 #include <ranges>
 
 #include "cnm/topology/ring/communicator.hpp"
-#include "cnm/topology/ring/ring_iterator.hpp"
+#include "cnm/topology/ring/iterator.hpp"
 
 namespace Cnm::Ring {
 

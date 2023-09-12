@@ -4,8 +4,8 @@
 #include <map>
 
 #include "cnm/topology/base/topology.hpp"
+#include "cnm/topology/ring/iterator.hpp"
 #include "cnm/topology/ring/node.hpp"
-#include "cnm/topology/ring/ring_iterator.hpp"
 
 namespace Cnm::Ring {
 
