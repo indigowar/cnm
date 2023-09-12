@@ -2,7 +2,7 @@
 #define HPP_CNM_CORE_TOPOLOGY_RING_RING_ITERATOR_HPP
 
 #include "cnm/topology/base/node_iterator.hpp"
-#include "cnm/topology/ring/ring_node.hpp"
+#include "cnm/topology/ring/node.hpp"
 
 namespace Cnm::Ring {
 

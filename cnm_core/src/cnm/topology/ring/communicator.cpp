@@ -1,4 +1,4 @@
-#include "ring_communicator.hpp"
+#include "communicator.hpp"
 
 #include <memory>
 #include <ranges>
@@ -6,7 +6,7 @@
 #include "cnm/connection/client_ctx.hpp"
 #include "cnm/connection/connection.hpp"
 #include "cnm/topology/base/node.hpp"
-#include "cnm/topology/ring/ring_node.hpp"
+#include "cnm/topology/ring/node.hpp"
 #include "cnm/utils/result.hpp"
 #include "spdlog/common.h"
 

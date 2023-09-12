@@ -2,7 +2,7 @@
 
 #include <ranges>
 
-#include "cnm/topology/ring/ring_communicator.hpp"
+#include "cnm/topology/ring/communicator.hpp"
 #include "cnm/topology/ring/ring_iterator.hpp"
 
 namespace Cnm::Ring {
