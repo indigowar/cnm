@@ -5,12 +5,13 @@
 #include "cnm/topology/base/node.hpp"
 #include "cnm/topology/star/star_node.hpp"
 
-namespace Cnm {
+namespace Cnm::Star {
 
-class Hub final : public Node {
+class Hub final : public Cnm::Node {
  public:
+  std::unique_ptr<Cnm::Communicator> createCommunicator() { return nullptr; }
 };
 
-}  // namespace Cnm
+}  // namespace Cnm::Star
 
 #endif  // HPP_CNM_CORE_TOPOLOGY_STAR_HUB_HPP

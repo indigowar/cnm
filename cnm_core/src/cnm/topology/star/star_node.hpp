@@ -7,21 +7,21 @@
 #include "cnm/machine/machine.hpp"
 #include "cnm/topology/base/node.hpp"
 
-namespace Cnm {
+namespace Cnm::Star {
 
 class Hub;
 
-class StarNode final : public Node {
+class Node final : public Cnm::Node {
  public:
-  StarNode(HostInfo, std::unique_ptr<Machine>&&, const std::shared_ptr<Hub>&);
+  Node(HostInfo, std::unique_ptr<Machine>&&, const std::shared_ptr<Hub>&);
 
-  ~StarNode() override;
+  ~Node() override;
 
   [[nodiscard]] HostInfo getHostInfo() const noexcept override;
 
   void setHostInfo(HostInfo) override;
 
-  std::vector<std::shared_ptr<Node>> getConnectedNodes()
+  std::vector<std::shared_ptr<Cnm::Node>> getConnectedNodes()
       const noexcept override;
 
   bool isServing() const noexcept override;
@@ -53,6 +53,6 @@ class StarNode final : public Node {
   std::set<Cnm::Connections::ConnectionNode*> connection_nodes;
 };
 
-}  // namespace Cnm
+}  // namespace Cnm::Star
 
 #endif  // HPP_CNM_CORE_TOPOLOGY_STAR_STAR_NODE_HPP
