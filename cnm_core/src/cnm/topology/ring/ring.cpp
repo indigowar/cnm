@@ -5,7 +5,7 @@
 #include "cnm/topology/ring/ring_communicator.hpp"
 #include "cnm/topology/ring/ring_iterator.hpp"
 
-namespace Cnm {
+namespace Cnm::Ring {
 
 void Ring::start() {
   signalNodes([](auto i) { i->start(); });
@@ -77,8 +77,8 @@ result_t<HostInfo> Ring::createNode(HostInfo host_info,
   if (nodes.contains(host_info.getAddress())) {
     return result_t<HostInfo>::Err("given address is already in use.");
   }
-  auto node = std::make_shared<RingNode>(
-      host_info, std::move(machine), std::make_unique<RingCommunicator>(this));
+  auto node = std::make_shared<Node>(host_info, std::move(machine),
+                                     std::make_unique<Communicator>(this));
   nodes.emplace(node->getHostInfo().getAddress(), node);
 
   return result_t<HostInfo>::Ok(node->getHostInfo());
@@ -100,13 +100,13 @@ result_t<bool> Ring::validate() const noexcept {
   return result_t<bool>::Ok(found.size() == nodes.size());
 }
 
-RingIterator Ring::begin() { return RingIterator(nodes.begin()->second); }
+Iterator Ring::begin() { return Iterator(nodes.begin()->second); }
 
-RingIterator Ring::end() { return RingIterator(nullptr); }
+Iterator Ring::end() { return Iterator(nullptr); }
 
-void Ring::signalNodes(std::function<void(std::shared_ptr<RingNode>&)> func) {
+void Ring::signalNodes(std::function<void(std::shared_ptr<Node>&)> func) {
   auto only_nodes = nodes | std::views::values;
   std::for_each(only_nodes.begin(), only_nodes.end(), func);
 }
 
-}  // namespace Cnm
+}  // namespace Cnm::Ring

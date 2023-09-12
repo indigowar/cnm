@@ -7,14 +7,13 @@
 #include "cnm/topology/ring/ring_iterator.hpp"
 #include "cnm/topology/ring/ring_node.hpp"
 
-namespace Cnm {
+namespace Cnm::Ring {
 
 class Ring final : public Topology {
  public:
-  // TODO: add the proper constructor.
   Ring() = default;
 
-  ~Ring() override;
+  ~Ring() = default;
 
   void start() override;
 
@@ -40,23 +39,23 @@ class Ring final : public Topology {
 
   std::string_view getType() const noexcept override { return "Ring"; }
 
-  [[nodiscard]] RingIterator begin();
-  [[nodiscard]] RingIterator end();
+  [[nodiscard]] Iterator begin();
+  [[nodiscard]] Iterator end();
 
  private:
-  friend class RingCommunicator;
+  friend class Communicator;
 
   result_t<HostInfo> createNode(HostInfo, std::unique_ptr<Machine>&&);
 
   HostInfo generateHostInfo(std::string_view name);
 
-  void signalNodes(std::function<void(std::shared_ptr<RingNode>&)>);
+  void signalNodes(std::function<void(std::shared_ptr<Node>&)>);
 
-  std::map<std::string, std::shared_ptr<RingNode>> nodes;
+  std::map<std::string, std::shared_ptr<Node>> nodes;
 
   mutable std::mutex mutex;
 };
 
-}  // namespace Cnm
+}  // namespace Cnm::Ring
 
 #endif  // HPP_CNM_CORE_TOPOLOGY_RING_RING_HPP

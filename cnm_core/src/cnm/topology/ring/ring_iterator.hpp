@@ -4,32 +4,31 @@
 #include "cnm/topology/base/node_iterator.hpp"
 #include "cnm/topology/ring/ring_node.hpp"
 
-namespace Cnm {
+namespace Cnm::Ring {
 
-// RingIterator - is an iterator for Ring topology.
-class RingIterator final {
+// Ring::Iterator - is an iterator for Ring topology.
+class Iterator final {
  public:
-  explicit RingIterator(std::shared_ptr<RingNode> node)
-      : node{std::move(node)} {}
+  explicit Iterator(std::shared_ptr<Node> node) : node{std::move(node)} {}
 
-  ~RingIterator() = default;
+  ~Iterator() = default;
 
-  RingIterator(const RingIterator&) = default;
-  RingIterator& operator=(const RingIterator&) = default;
+  Iterator(const Iterator&) = default;
+  Iterator& operator=(const Iterator&) = default;
 
-  RingIterator(RingIterator&&) = default;
-  RingIterator& operator=(RingIterator&&) = default;
+  Iterator(Iterator&&) = default;
+  Iterator& operator=(Iterator&&) = default;
 
-  std::shared_ptr<RingNode> operator*() const noexcept { return node; }
+  std::shared_ptr<Node> operator*() const noexcept { return node; }
 
-  RingIterator& operator++() {
+  Iterator& operator++() {
     if (node) {
       node = node->getNextNode();
     }
     return *this;
   }
 
-  RingIterator& operator--() {
+  Iterator& operator--() {
     if (node) {
       node = node->getPreviousNode();
     }
@@ -60,9 +59,9 @@ class RingIterator final {
   }
 
  private:
-  std::shared_ptr<RingNode> node;
+  std::shared_ptr<Node> node;
 };
 
-}  // namespace Cnm
+}  // namespace Cnm::Ring
 
 #endif  // HPP_CNM_CORE_TOPOLOGY_RING_RING_ITERATOR_HPP

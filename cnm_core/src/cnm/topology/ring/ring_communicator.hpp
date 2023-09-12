@@ -7,13 +7,13 @@
 #include "cnm/machine/server/server.hpp"
 #include "cnm/topology/ring/ring.hpp"
 
-namespace Cnm {
+namespace Cnm::Ring {
 
-class RingCommunicator final : public Communicator {
+class Communicator final : public Cnm::Communicator {
  public:
-  explicit RingCommunicator(Ring* ring);
+  explicit Communicator(Ring* ring);
 
-  void setNode(std::shared_ptr<Node>) override;
+  void setNode(std::shared_ptr<Cnm::Node>) override;
 
   std::vector<HostInfo> getOfficeEquipments(
       bool filter_unavailable = false) override {
@@ -36,13 +36,13 @@ class RingCommunicator final : public Communicator {
   std::vector<HostInfo> getSpecificType(std::string_view type,
                                         bool filteR_unavailable = false);
 
-  result_t<std::vector<std::shared_ptr<RingNode>>> findShortestPath(
+  result_t<std::vector<std::shared_ptr<Node>>> findShortestPath(
       const std::string& from, const std::string& to);
 
   Ring* ring;
-  std::shared_ptr<Node> node;
+  std::shared_ptr<Cnm::Node> node;
 };
 
-}  // namespace Cnm
+}  // namespace Cnm::Ring
 
 #endif  // HPP_CNM_CORE_TOPOLOGY_RING_RING_COMMUNICATOR_HPP

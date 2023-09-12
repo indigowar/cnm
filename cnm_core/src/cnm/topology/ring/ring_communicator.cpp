@@ -10,12 +10,12 @@
 #include "cnm/utils/result.hpp"
 #include "spdlog/common.h"
 
-namespace Cnm {
+namespace Cnm::Ring {
 
-RingCommunicator::RingCommunicator(Ring* ring) : ring{ring} {}
+Communicator::Communicator(Ring* ring) : ring{ring} {}
 
-std::vector<HostInfo> RingCommunicator::getSpecificType(
-    std::string_view type, bool filter_unavailable) {
+std::vector<HostInfo> Communicator::getSpecificType(std::string_view type,
+                                                    bool filter_unavailable) {
   std::unique_lock lock(ring->mutex);
 
   std::vector<HostInfo> result{};
@@ -31,7 +31,7 @@ std::vector<HostInfo> RingCommunicator::getSpecificType(
   return result;
 }
 
-void RingCommunicator::disconnect(HostInfo host_info) {
+void Communicator::disconnect(HostInfo host_info) {
   std::unique_lock lock(ring->mutex);
 
   if (!ring->nodes.contains(host_info.getAddress())) {
@@ -49,14 +49,13 @@ void RingCommunicator::disconnect(HostInfo host_info) {
   ring->nodes.erase(host_info.getAddress());
 }
 
-void RingCommunicator::setNode(std::shared_ptr<Node> n) {
+void Communicator::setNode(std::shared_ptr<Cnm::Node> n) {
   this->node = std::move(n);
 }
 
-result_t<std::vector<std::shared_ptr<RingNode>>>
-RingCommunicator::findShortestPath(const std::string& from,
-                                   const std::string& to) {
-  using ResultType = std::vector<std::shared_ptr<RingNode>>;
+result_t<std::vector<std::shared_ptr<Node>>> Communicator::findShortestPath(
+    const std::string& from, const std::string& to) {
+  using ResultType = std::vector<std::shared_ptr<Node>>;
 
   if (!ring->nodes.contains(from)) {
     return result_t<ResultType>::Err(
@@ -72,9 +71,8 @@ RingCommunicator::findShortestPath(const std::string& from,
   auto end = ring->nodes.at(to);
 
   ResultType next_path{};
-  for (auto it = ++RingIterator(start);
-       (*it)->getHostInfo().getAddress() != from &&
-       (*it)->getHostInfo().getAddress() != to;
+  for (auto it = ++Iterator(start); (*it)->getHostInfo().getAddress() != from &&
+                                    (*it)->getHostInfo().getAddress() != to;
        ++it) {
     next_path.emplace_back(*it);
   }
@@ -85,9 +83,8 @@ RingCommunicator::findShortestPath(const std::string& from,
   }
 
   ResultType back_path{};
-  for (auto it = --RingIterator(start);
-       (*it)->getHostInfo().getAddress() != from &&
-       (*it)->getHostInfo().getAddress() != to;
+  for (auto it = --Iterator(start); (*it)->getHostInfo().getAddress() != from &&
+                                    (*it)->getHostInfo().getAddress() != to;
        ++it) {
     back_path.emplace_back(*it);
   }
@@ -96,7 +93,7 @@ RingCommunicator::findShortestPath(const std::string& from,
       std::move(next_path.size() > back_path.size() ? next_path : back_path));
 }
 
-result_t<ClientCtx> RingCommunicator::makeConnection(std::string address) {
+result_t<ClientCtx> Communicator::makeConnection(std::string address) {
   auto path_result =
       findShortestPath(this->node->getHostInfo().getAddress(), address);
 
@@ -122,4 +119,4 @@ result_t<ClientCtx> RingCommunicator::makeConnection(std::string address) {
   return conn.createClientContext();
 }
 
-}  // namespace Cnm
+}  // namespace Cnm::Ring

@@ -9,33 +9,32 @@
 #include "cnm/machine/machine.hpp"
 #include "cnm/topology/base/node.hpp"
 
-namespace Cnm {
+namespace Cnm::Ring {
 
-class RingNode final : public Node {
+class Node final : public Cnm::Node {
  public:
-  RingNode(HostInfo, std::unique_ptr<Machine>&&,
-           std::unique_ptr<Communicator>&&);
+  Node(HostInfo, std::unique_ptr<Machine>&&, std::unique_ptr<Communicator>&&);
 
-  ~RingNode() override;
+  ~Node() override;
 
   [[nodiscard]] HostInfo getHostInfo() const noexcept override;
 
   void setHostInfo(HostInfo) override;
 
-  std::vector<std::shared_ptr<Node>> getConnectedNodes()
+  std::vector<std::shared_ptr<Cnm::Node>> getConnectedNodes()
       const noexcept override;
 
   bool isServing() const noexcept override;
 
-  bool isBusy() const noexcept;
+  bool isBusy() const noexcept override;
 
-  [[nodiscard]] std::shared_ptr<RingNode> getPreviousNode() const noexcept;
+  [[nodiscard]] std::shared_ptr<Node> getPreviousNode() const noexcept;
 
-  void setPreviousNode(std::shared_ptr<RingNode>);
+  void setPreviousNode(std::shared_ptr<Node>);
 
-  [[nodiscard]] std::shared_ptr<RingNode> getNextNode() const noexcept;
+  [[nodiscard]] std::shared_ptr<Node> getNextNode() const noexcept;
 
-  void setNextNode(std::shared_ptr<RingNode>);
+  void setNextNode(std::shared_ptr<Node>);
 
   void start() override;
   void stop() override;
@@ -53,8 +52,8 @@ class RingNode final : public Node {
   std::vector<ConnectionInfo> getConnections() const noexcept override;
 
  private:
-  std::shared_ptr<RingNode> previous_node;
-  std::shared_ptr<RingNode> next_node;
+  std::shared_ptr<Node> previous_node;
+  std::shared_ptr<Node> next_node;
 
   std::unique_ptr<Machine> machine;
 
@@ -63,6 +62,6 @@ class RingNode final : public Node {
   std::set<Cnm::Connections::ConnectionNode*> connection_nodes;
 };
 
-}  // namespace Cnm
+}  // namespace Cnm::Ring
 
 #endif  // HPP_CNM_CORE_TOPOLOGY_RING_RING_NODE_HPP
