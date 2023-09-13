@@ -85,6 +85,8 @@ result_t<HostInfo> Ring::createNode(HostInfo host_info,
 }
 
 result_t<bool> Ring::validate() const noexcept {
+  std::unique_lock lock(mutex);
+
   std::set<std::string> found{};
 
   auto node = nodes.begin()->second;
