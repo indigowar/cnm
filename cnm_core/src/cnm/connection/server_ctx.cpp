@@ -28,6 +28,8 @@ std::future<result_t<MessageBatch>> ServerContext::acceptRequest() {
         "requesting stage of connection is already passed."));
     return promise.get_future();
   }
+
+  // TODO: add the impl for ServerContext::acceptRequest.
 }
 
 void ServerContext::abort() { server_node->abort(); }
