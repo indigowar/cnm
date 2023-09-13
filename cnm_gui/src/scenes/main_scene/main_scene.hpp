@@ -1,0 +1,39 @@
+#ifndef HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
+#define HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
+
+#include <memory>
+
+#include "lib/menu/menu.hpp"
+#include "lib/scenes/exiter.hpp"
+#include "lib/scenes/scene.hpp"
+#include "lib/scenes/switcher.hpp"
+
+class MainScene final : public Scenes::Scene {
+ public:
+  MainScene(Scenes::Switcher* switcher = nullptr,
+            Scenes::Exiter* exitter = nullptr);
+  void start() override;
+
+  void update() override;
+
+  void render() override;
+
+  void postRender() override;
+
+  void cleanup() override;
+
+  void freeze() override;
+
+  void invoke() override;
+
+ private:
+  void renderEditor();
+
+  void renderProperties();
+
+  Menu::Menu makeMenuBar();
+
+  std::unique_ptr<Menu::Menu> menu;
+};
+
+#endif  // HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
