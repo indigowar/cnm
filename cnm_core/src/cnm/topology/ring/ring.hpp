@@ -49,7 +49,7 @@ class Ring final : public Topology {
 
   result_t<HostInfo> createNode(HostInfo, std::unique_ptr<Machine>&&);
 
-  HostInfo generateHostInfo(std::string_view name);
+  HostInfo generateHostInfo(std::string name);
 
   void signalNodes(std::function<void(std::shared_ptr<Node>&)>);
 

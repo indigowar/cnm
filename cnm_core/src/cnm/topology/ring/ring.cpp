@@ -25,7 +25,7 @@ void Ring::freeze() {
 
 result_t<HostInfo> Ring::addMachine(std::unique_ptr<Machine>&& machine) {
   std::unique_lock lock(mutex);
-  auto info = generateHostInfo(machine->getType());
+  auto info = generateHostInfo(std::string(machine->getType()));
   return createNode(info, std::move(machine));
 }
 
@@ -45,7 +45,7 @@ result_t<HostInfo> Ring::addMachineWithAddress(
 result_t<HostInfo> Ring::addMachineWithName(std::unique_ptr<Machine>&& machine,
                                             std::string_view name) {
   std::unique_lock lock(mutex);
-  auto host_info = generateHostInfo(name);
+  auto host_info = generateHostInfo(std::string(name));
   return createNode(host_info, std::move(machine));
 }
 
@@ -109,6 +109,14 @@ Iterator Ring::end() { return Iterator(nullptr); }
 void Ring::signalNodes(std::function<void(std::shared_ptr<Node>&)> func) {
   auto only_nodes = nodes | std::views::values;
   std::for_each(only_nodes.begin(), only_nodes.end(), func);
+}
+
+HostInfo Ring::generateHostInfo(std::string name) {
+  HostInfo hi{};
+  do {
+    hi = HostInfo::generate(name);
+  } while (!nodes.contains(hi.getAddress()));
+  return hi;
 }
 
 }  // namespace Cnm::Ring
