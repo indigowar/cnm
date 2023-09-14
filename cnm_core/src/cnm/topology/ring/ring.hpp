@@ -9,6 +9,8 @@
 
 namespace Cnm::Ring {
 
+class Communicator;
+
 class Ring final : public Topology {
  public:
   Ring() = default;
@@ -43,7 +45,7 @@ class Ring final : public Topology {
   [[nodiscard]] Iterator end();
 
  private:
-  friend class Communicator;
+  friend class Cnm::Ring::Communicator;
 
   result_t<HostInfo> createNode(HostInfo, std::unique_ptr<Machine>&&);
 
