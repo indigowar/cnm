@@ -42,17 +42,23 @@ void Node::serve(ServerCtx&& ctx) { machine->serve(std::move(ctx)); }
 std::string_view Node::getType() const noexcept { return machine->getType(); }
 
 void Node::attachConnectionNode(Connections::ConnectionNode* ptr) {
+  std::unique_lock lock(mutex);
+
   if (!connection_nodes.contains(ptr)) {
     connection_nodes.emplace(ptr);
   }
 }
 void Node::detachConnectionNode(Connections::ConnectionNode* ptr) {
+  std::unique_lock lock(mutex);
+
   if (connection_nodes.contains(ptr)) {
     connection_nodes.erase(ptr);
   }
 }
 
 std::vector<ConnectionInfo> Node::getConnections() const noexcept {
+  std::unique_lock lock(mutex);
+
   std::vector<ConnectionInfo> result{};
   std::transform(connection_nodes.begin(), connection_nodes.end(),
                  std::back_inserter(result),
