@@ -1,6 +1,9 @@
 # This file fetches all requirements for Dear ImGUI library.
+if(WIN32)
+  set(ENV{VULKAN_SDK} "C:\\VulkanSDK\\1.3.261.1")
+endif()
 
-find_package(Vulkan REQUIRED FATAL_ERROR)
+find_package(Vulkan REQUIRED)
 
 FetchContent_Declare(
   glad
