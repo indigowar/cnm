@@ -27,6 +27,8 @@ class Node final : public Cnm::Node {
 
   HostInfo getHostInfo() const noexcept override;
 
+  void setHostInfo(HostInfo) override;
+
   bool isServing() const noexcept override;
 
   bool isBusy() const noexcept override;

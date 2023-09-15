@@ -23,6 +23,8 @@ void Node::freeze() { machine->freeze(); }
 
 HostInfo Node::getHostInfo() const noexcept { return machine->getHostInfo(); }
 
+void Node::setHostInfo(Cnm::HostInfo info) { machine->setHostInfo(info); }
+
 bool Node::isServing() const noexcept {
   return machine->getCurrentServingAmount() > 0;
 }
