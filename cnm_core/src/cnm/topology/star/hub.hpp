@@ -13,9 +13,11 @@ class Node;
 
 class Communicator;
 
+class Star;
+
 class Hub final : public Cnm::Node {
  public:
-  explicit Hub(HostInfo);
+  explicit Hub(Star *, HostInfo);
 
   ~Hub() override = default;
 
@@ -48,24 +50,26 @@ class Hub final : public Cnm::Node {
 
   void detachConnectionNode(Connections::ConnectionNode *node) override;
 
-  std::unique_ptr<Communicator> createCommunicator();
+  std::unique_ptr<Cnm::Communicator> createCommunicator();
 
   result_t<HostInfo> addMachine(std::unique_ptr<Machine> &&, HostInfo);
 
   result_t<bool> deleteMachine(HostInfo);
 
-  std::set<std::shared_ptr<Star::Node>>::iterator begin() {
-    return nodes.begin();
-  }
+  std::set<std::shared_ptr<Node>>::iterator begin() { return nodes.begin(); }
 
-  std::set<std::shared_ptr<Star::Node>>::iterator end() { return nodes.end(); }
+  std::set<std::shared_ptr<Node>>::iterator end() { return nodes.end(); }
+
+  [[nodiscard]] size_t getSpeed() const noexcept { return 1000; }
 
  private:
   friend class Communicator;
 
   HostInfo host_info;
 
-  std::set<std::shared_ptr<Star::Node>> nodes;
+  Star *star;
+
+  std::set<std::shared_ptr<Node>> nodes;
 
   std::set<Connections::ConnectionNode *> connection_nodes;
 

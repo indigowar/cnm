@@ -3,10 +3,11 @@
 #include "cnm/topology/base/node.hpp"
 #include "cnm/topology/star/communicator.hpp"
 #include "cnm/topology/star/node.hpp"
+#include "cnm/topology/star/star.hpp"
 
 namespace Cnm::Star {
 
-Hub::Hub(Cnm::HostInfo hi) : host_info(std::move(hi)) {}
+Hub::Hub(Star *star, Cnm::HostInfo hi) : host_info(std::move(hi)), star{star} {}
 
 void Hub::start() {}
 
@@ -69,9 +70,8 @@ std::vector<ConnectionInfo> Hub::getConnections() const noexcept {
   return result;
 }
 
-std::unique_ptr<Communicator> Hub::createCommunicator() {
-  // TODO: Add here a creation of Cnm::Star::Communicator.
-  return nullptr;
+std::unique_ptr<Cnm::Communicator> Hub::createCommunicator() {
+  return std::make_unique<Communicator>(this);
 }
 
 result_t<HostInfo> Hub::addMachine(std::unique_ptr<Machine> &&machine,
@@ -86,9 +86,8 @@ result_t<HostInfo> Hub::addMachine(std::unique_ptr<Machine> &&machine,
     return result_t<HostInfo>::Err("node with given host info already exists.");
   }
 
-  // TODO: replace this with given the star->hub member.
-  auto node =
-      std::make_shared<Star::Node>(host_info, std::move(machine), nullptr);
+  auto node = std::make_shared<Cnm::Star::Node>(host_info, std::move(machine),
+                                                star->getHub());
 
   nodes.emplace(node);
 

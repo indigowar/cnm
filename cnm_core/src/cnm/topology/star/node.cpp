@@ -2,13 +2,17 @@
 
 #include <utility>
 
+#include "cnm/topology/star/hub.hpp"
+
 namespace Cnm::Star {
 
 Node::Node(HostInfo hi, std::unique_ptr<Machine>&& m,
            const std::shared_ptr<Hub>& h)
     : machine(std::move(m)), hub(h) {
   machine->setHostInfo(std::move(hi));
-  // TODO: Star::Node::Node() set machine's communicator to the created by Hub.
+  auto c = h->createCommunicator();
+  c->setNode(this);
+  machine->setCommunicator(std::move(c));
 }
 
 Node::~Node() = default;
@@ -35,8 +39,7 @@ bool Node::isBusy() const noexcept {
 
 std::vector<std::shared_ptr<Cnm::Node>> Node::getConnectedNodes()
     const noexcept {
-  // TODO: make Star::Node::getConnectedNodes to return the Hub.
-  return {};
+  return {hub};
 }
 
 void Node::serve(ServerCtx&& ctx) { machine->serve(std::move(ctx)); }
