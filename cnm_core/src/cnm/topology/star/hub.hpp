@@ -66,6 +66,7 @@ class Hub final : public Cnm::Node {
   void forEachNode(std::function<void(std::shared_ptr<Node> &)>);
 
   friend class Communicator;
+  friend class Star;
 
   HostInfo host_info;
 
