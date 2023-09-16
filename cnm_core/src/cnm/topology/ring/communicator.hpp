@@ -13,7 +13,7 @@ class Communicator final : public Cnm::Communicator {
  public:
   explicit Communicator(Ring* ring);
 
-  void setNode(std::shared_ptr<Cnm::Node>) override;
+  void setNode(Cnm::Node*) override;
 
   std::vector<HostInfo> getOfficeEquipments(
       bool filter_unavailable = false) override {
@@ -40,7 +40,7 @@ class Communicator final : public Cnm::Communicator {
       const std::string& from, const std::string& to);
 
   Ring* ring;
-  std::shared_ptr<Cnm::Node> node;
+  Cnm::Node* node;
 };
 
 }  // namespace Cnm::Ring

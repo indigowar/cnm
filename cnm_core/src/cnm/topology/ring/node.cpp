@@ -8,6 +8,7 @@ Node::Node(Cnm::HostInfo host_info, std::unique_ptr<Machine>&& m,
            std::unique_ptr<Communicator>&& communicator)
     : machine{std::move(m)}, previous_node{}, next_node{} {
   machine->setHostInfo(host_info);
+  communicator->setNode(this);
   machine->setCommunicator(std::move(communicator));
 }
 

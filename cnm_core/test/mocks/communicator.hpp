@@ -6,6 +6,8 @@
 #include "cnm/machine/communicator.hpp"
 
 class MockCommunicator : public Cnm::Communicator {
+  MOCK_METHOD(void, setNode, (Cnm::Node*), (override));
+
   MOCK_METHOD(std::vector<Cnm::HostInfo>, getOfficeEquipments, (bool),
               (override));
 
