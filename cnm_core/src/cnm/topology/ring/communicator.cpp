@@ -49,9 +49,7 @@ void Communicator::disconnect(HostInfo host_info) {
   ring->nodes.erase(host_info.getAddress());
 }
 
-void Communicator::setNode(std::shared_ptr<Cnm::Node> n) {
-  this->node = std::move(n);
-}
+void Communicator::setNode(Cnm::Node* n) { this->node = n; }
 
 result_t<std::vector<std::shared_ptr<Node>>> Communicator::findShortestPath(
     const std::string& from, const std::string& to) {
