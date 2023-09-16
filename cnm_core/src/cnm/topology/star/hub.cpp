@@ -9,13 +9,25 @@ namespace Cnm::Star {
 
 Hub::Hub(Star *star, Cnm::HostInfo hi) : host_info(std::move(hi)), star{star} {}
 
-void Hub::start() {}
+void Hub::start() {
+  std::unique_lock lock(mutex);
+  forEachNode([](auto &i) { i->start(); });
+}
 
-void Hub::stop() {}
+void Hub::stop() {
+  std::unique_lock lock(mutex);
+  forEachNode([](auto &i) { i->stop(); });
+}
 
-void Hub::invoke() {}
+void Hub::invoke() {
+  std::unique_lock lock(mutex);
+  forEachNode([](auto &i) { i->invoke(); });
+}
 
-void Hub::freeze() {}
+void Hub::freeze() {
+  std::unique_lock lock(mutex);
+  forEachNode([](auto &i) { i->freeze(); });
+}
 
 HostInfo Hub::getHostInfo() const noexcept {
   std::unique_lock lock(mutex);
@@ -105,6 +117,11 @@ result_t<bool> Hub::deleteMachine(HostInfo hi) {
 
   nodes.erase(*it);
   return result_t<bool>::Ok(true);
+}
+
+void Hub::forEachNode(std::function<void(std::shared_ptr<Node> &)> func) {
+  std::for_each(nodes.begin(), nodes.end(),
+                [&func](std::shared_ptr<Node> i) { func(i); });
 }
 
 }  // namespace Cnm::Star

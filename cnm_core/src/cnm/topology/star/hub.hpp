@@ -63,6 +63,8 @@ class Hub final : public Cnm::Node {
   [[nodiscard]] size_t getSpeed() const noexcept { return 1000; }
 
  private:
+  void forEachNode(std::function<void(std::shared_ptr<Node> &)>);
+
   friend class Communicator;
 
   HostInfo host_info;
