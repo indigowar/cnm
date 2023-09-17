@@ -33,23 +33,6 @@ class Connection final : public Connections::Connection {
 
     sleep_wrapper = std::move(std::make_shared<Utils::SleepWrapper>());
 
-    // auto prev = begin;
-    // for (auto it = begin; it != end; it++) {
-    //   if (it == begin) {
-    //     client_node = std::make_shared<Connections::ClientNode>(*this, *it,
-    //                                                             sleep_wrapper);
-    //     prev = it;
-    //   } else if (it + 1 == end) {
-    //     server_node = std::make_shared<Connections::ServerNode>(
-    //         *this, *it, sleep_wrapper, prev);
-    //     (*prev)->setNextNode(server_node);
-    //   } else {
-    //     auto intermediate = std::make_shared<Connections::IntermediateNode>(
-    //         *this, *it, sleep_wrapper, prev);
-    //     (*prev)->setNextNode(intermediate);
-    //   }
-    // }
-
     client_node =
         std::make_shared<Connections::ClientNode>(*this, *begin, sleep_wrapper);
 
@@ -68,6 +51,10 @@ class Connection final : public Connections::Connection {
         std::make_shared<Connections::ServerNode>(*this, *it, sleep_wrapper);
     server_node->setPreviousNode(prev);
     prev->setNextNode(server_node);
+
+    speed = net_speed;
+    is_aborted = false;
+    current_direction = SendingDirection::ToServer;
   }
 
   ~Connection() override;
