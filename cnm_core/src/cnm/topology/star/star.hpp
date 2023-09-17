@@ -37,10 +37,15 @@ class Star final : public Topology {
 
   std::string_view getType() const noexcept override;
 
+  std::vector<std::shared_ptr<Cnm::Node>>::iterator  begin();
+  std::vector<std::shared_ptr<Cnm::Node>>::iterator  end();
+
  private:
   HostInfo generateFreeHostInfo(std::string name);
 
   std::shared_ptr<Hub> hub;
+
+  std::vector<std::shared_ptr<Cnm::Node>> nodes;
 };
 
 }  // namespace Cnm::Star
