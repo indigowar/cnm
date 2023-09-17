@@ -51,6 +51,10 @@ class Connection final : public Connections::Connection {
         std::make_shared<Connections::ServerNode>(*this, *it, sleep_wrapper);
     server_node->setPreviousNode(prev);
     prev->setNextNode(server_node);
+
+    speed = net_speed;
+    is_aborted = false;
+    current_direction = SendingDirection::ToServer;
   }
 
   ~Connection() override;
