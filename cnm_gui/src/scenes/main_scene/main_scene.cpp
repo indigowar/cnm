@@ -185,10 +185,10 @@ void MainScene::renderEditor() {
                        IM_COL32(200, 200, 200, 40));
   }
 
-  for (auto& i : *topology) {
-    renderNode(i);
-  }
-  renderNodeConnections(topology->getHub());
+  std::for_each(topology->begin(), topology->end(),
+                [](auto& i) { renderNode(i); });
+  std::for_each(topology->begin(), topology->end(),
+                [](auto& i) { renderNodeConnections(i); });
 
   ImGui::End();
 }
