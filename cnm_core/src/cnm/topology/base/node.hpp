@@ -2,6 +2,7 @@
 #define HPP_CNM_CORE_TOPOLOGY_BASE_NODE_HPP
 
 #include <memory>
+#include <sstream>
 #include <vector>
 
 #include "cnm/core/object.hpp"
@@ -20,6 +21,13 @@ class ConnectionNode;
 struct ConnectionInfo final {
   HostInfo client;
   HostInfo server;
+
+  std::string toString() const noexcept {
+    std::stringstream ss;
+    ss << client.getName() << "(" << client.getAddress() << ") - "
+       << server.getName() << "(" << server.getAddress() << ")";
+    return ss.str();
+  }
 };
 
 class Node : public Object {
