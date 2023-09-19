@@ -9,7 +9,8 @@ Server::Server(ServerLogic&& logic, size_t limit, HostInfo host_info,
     : Machine(Server::Type, limit, host_info, std::move(communicator)),
       thread_pool{},
       is_accepting{},
-      logic{logic} {}
+      logic{logic},
+      status{NotInitialized} {}
 
 Server::~Server() { stop(); }
 
@@ -31,6 +32,7 @@ void Server::start() {
 
   thread_pool = std::make_unique<Utils::ThreadPool>(getServingLimit());
   thread_pool->startThreads();
+  status = Status::Running;
 }
 
 void Server::stop() {
@@ -44,6 +46,8 @@ void Server::stop() {
   is_accepting = false;
   thread_pool->stopThreads();
   thread_pool.reset(nullptr);
+
+  status = Status::Dead;
 }
 
 void Server::invoke() {
@@ -59,6 +63,8 @@ void Server::invoke() {
         "Server::invoke() called when Server does accept requests already.");
     return;
   }
+
+  status = Status::Running;
 }
 
 void Server::freeze() {
@@ -76,6 +82,7 @@ void Server::freeze() {
   }
 
   is_accepting = false;
+  status = Status::Freezed;
 }
 
 size_t Server::getCurrentServingAmount() const noexcept {
@@ -99,5 +106,7 @@ void Server::addRequestToThreadPool(Cnm::ServerCtx&& ctx) {
   auto task = [this, &ctx] { logic.execute(std::move(ctx)); };
   thread_pool->enqueue(task);
 }
+
+Object::Status Server::getStatus() const noexcept { return status; }
 
 }  // namespace Cnm

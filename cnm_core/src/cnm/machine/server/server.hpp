@@ -23,6 +23,8 @@ class Server final : public Machine {
 
   void freeze() override;
 
+  Status getStatus() const noexcept override;
+
   size_t getCurrentServingAmount() const noexcept override;
 
   void serve(ServerCtx&&) override;
@@ -40,6 +42,8 @@ class Server final : public Machine {
 
   // ServerLogic object contains a custom logic for servers.
   ServerLogic logic;
+
+  Object::Status status;
 };
 
 }  // namespace Cnm
