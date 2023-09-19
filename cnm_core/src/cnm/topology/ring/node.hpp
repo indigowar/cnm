@@ -37,9 +37,16 @@ class Node final : public Cnm::Node {
   void setNextNode(std::shared_ptr<Node>);
 
   void start() override;
+
   void stop() override;
+
   void invoke() override;
+
   void freeze() override;
+
+  Object::Status getStatus() const noexcept override {
+    return machine->getStatus();
+  }
 
   void serve(std::unique_ptr<ServerContext>&&) override;
 

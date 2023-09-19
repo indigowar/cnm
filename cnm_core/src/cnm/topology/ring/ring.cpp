@@ -8,19 +8,32 @@
 namespace Cnm::Ring {
 
 void Ring::start() {
+  std::unique_lock lock(mutex);
+  status = Running;
   signalNodes([](auto i) { i->start(); });
 }
 
 void Ring::stop() {
+  std::unique_lock lock(mutex);
+  status = Dead;
   signalNodes([](auto i) { i->stop(); });
 }
 
 void Ring::invoke() {
+  std::unique_lock lock(mutex);
+  status = Running;
   signalNodes([](auto i) { i->invoke(); });
 }
 
 void Ring::freeze() {
+  std::unique_lock lock(mutex);
+  status = Freezed;
   signalNodes([](auto i) { i->freeze(); });
+}
+
+Object::Status Ring::getStatus() const noexcept {
+  std::unique_lock lock(mutex);
+  return status;
 }
 
 result_t<HostInfo> Ring::addMachine(std::unique_ptr<Machine>&& machine) {

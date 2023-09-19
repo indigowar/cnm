@@ -25,6 +25,8 @@ class Ring final : public Topology {
 
   void freeze() override;
 
+  Object::Status getStatus() const noexcept override;
+
   result_t<HostInfo> addMachine(std::unique_ptr<Machine>&&) override;
 
   result_t<HostInfo> addMachine(std::unique_ptr<Machine>&&, HostInfo) override;
@@ -54,6 +56,8 @@ class Ring final : public Topology {
   void signalNodes(std::function<void(std::shared_ptr<Node>&)>);
 
   std::map<std::string, std::shared_ptr<Node>> nodes;
+
+  Object::Status status;
 
   mutable std::mutex mutex;
 };
