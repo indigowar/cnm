@@ -10,7 +10,8 @@ PersonalComputer::PersonalComputer(Cnm::PersonalComputerLogic&& logic,
     : Machine(PersonalComputer::Type, 0, host_info, std::move(communicator)),
       logic(std::move(logic)),
       thread{},
-      continue_execution{} {}
+      continue_execution{},
+      status{NotInitialized} {}
 
 PersonalComputer::~PersonalComputer() { stop(); }
 
@@ -38,6 +39,8 @@ void PersonalComputer::start() {
 
   thread = std::make_unique<std::jthread>(
       [this](std::stop_token t) { threadRunner(std::move(t)); });
+
+  status = Running;
 }
 
 void PersonalComputer::stop() {
@@ -56,6 +59,8 @@ void PersonalComputer::stop() {
   if (thread->joinable()) {
     thread->join();
   }
+
+  status = Dead;
 }
 
 void PersonalComputer::invoke() {
@@ -74,12 +79,14 @@ void PersonalComputer::invoke() {
 
     continue_execution = true;
   }
+  status = Running;
   cond_var.notify_one();
 }
 
 void PersonalComputer::freeze() {
   auto lock = makeLock();
   continue_execution = false;
+  status = Freezed;
 }
 
 void PersonalComputer::threadRunner(std::stop_token stop_token) {
@@ -98,5 +105,7 @@ void PersonalComputer::threadRunner(std::stop_token stop_token) {
     }
   }
 }
+
+Object::Status PersonalComputer::getStatus() const noexcept { return status; }
 
 }  // namespace Cnm

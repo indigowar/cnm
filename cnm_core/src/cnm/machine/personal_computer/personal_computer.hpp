@@ -32,6 +32,8 @@ class PersonalComputer final : public Machine {
 
   void freeze() override;
 
+  Object::Status getStatus() const noexcept override;
+
   static constexpr std::string_view Type = "personal_computer";
 
  private:
@@ -42,6 +44,8 @@ class PersonalComputer final : public Machine {
   std::unique_ptr<std::jthread> thread;
   std::condition_variable cond_var;
   bool continue_execution;
+
+  Object::Status status;
 };
 
 }  // namespace Cnm
