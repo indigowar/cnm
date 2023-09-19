@@ -13,7 +13,8 @@ OfficeEquipment::OfficeEquipment(const OfficeEquipmentLogic& logic,
       logic(std::make_unique<OfficeEquipmentLogic>(logic)),
       is_accepting{},
       is_running{},
-      tasks{} {}
+      tasks{},
+      status{NotInitialized} {}
 
 OfficeEquipment::~OfficeEquipment() { stop(); }
 
@@ -34,6 +35,8 @@ void OfficeEquipment::start() {
   is_accepting = true;
   is_running = true;
 
+  status = Running;
+
   thread = std::make_unique<std::jthread>(
       [this](const std::stop_token& st) { threadFunction(st); });
 }
@@ -48,6 +51,7 @@ void OfficeEquipment::stop() {
 
   is_running = false;
   is_accepting = false;
+  status = Dead;
 
   thread->request_stop();
   thread.reset();
@@ -70,6 +74,8 @@ void OfficeEquipment::invoke() {
     is_running = true;
   }
 
+  status = Running;
+
   cond_var.notify_one();
 }
 
@@ -85,6 +91,8 @@ void OfficeEquipment::freeze() {
     spdlog::warn("OfficeEquipment::freeze(): called on the frozen thread.");
     return;
   }
+
+  status = Freezed;
 
   is_running = false;
 }

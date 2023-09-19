@@ -33,6 +33,8 @@ class OfficeEquipment final : public Machine {
 
   void freeze() override;
 
+  Object::Status getStatus() const noexcept override;
+
   size_t getCurrentServingAmount() const noexcept override;
 
   void serve(ServerCtx&& ctx) override;
@@ -55,6 +57,8 @@ class OfficeEquipment final : public Machine {
   std::unique_ptr<std::jthread> thread;
 
   std::unique_ptr<OfficeEquipmentLogic> logic;
+
+  Object::Status status;
 };
 
 }  // namespace Cnm
