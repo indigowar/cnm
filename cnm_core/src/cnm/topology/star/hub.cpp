@@ -7,25 +7,30 @@
 
 namespace Cnm::Star {
 
-Hub::Hub(Star *star, Cnm::HostInfo hi) : host_info(std::move(hi)), star{star} {}
+Hub::Hub(Star *star, Cnm::HostInfo hi)
+    : host_info(std::move(hi)), star{star}, status{NotInitialized} {}
 
 void Hub::start() {
   std::unique_lock lock(mutex);
+  status = Running;
   forEachNode([](auto &i) { i->start(); });
 }
 
 void Hub::stop() {
   std::unique_lock lock(mutex);
+  status = Dead;
   forEachNode([](auto &i) { i->stop(); });
 }
 
 void Hub::invoke() {
   std::unique_lock lock(mutex);
+  status = Running;
   forEachNode([](auto &i) { i->invoke(); });
 }
 
 void Hub::freeze() {
   std::unique_lock lock(mutex);
+  status = Freezed;
   forEachNode([](auto &i) { i->freeze(); });
 }
 
@@ -123,5 +128,7 @@ void Hub::forEachNode(std::function<void(std::shared_ptr<Node> &)> func) {
   std::for_each(nodes.begin(), nodes.end(),
                 [&func](std::shared_ptr<Node> i) { func(i); });
 }
+
+Object::Status Hub::getStatus() const noexcept { return status; }
 
 }  // namespace Cnm::Star

@@ -74,4 +74,6 @@ std::vector<ConnectionInfo> Node::getConnections() const noexcept {
   return result;
 }
 
+Object::Status Node::getStatus() const noexcept { return machine->getStatus(); }
+
 }  // namespace Cnm::Star

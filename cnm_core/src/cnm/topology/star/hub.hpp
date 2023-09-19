@@ -32,6 +32,8 @@ class Hub final : public Cnm::Node {
 
   void freeze() override;
 
+  Object::Status getStatus() const noexcept override;
+
   HostInfo getHostInfo() const noexcept override;
 
   void setHostInfo(HostInfo) override;
@@ -76,6 +78,8 @@ class Hub final : public Cnm::Node {
   std::set<std::shared_ptr<Node>> nodes;
 
   std::set<Connections::ConnectionNode *> connection_nodes;
+
+  Object::Status status;
 
   mutable std::mutex mutex;
 };

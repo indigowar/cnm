@@ -20,6 +20,10 @@ class Star final : public Topology {
 
   void freeze() override;
 
+  Object::Status getStatus() const noexcept override {
+    return hub->getStatus();
+  }
+
   result_t<HostInfo> addMachine(std::unique_ptr<Machine>&& ptr) override;
 
   result_t<HostInfo> addMachine(std::unique_ptr<Machine>&& ptr,

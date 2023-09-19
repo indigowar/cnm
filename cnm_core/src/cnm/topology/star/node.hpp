@@ -25,6 +25,8 @@ class Node final : public Cnm::Node {
 
   void freeze() override;
 
+  Object::Status getStatus() const noexcept override;
+
   HostInfo getHostInfo() const noexcept override;
 
   void setHostInfo(HostInfo) override;
