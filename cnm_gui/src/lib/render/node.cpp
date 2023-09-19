@@ -32,7 +32,7 @@ void forceWindowInsideParent(const ImGuiWindow* parent, ImGuiWindow* child) {
   child->Pos = child_pos;
 }
 
-void renderNode(std::shared_ptr<Cnm::Node>& node) {
+ImGuiWindow* renderNode(std::shared_ptr<Cnm::Node>& node) {
   auto name = makeNodeWindowName(node);
 
   ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
@@ -49,6 +49,7 @@ void renderNode(std::shared_ptr<Cnm::Node>& node) {
   }
 
   ImGui::End();
+  return this_window;
 }
 
 // calculateWindowCenter - calculates the center of the window based of it's
@@ -61,23 +62,27 @@ ImVec2 calculateWindowCenter(const ImGuiWindow* window) {
 
 // renderConnection - renders the connection between two windows with given
 // color.
-void renderConnection(const char* first_name, const char* second_name,
-                      ImGuiCol color) {
-  auto first = ImGui::FindWindowByName(first_name);
-  auto second = ImGui::FindWindowByName(second_name);
-
+void renderConnection(ImGuiWindow* first, ImGuiWindow* second, ImGuiCol color) {
   auto first_center = calculateWindowCenter(first);
   auto second_center = calculateWindowCenter(second);
 
   ImGui::GetWindowDrawList()->AddLine(first_center, second_center, color, 3.0f);
 }
 
-void renderNodeConnections(const std::shared_ptr<Cnm::Node>& node) {
-  auto connected_nodes = node->getConnectedNodes();
+// void renderNodeConnections(const std::shared_ptr<Cnm::Node>& node) {
+//   auto connected_nodes = node->getConnectedNodes();
+//
+//   for (const auto& i : connected_nodes) {
+//     renderConnection(makeNodeWindowName(node).c_str(),
+//                      makeNodeWindowName(i).c_str(), IM_COL32(255, 0, 0,
+//                      255));
+//   }
+// }
 
-  for (const auto& i : connected_nodes) {
-    renderConnection(makeNodeWindowName(node).c_str(),
-                     makeNodeWindowName(i).c_str(), IM_COL32(255, 0, 0, 255));
+void renderNodeConnections(
+    const std::vector<std::pair<ImGuiWindow*, ImGuiWindow*>>& cons) {
+  for (auto& [f, s] : cons) {
+    renderConnection(f, s, IM_COL32(255, 0, 0, 255));
   }
 }
 

@@ -3,9 +3,12 @@
 
 #include <cnm/topology/base/node.hpp>
 
-void renderNode(std::shared_ptr<Cnm::Node>&);
+class ImGuiWindow;
 
-void renderNodeConnections(const std::shared_ptr<Cnm::Node>&);
+ImGuiWindow* renderNode(std::shared_ptr<Cnm::Node>&);
+
+void renderNodeConnections(
+    const std::vector<std::pair<ImGuiWindow*, ImGuiWindow*>>& values);
 
 std::string makeNodeWindowName(const std::shared_ptr<Cnm::Node>&);
 

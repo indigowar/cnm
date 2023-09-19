@@ -7,6 +7,7 @@
 #include <cnm/machine/server/server.hpp>
 #include <string_view>
 
+#include "cnm/machine/personal_computer/personal_computer.hpp"
 #include "cnm/topology/base/node.hpp"
 #include "helpers/fps_window.hpp"
 #include "lib/render/node.hpp"
@@ -123,12 +124,21 @@ Menu::Menu MainScene::makeMenuBar() {
                       Menu::Item("Mesh", std::bind(test, "Topology", "Mesh")),
                   });
   auto machine = Menu::SubMenu(
-      "Machine", {
-                     Menu::Item("PC", std::bind(test, "Machine", "PC")),
-                     Menu::Item("Server", std::bind(test, "Machine", "Server")),
-                     Menu::Item("Office Equipment",
-                                std::bind(test, "Machine", "Office Equipment")),
-                 });
+      "Machine",
+      {
+          Menu::Item("PC",
+                     [this] {
+                       auto host_info = Cnm::HostInfo::generate("PC");
+                       auto machine = std::make_unique<Cnm::PersonalComputer>(
+                           Cnm::PersonalComputerLogic{}, host_info,
+                           topology->getHub()->createCommunicator());
+
+                       topology->addMachine(std::move(machine), host_info);
+                     }),
+          Menu::Item("Server", std::bind(test, "Machine", "Server")),
+          Menu::Item("Office Equipment",
+                     std::bind(test, "Machine", "Office Equipment")),
+      });
 
   auto test_menu = Menu::SubMenu(
       "Test",
@@ -185,10 +195,23 @@ void MainScene::renderEditor() {
                        IM_COL32(200, 200, 200, 40));
   }
 
-  std::for_each(topology->begin(), topology->end(),
-                [](auto& i) { renderNode(i); });
-  std::for_each(topology->begin(), topology->end(),
-                [](auto& i) { renderNodeConnections(i); });
+  {
+    auto lock = topology->makeLock();
+    std::shared_ptr<Cnm::Node> hub = topology->getHub();
+
+    std::vector<std::pair<ImGuiWindow*, ImGuiWindow*>> connections;
+
+    auto hub_window = renderNode(hub);
+
+    std::transform(topology->getHub()->begin(), topology->getHub()->end(),
+                   std::back_inserter(connections), [this, hub_window](auto i) {
+                     auto win = renderNode(i);
+                     return std::pair<ImGuiWindow*, ImGuiWindow*>(hub_window,
+                                                                  win);
+                   });
+
+    renderNodeConnections(connections);
+  }
 
   ImGui::End();
 }

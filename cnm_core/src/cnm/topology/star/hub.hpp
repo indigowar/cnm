@@ -1,6 +1,7 @@
 #ifndef HPP_CNM_CORE_TOPOLOGY_STAR_HUB_HPP
 #define HPP_CNM_CORE_TOPOLOGY_STAR_HUB_HPP
 
+#include <mutex>
 #include <set>
 #include <utility>
 
