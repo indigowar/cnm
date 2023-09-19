@@ -113,8 +113,10 @@ Menu::Menu MainScene::makeMenuBar() {
   };
   auto app = Menu::SubMenu(
       "Application", {
-                         Menu::Item("Start", std::bind(test, "App", "Start")),
-                         Menu::Item("Stop", std::bind(test, "App", "Stop")),
+                         Menu::Item("Start", [this] { topology->start(); }),
+                         Menu::Item("Stop", [this] { topology->stop(); }),
+                         Menu::Item("Invoke", [this] { topology->invoke(); }),
+                         Menu::Item("Freeze", [this] { topology->freeze(); }),
                          Menu::Item("Exit", std::bind(test, "App", "Exit")),
                      });
   auto topology_menu = Menu::SubMenu(

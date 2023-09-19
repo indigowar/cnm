@@ -5,6 +5,8 @@
 
 #include <sstream>
 
+#include "cnm/core/object.hpp"
+
 // forceWindowInsideParent - force the child to be inside the parent window.
 void forceWindowInsideParent(const ImGuiWindow* parent, ImGuiWindow* child) {
   auto child_pos = child->Pos;
@@ -35,12 +37,30 @@ void forceWindowInsideParent(const ImGuiWindow* parent, ImGuiWindow* child) {
 ImGuiWindow* renderNode(std::shared_ptr<Cnm::Node>& node) {
   auto name = makeNodeWindowName(node);
 
+  auto is_active = node->getStatus() == Cnm::Object::Status::Running;
+
+  ImGui::PushStyleColor(ImGuiCol_WindowBg,
+                        is_active ? ImVec4(0.0f, 0.0f, 0.0f, 1.0f)
+                                  : ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+
   ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
+
+  ImGui::PopStyleColor();
 
   auto this_window = ImGui::GetCurrentWindow();
   auto parent_window = ImGui::FindWindowByName("Editor");
 
   IM_ASSERT(parent_window != nullptr);
+
+  // list with connections
+  if (ImGui::BeginListBox("", ImVec2(100.0f, 50.0f))) {
+    for (auto i : node->getConnections()) {
+      if (ImGui::Selectable(i.toString().c_str())) {
+      }
+    }
+
+    ImGui::EndListBox();
+  }
 
   // On moving the window, checks if it goes out of Editor window.
   if (ImGui::IsWindowHovered() &&
