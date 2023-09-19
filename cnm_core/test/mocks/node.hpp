@@ -23,6 +23,8 @@ class MockNode : public Cnm::Node {
   MOCK_METHOD(void, invoke, (), (override));
   MOCK_METHOD(void, freeze, (), (override));
 
+  MOCK_METHOD(Cnm::Object::Status, getStatus, (), (const, noexcept, override));
+
   MOCK_METHOD(std::string_view, getType, (), (const, noexcept, override));
 
   MOCK_METHOD(void, attachConnectionNode, (Cnm::Connections::ConnectionNode*),
