@@ -1,6 +1,7 @@
 #ifndef HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
 #define HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
 
+#include <cnm/topology/star/star.hpp>
 #include <memory>
 
 #include "lib/menu/menu.hpp"
@@ -29,11 +30,11 @@ class MainScene final : public Scenes::Scene {
  private:
   void renderEditor();
 
-  void renderProperties();
-
   Menu::Menu makeMenuBar();
 
   std::unique_ptr<Menu::Menu> menu;
+
+  std::unique_ptr<Cnm::Star::Star> topology;
 };
 
 #endif  // HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP

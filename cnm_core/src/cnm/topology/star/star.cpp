@@ -23,7 +23,10 @@ result_t<Cnm::HostInfo> Star::addMachine(std::unique_ptr<Machine>&& m) {
 result_t<Cnm::HostInfo> Star::addMachine(std::unique_ptr<Machine>&& m,
                                          HostInfo info) {
   auto result = hub->addMachine(std::move(m), info);
-  nodes.emplace_back(*hub->nodes.rbegin());
+  {
+    auto lock = makeLock();
+    nodes.emplace_back(*hub->nodes.rbegin());
+  }
   return result;
 }
 
@@ -31,7 +34,10 @@ result_t<HostInfo> Star::addMachineWithName(std::unique_ptr<Machine>&& m,
                                             std::string_view name) {
   auto info = generateFreeHostInfo(std::string{name});
   auto result = hub->addMachine(std::move(m), info);
-  nodes.emplace_back(*hub->nodes.rbegin());
+  {
+    auto lock = makeLock();
+    nodes.emplace_back(*hub->nodes.rbegin());
+  }
   return result;
 }
 
@@ -39,13 +45,17 @@ result_t<Cnm::HostInfo> Star::addMachineWithAddress(
     std::unique_ptr<Machine>&& m, std::string_view address) {
   HostInfo info(std::string{m->getType()}, std::string{address});
   auto result = hub->addMachine(std::move(m), info);
-  nodes.emplace_back(*hub->nodes.rbegin());
+  {
+    auto lock = makeLock();
+    nodes.emplace_back(*hub->nodes.rbegin());
+  }
   return result;
 }
 
 result_t<bool> Star::deleteMachine(Cnm::HostInfo info) {
   auto result = hub->deleteMachine(info);
   if (result.isOk()) {
+    auto lock = makeLock();
     std::erase_if(nodes,
                   [&info](const auto& i) { return i->getHostInfo() == info; });
   }
@@ -71,7 +81,7 @@ result_t<bool> Star::validate() const noexcept {
 
 std::string_view Star::getType() const noexcept { return std::string_view(); }
 
-std::shared_ptr<Cnm::Star::Hub> Star::getHub() const noexcept { return hub; }
+std::shared_ptr<Cnm::Star::Hub> Star::getHub() noexcept { return hub; }
 
 HostInfo Star::generateFreeHostInfo(std::string name) {
   std::unique_lock lock(hub->mutex);
@@ -92,6 +102,10 @@ std::vector<std::shared_ptr<Cnm::Node>>::iterator Star::begin() {
 
 std::vector<std::shared_ptr<Cnm::Node>>::iterator Star::end() {
   return nodes.end();
+}
+
+std::unique_lock<std::mutex> Star::makeLock() const noexcept {
+  return std::unique_lock(mutex);
 }
 
 }  // namespace Cnm::Star

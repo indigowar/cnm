@@ -1,13 +1,16 @@
 #include "main_scene.hpp"
 
-#include <sstream>
+#include <imgui.h>
+#include <imgui_internal.h>
+#include <spdlog/spdlog.h>
+
+#include <cnm/machine/server/server.hpp>
 #include <string_view>
 
+#include "cnm/machine/personal_computer/personal_computer.hpp"
 #include "cnm/topology/base/node.hpp"
 #include "helpers/fps_window.hpp"
-#include "imgui.h"
-#include "imgui_internal.h"
-#include "spdlog/spdlog.h"
+#include "lib/render/node.hpp"
 
 MainScene::MainScene(Scenes::Switcher* switcher, Scenes::Exiter* exiter)
     : Scene("MainScene", switcher, exiter) {}
@@ -16,6 +19,23 @@ void MainScene::start() {
   spdlog::info("MainScene::start()");
 
   menu = std::make_unique<Menu::Menu>(makeMenuBar());
+
+  topology = std::make_unique<Cnm::Star::Star>();
+  {
+    auto server = std::make_unique<Cnm::Server>(
+        Cnm::ServerLogic{}, 10, Cnm::HostInfo("Server A", "123.44.50.255"),
+        nullptr);
+
+    topology->addMachine(std::move(server),
+                         Cnm::HostInfo("Server A", "123.44.50.255"));
+
+    server = std::make_unique<Cnm::Server>(
+        Cnm::ServerLogic{}, 10, Cnm::HostInfo("Server b", "23.122.51.255"),
+        nullptr);
+
+    topology->addMachine(std::move(server),
+                         Cnm::HostInfo("Server B", "23.122.51.255"));
+  }
 
   ImGui::StyleColorsDark();
 }
@@ -73,7 +93,6 @@ void MainScene::render() {
   ImGui::End();
 
   renderEditor();
-  renderProperties();
 }
 
 void MainScene::postRender() {}
@@ -92,105 +111,40 @@ Menu::Menu MainScene::makeMenuBar() {
   const static auto test = [](std::string_view first, std::string_view second) {
     spdlog::info("{}->{} clicked!", first, second);
   };
-
   auto app = Menu::SubMenu(
-      "Applicaition",
-      {Menu::Item("Exit", std::bind(test, "Application", "Close")),
-       Menu::Item("Clear", std::bind(test, "Application", "Clear"))});
-
-  auto view = Menu::SubMenu(
-      "View", {Menu::Item("Test", std::bind(test, "View", "Test"))});
-
-  auto topology = Menu::SubMenu(
-      "Topology", {Menu::Item("Ring", std::bind(test, "Topology", "Ring")),
-                   Menu::Item("Star", std::bind(test, "Topology", "Star")),
-                   Menu::Item("Mesh", std::bind(test, "Topology", "Mesh"))});
-
+      "Application", {
+                         Menu::Item("Start", std::bind(test, "App", "Start")),
+                         Menu::Item("Stop", std::bind(test, "App", "Stop")),
+                         Menu::Item("Exit", std::bind(test, "App", "Exit")),
+                     });
+  auto topology_menu = Menu::SubMenu(
+      "Topology", {
+                      Menu::Item("Ring", std::bind(test, "Topology", "Ring")),
+                      Menu::Item("Star", std::bind(test, "Topology", "Star")),
+                      Menu::Item("Mesh", std::bind(test, "Topology", "Mesh")),
+                  });
   auto machine = Menu::SubMenu(
-      "Machine", {Menu::Item("PC", std::bind(test, "Machine", "PC")),
-                  Menu::Item("Server", std::bind(test, "Machine", "Server")),
-                  Menu::Item("Office Equipment",
-                             std::bind(test, "Machine", "Office Equipment"))});
+      "Machine",
+      {
+          Menu::Item("PC",
+                     [this] {
+                       auto host_info = Cnm::HostInfo::generate("PC");
+                       auto machine = std::make_unique<Cnm::PersonalComputer>(
+                           Cnm::PersonalComputerLogic{}, host_info,
+                           topology->getHub()->createCommunicator());
 
-  return Menu::Menu({app, view, topology, machine});
-}
+                       topology->addMachine(std::move(machine), host_info);
+                     }),
+          Menu::Item("Server", std::bind(test, "Machine", "Server")),
+          Menu::Item("Office Equipment",
+                     std::bind(test, "Machine", "Office Equipment")),
+      });
 
-void keep_window_inside(ImGuiWindow*, ImGuiWindow*);
+  auto test_menu = Menu::SubMenu(
+      "Test",
+      {Menu::Item("Go to DEMO", [this] { this->setNextScene("demo"); })});
 
-void render_node(const std::string& name) {
-  ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
-
-  auto this_window = ImGui::GetCurrentWindow();
-  auto parent_window = ImGui::FindWindowByName("Editor");
-
-  IM_ASSERT(parent_window != nullptr);
-
-  // On moving the window, checks if it goes out of Editor window.
-  if (ImGui::IsWindowHovered() &&
-      ImGui::IsMouseDragging(ImGuiMouseButton_Left, -1.0f)) {
-    keep_window_inside(parent_window, this_window);
-  }
-
-  ImGui::End();
-}
-
-ImVec2 get_window_center(const ImGuiWindow* window) {
-  auto pos = window->Pos;
-  auto size = window->Size;
-  return {pos.x + (size.x / 2), pos.y + (size.y / 2)};
-}
-
-void draw_connection(ImDrawList* draw_list, const char* first_node_name,
-                     const char* second_node_name) {
-  auto first_node = ImGui::FindWindowByName(first_node_name);
-  auto second_node = ImGui::FindWindowByName(second_node_name);
-
-  auto first_center = get_window_center(first_node);
-  auto second_center = get_window_center(second_node);
-
-  draw_list->AddLine(first_center, second_center, IM_COL32(255, 0, 0, 255),
-                     3.0f);
-}
-
-std::string create_node_name(const std::shared_ptr<Cnm::Node>& node) {
-  std::stringstream ss;
-  ss << node->getHostInfo().getName() << " "
-     << node->getHostInfo().getAddress();
-  return ss.str();
-}
-
-void keep_window_inside(ImGuiWindow* parent, ImGuiWindow* child) {
-  auto this_pos = child->Pos;
-  auto this_size = child->Size;
-
-  auto parent_pos = parent->Pos;
-  auto parent_size = parent->Size;
-
-  if (parent_pos.x > this_pos.x) {
-    this_pos.x = parent_pos.x;
-  }
-
-  if (parent_pos.y > this_pos.y) {
-    this_pos.y = parent_pos.y;
-  }
-
-  if (parent_pos.x + parent_size.x < this_pos.x + this_size.x) {
-    this_pos.x = parent_pos.x + parent_size.x - this_size.x;
-  }
-
-  if (parent_pos.y + parent_size.y < this_pos.y + this_size.y) {
-    this_pos.y = parent_pos.y + parent_size.y - this_size.y;
-  }
-
-  child->Pos = this_pos;
-}
-
-void render_node(const std::shared_ptr<Cnm::Node>& node) {
-  auto name = create_node_name(node);
-
-  ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
-
-  ImGui::End();
+  return Menu::Menu({test_menu, app, topology_menu, machine});
 }
 
 void MainScene::renderEditor() {
@@ -241,28 +195,23 @@ void MainScene::renderEditor() {
                        IM_COL32(200, 200, 200, 40));
   }
 
-  render_node("Node A");
+  {
+    auto lock = topology->makeLock();
+    std::shared_ptr<Cnm::Node> hub = topology->getHub();
 
-  render_node("Node B");
+    std::vector<std::pair<ImGuiWindow*, ImGuiWindow*>> connections;
 
-  render_node("Node C");
+    auto hub_window = renderNode(hub);
 
-  draw_connection(ImGui::GetWindowDrawList(), "Node A", "Node B");
-  draw_connection(ImGui::GetWindowDrawList(), "Node A", "Node C");
+    std::transform(topology->getHub()->begin(), topology->getHub()->end(),
+                   std::back_inserter(connections), [this, hub_window](auto i) {
+                     auto win = renderNode(i);
+                     return std::pair<ImGuiWindow*, ImGuiWindow*>(hub_window,
+                                                                  win);
+                   });
+
+    renderNodeConnections(connections);
+  }
 
   ImGui::End();
-}
-
-void MainScene::renderProperties() {
-  ImGui::Begin("Properties", nullptr,
-               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
-                   ImGuiWindowFlags_NoResize);
-  ImGui::Text("Properties");
-  ImGui::Button("Do nothing!");
-  ImGui::End();
-
-  //  ImGui::Begin("Properties", nullptr,
-  //               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
-  //
-  //  ImGui::End();
 }

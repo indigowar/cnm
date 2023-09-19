@@ -10,7 +10,7 @@ class Star final : public Topology {
  public:
   Star();
 
-  std::shared_ptr<Hub> getHub() const noexcept;
+  std::shared_ptr<Hub> getHub() noexcept;
 
   void start() override;
 
@@ -37,8 +37,10 @@ class Star final : public Topology {
 
   std::string_view getType() const noexcept override;
 
-  std::vector<std::shared_ptr<Cnm::Node>>::iterator  begin();
-  std::vector<std::shared_ptr<Cnm::Node>>::iterator  end();
+  std::vector<std::shared_ptr<Cnm::Node>>::iterator begin();
+  std::vector<std::shared_ptr<Cnm::Node>>::iterator end();
+
+  std::unique_lock<std::mutex> makeLock() const noexcept;
 
  private:
   HostInfo generateFreeHostInfo(std::string name);
@@ -46,6 +48,8 @@ class Star final : public Topology {
   std::shared_ptr<Hub> hub;
 
   std::vector<std::shared_ptr<Cnm::Node>> nodes;
+
+  mutable std::mutex mutex;
 };
 
 }  // namespace Cnm::Star
