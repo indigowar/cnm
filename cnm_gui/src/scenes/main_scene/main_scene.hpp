@@ -2,6 +2,7 @@
 #define HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
 
 #include <cnm/topology/star/star.hpp>
+#include <map>
 #include <memory>
 
 #include "lib/menu/menu.hpp"
@@ -35,6 +36,10 @@ class MainScene final : public Scenes::Scene {
   std::unique_ptr<Menu::Menu> menu;
 
   std::unique_ptr<Cnm::Star::Star> topology;
+
+  bool open_server_creation_window;
+
+  void showServerCreationWindow(bool* open);
 };
 
 #endif  // HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
