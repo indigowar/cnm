@@ -65,6 +65,7 @@ void Server::invoke() {
   }
 
   status = Status::Running;
+  is_accepting = true;
 }
 
 void Server::freeze() {
