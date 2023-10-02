@@ -7,6 +7,9 @@
 
 #include "cnm/core/object.hpp"
 
+constexpr ImVec4 ACTIVE_NODE_COLOR = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+constexpr ImVec4 INACTIVE_NODE_COLOR = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+
 // forceWindowInsideParent - force the child to be inside the parent window.
 void forceWindowInsideParent(const ImGuiWindow* parent, ImGuiWindow* child) {
   auto child_pos = child->Pos;
@@ -34,14 +37,51 @@ void forceWindowInsideParent(const ImGuiWindow* parent, ImGuiWindow* child) {
   child->Pos = child_pos;
 }
 
+void renderStopButtonForNode(std::shared_ptr<Cnm::Node>& node) {
+  if (ImGui::Button("Stop")) {
+    if (node->getStatus() != Cnm::Object::Status::Freezed) {
+      node->freeze();
+    }
+  }
+}
+
+void renderKillButtonForNode(std::shared_ptr<Cnm::Node>& node) {
+  if (ImGui::Button("Kill")) {
+    if (node->getStatus() != Cnm::Object::Status::Dead) {
+      node->stop();
+    }
+  }
+}
+
+void renderInvokeButtonForNode(std::shared_ptr<Cnm::Node>& node) {
+  if (ImGui::Button("Invoke")) {
+    if (node->getStatus() != Cnm::Object::Status::Running) {
+      node->invoke();
+    }
+  }
+}
+
+void renderMenuForRunningNode(std::shared_ptr<Cnm::Node>& node) {
+  IM_ASSERT(node->getStatus() == Cnm::Object::Status::Running);
+  renderStopButtonForNode(node);
+  ImGui::SameLine();
+  renderKillButtonForNode(node);
+}
+
+void renderMenuForFrozenNode(std::shared_ptr<Cnm::Node>& node) {
+  IM_ASSERT(node->getStatus() == Cnm::Object::Status::Freezed);
+  renderInvokeButtonForNode(node);
+  ImGui::SameLine();
+  renderKillButtonForNode(node);
+}
+
 ImGuiWindow* renderNode(std::shared_ptr<Cnm::Node>& node) {
   auto name = makeNodeWindowName(node);
 
   auto is_active = node->getStatus() == Cnm::Object::Status::Running;
 
   ImGui::PushStyleColor(ImGuiCol_WindowBg,
-                        is_active ? ImVec4(0.0f, 0.0f, 0.0f, 1.0f)
-                                  : ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+                        is_active ? ACTIVE_NODE_COLOR : INACTIVE_NODE_COLOR);
 
   ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
 
@@ -52,14 +92,19 @@ ImGuiWindow* renderNode(std::shared_ptr<Cnm::Node>& node) {
 
   IM_ASSERT(parent_window != nullptr);
 
-  // list with connections
-  if (ImGui::BeginListBox("", ImVec2(100.0f, 50.0f))) {
-    for (auto i : node->getConnections()) {
-      if (ImGui::Selectable(i.toString().c_str())) {
-      }
-    }
+  auto host_info = node->getHostInfo();
 
-    ImGui::EndListBox();
+  ImGui::Text("Name: %s", host_info.getName().c_str());
+  ImGui::Text("Address: %s", host_info.getAddress().c_str());
+
+  auto status = node->getStatus();
+
+  if (status == Cnm::Object::Status::Running) {
+    renderMenuForRunningNode(node);
+  } else if (status == Cnm::Object::Status::Freezed) {
+    renderMenuForFrozenNode(node);
+  } else {
+    ImGui::Text("Object is inactive");
   }
 
   // On moving the window, checks if it goes out of Editor window.
@@ -88,16 +133,6 @@ void renderConnection(ImGuiWindow* first, ImGuiWindow* second, ImGuiCol color) {
 
   ImGui::GetWindowDrawList()->AddLine(first_center, second_center, color, 3.0f);
 }
-
-// void renderNodeConnections(const std::shared_ptr<Cnm::Node>& node) {
-//   auto connected_nodes = node->getConnectedNodes();
-//
-//   for (const auto& i : connected_nodes) {
-//     renderConnection(makeNodeWindowName(node).c_str(),
-//                      makeNodeWindowName(i).c_str(), IM_COL32(255, 0, 0,
-//                      255));
-//   }
-// }
 
 void renderNodeConnections(
     const std::vector<std::pair<ImGuiWindow*, ImGuiWindow*>>& cons) {
