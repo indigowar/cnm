@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "lib/menu/menu.hpp"
+#include "lib/popups/create_server.hpp"
 #include "lib/scenes/exiter.hpp"
 #include "lib/scenes/scene.hpp"
 #include "lib/scenes/switcher.hpp"
@@ -39,7 +40,7 @@ class MainScene final : public Scenes::Scene {
 
   bool open_server_creation_window;
 
-  void showServerCreationWindow(bool* open);
+  Popup::CreateServerPopup create_server_popup{};
 };
 
 #endif  // HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
