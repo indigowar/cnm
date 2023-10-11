@@ -9,12 +9,13 @@ FileServerLogic::FileServerLogic(std::map<std::string, std::string> df)
   file_storage.insert(default_files.begin(), default_files.end());
 }
 
-void FileServerLogic::init() {
+void FileServerLogic::onInit() {
   file_storage.clear();
   file_storage.insert(default_files.begin(), default_files.end());
 }
 
-void FileServerLogic::execute(ServerCtx&& ctx) {
+void FileServerLogic::execute(std::unique_ptr<Communicator>& com,
+                              ServerCtx&& ctx) {
   auto request = readRequest(ctx);
   if (request.isErr()) {
     spdlog::warn("Got an error, while reading the request: %s",

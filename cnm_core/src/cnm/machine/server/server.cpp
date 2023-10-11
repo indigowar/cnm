@@ -104,7 +104,7 @@ void Server::serve(ServerCtx&& ctx) {
 }
 
 void Server::addRequestToThreadPool(Cnm::ServerCtx&& ctx) {
-  auto task = [this, &ctx] { logic.execute(std::move(ctx)); };
+  auto task = [this, &ctx] { logic.execute(communicator, std::move(ctx)); };
   thread_pool->enqueue(task);
 }
 
