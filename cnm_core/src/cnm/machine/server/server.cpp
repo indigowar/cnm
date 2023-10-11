@@ -100,7 +100,7 @@ void Server::serve(ServerCtx&& ctx) {
   }
 
   spdlog::warn("Server::serve() called when Server does not accept requests.");
-  // ctx->abort();
+  ctx->abort();
 }
 
 void Server::addRequestToThreadPool(Cnm::ServerCtx&& ctx) {
