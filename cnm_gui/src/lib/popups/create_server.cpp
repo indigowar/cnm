@@ -3,26 +3,23 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include "lib/render/readers.hpp"
+
 using namespace Popup;
 
-void readSmallNumber(const char* id, int* value) {
-  ImGui::PushID(id);
-  ImGui::InputInt(
-      "", value, 0, 0,
-      ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_CharsDecimal);
-  ImGui::PopID();
+void renderIPv4Reader(NumberReader<10, 3>& f, NumberReader<10, 3>& s,
+                      NumberReader<10, 3>& t, NumberReader<10, 3>& fo, ) {
+  ImGui::PushItemWidth(25.0f);
+  f("first of ipv4", false);
+  ImGui::SameLine();
+  s("second of ipv4", false);
+  ImGui::SameLine();
+  t("third of ipv4", false);
+  ImGui::SameLine();
+  fo("fourth of ipv4", false);
+  ImGui::PopItemWidth();
+  ImGui::Separator();
 }
-
-template <size_t BUFF_SIZE>
-struct StringReader final {
-  void operator()(const char* name, bool with_name = true) {
-    ImGui::PushID(name);
-    ImGui::InputText(with_name ? name : "", buffer, 256);
-    ImGui::PopID();
-  }
-
-  char buffer[BUFF_SIZE] = {};
-};
 
 void CreateServerPopup::render(bool* is_open) {
   if (is_open) {
@@ -49,18 +46,11 @@ void CreateServerPopup::render(bool* is_open) {
 
   // The Address of the Server in IPv4
   ImGui::Text("The Address of the Server");
-  ImGui::SameLine();
-  int first{}, second{}, third{}, fourth{};
-  ImGui::PushItemWidth(20.0f);
-  readSmallNumber("first", &first);
-  ImGui::SameLine();
-  readSmallNumber("second", &second);
-  ImGui::SameLine();
-  readSmallNumber("third", &third);
-  ImGui::SameLine();
-  readSmallNumber("fourth", &fourth);
-  ImGui::PopItemWidth();
-  ImGui::Separator();
+  static NumberReader<10, 3> first_reader{};
+  static NumberReader<10, 3> second_reader{};
+  static NumberReader<10, 3> third_reader{};
+  static NumberReader<10, 3> fourth_reader{};
+  renderIPv4Reader(first_reader, second_reader, third_reader, fourth_reader);
 
   static const char* items[] = {"File Server", "Plain", "KYS"};
   static int selected_item = -1;
