@@ -3,12 +3,13 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include "lib/render/list_chooser.hpp"
 #include "lib/render/readers.hpp"
 
 using namespace Popup;
 
 void renderIPv4Reader(NumberReader<10, 3>& f, NumberReader<10, 3>& s,
-                      NumberReader<10, 3>& t, NumberReader<10, 3>& fo, ) {
+                      NumberReader<10, 3>& t, NumberReader<10, 3>& fo) {
   ImGui::PushItemWidth(25.0f);
   f("first of ipv4", false);
   ImGui::SameLine();
@@ -52,19 +53,13 @@ void CreateServerPopup::render(bool* is_open) {
   static NumberReader<10, 3> fourth_reader{};
   renderIPv4Reader(first_reader, second_reader, third_reader, fourth_reader);
 
-  static const char* items[] = {"File Server", "Plain", "KYS"};
-  static int selected_item = -1;
-
+  // The Type of the Server
   ImGui::Text("## Select the Type of the Server:");
+  static auto type_chooser = ListChooser<3>({"File Server", "Plain", "KYS"});
+  type_chooser();
 
-  for (int i = 0; i < 3; i++) {
-    if (ImGui::Selectable(items[i], selected_item == i)) {
-      selected_item = i;
-    }
-  }
-
-  if (selected_item == 0) {
-    // specific for file server settings
+  if (type_chooser.has_selected()) {
+    // additional settings for specific server types
   }
 
   ImGui::Separator();
