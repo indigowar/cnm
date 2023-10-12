@@ -15,11 +15,19 @@
 MainScene::MainScene(Scenes::Switcher* switcher, Scenes::Exiter* exiter)
     : Scene("MainScene", switcher, exiter) {
   open_server_creation_window = false;
+  open_office_equipment_creation_window = false;
 
   create_server_popup.onSave(
       [this](auto& info) { spdlog::warn("CreateServerPopup::onSave"); });
   create_server_popup.onClose(
       [this](auto& info) { spdlog::warn("CreateServerPopup::onClose"); });
+
+  create_office_eq_popup.onSave([this](auto& info) {
+    spdlog::warn("CreateOfficeEquipmentPopup::onSave");
+  });
+  create_office_eq_popup.onClose([this](auto& info) {
+    spdlog::warn("CreateOfficeEquipmentPopup::onClose");
+  });
 }
 
 void MainScene::start() {
@@ -152,7 +160,10 @@ Menu::Menu MainScene::makeMenuBar() {
                        open_server_creation_window = true;
                      }),
           Menu::Item("Office Equipment",
-                     std::bind(test, "Machine", "Office Equipment")),
+                     [this] {
+                       test("Machine", "Server");
+                       open_office_equipment_creation_window = true;
+                     }),
       });
 
   auto test_menu = Menu::SubMenu(
@@ -229,5 +240,7 @@ void MainScene::renderEditor() {
   }
 
   create_server_popup.render(&open_server_creation_window);
+  create_office_eq_popup.render(&open_office_equipment_creation_window);
+
   ImGui::End();
 }
