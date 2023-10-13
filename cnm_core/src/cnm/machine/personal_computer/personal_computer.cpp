@@ -101,7 +101,7 @@ void PersonalComputer::threadRunner(std::stop_token stop_token) {
     });
 
     if (continue_execution) {
-      running_logic.execute();
+      running_logic.execute(communicator);
     }
   }
 }
