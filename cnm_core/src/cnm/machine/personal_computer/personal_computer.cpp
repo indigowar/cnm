@@ -19,7 +19,7 @@ size_t PersonalComputer::getCurrentServingAmount() const noexcept { return 0; }
 
 void PersonalComputer::serve(ServerCtx&& ctx) {
   spdlog::warn("PersonalComputer::serve(): was called.");
-  //  return result_t<MessageBatch>::Err("pc can not serve.");
+  ctx->abort();
 }
 
 void PersonalComputer::start() {
@@ -101,7 +101,7 @@ void PersonalComputer::threadRunner(std::stop_token stop_token) {
     });
 
     if (continue_execution) {
-      running_logic.execute();
+      running_logic.execute(communicator);
     }
   }
 }
