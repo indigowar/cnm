@@ -17,6 +17,7 @@ include(cmake/get_imgui.cmake)
 
 # add_subdirectory(cnm)
 add_subdirectory(cnm_core)
+add_subdirectory(cnm_test)
 add_subdirectory(cnm_gui)
 
 # add_subdirectory(guitest)

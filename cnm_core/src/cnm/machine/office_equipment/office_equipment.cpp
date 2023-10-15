@@ -2,147 +2,105 @@
 
 #include <spdlog/spdlog.h>
 
-#include <utility>
-
 namespace Cnm {
 
-OfficeEquipment::OfficeEquipment(const OfficeEquipmentLogic& logic,
-                                 HostInfo info,
-                                 std::unique_ptr<Communicator> communicator)
-    : Machine(OfficeEquipment::Type, 1, info, std::move(communicator)),
-      logic(std::make_unique<OfficeEquipmentLogic>(logic)),
-      is_accepting{},
-      is_running{},
-      tasks{},
-      status{NotInitialized} {}
+OfficeEquipment::OfficeEquipment(Cnm::OfficeEquipmentLogic &&logic,
+                                 Cnm::HostInfo host_info,
+                                 std::unique_ptr<Communicator> &&c)
+    : Machine(OfficeEquipment::Type, 1, std::move(host_info), std::move(c)),
+      runner(nullptr),
+      is_active{},
+      logic{logic} {}
 
 OfficeEquipment::~OfficeEquipment() { stop(); }
+
+size_t OfficeEquipment::getCurrentServingAmount() const noexcept {
+  auto lock = makeLock();
+  if (!runner) {
+    return 0;
+  }
+  return runner->getNumBusyWorkers();
+}
 
 void OfficeEquipment::start() {
   auto lock = makeLock();
 
-  if (is_running) {
-    spdlog::warn("OfficeEquipment::start(): called when is running already.");
+  if (runner) {
+    spdlog::warn("OfficeEquipment::start() - the runner exists.");
     return;
   }
 
-  if (thread) {
-    spdlog::warn(
-        "OfficeEquipment::start(): called when the thread is initialized.");
-    return;
-  }
-
-  is_accepting = true;
-  is_running = true;
-
-  status = Running;
-
-  thread = std::make_unique<std::jthread>(
-      [this](const std::stop_token& st) { threadFunction(st); });
+  runner = std::make_unique<Utils::ThreadPool>(getServingLimit());
+  runner->startThreads();
+  is_active = true;
 }
 
 void OfficeEquipment::stop() {
   auto lock = makeLock();
 
-  if (!thread) {
-    spdlog::warn("OfficeEquipment::stop(): called when the thread is dead.");
+  if (!runner) {
+    spdlog::warn("OfficeEquipment::stop() - already stopped.");
     return;
   }
 
-  is_running = false;
-  is_accepting = false;
-  status = Dead;
-
-  thread->request_stop();
-  thread.reset();
+  is_active = false;
+  runner.reset(nullptr);
 }
 
 void OfficeEquipment::invoke() {
-  {
-    auto lock = makeLock();
+  auto lock = makeLock();
 
-    if (!thread) {
-      spdlog::warn("OfficeEquipment::invoke(): called on the dead thread.");
-      return;
-    }
-
-    if (is_running) {
-      spdlog::warn("OfficeEquipment::invoke(): called on the running thread.");
-      return;
-    }
-
-    is_running = true;
+  if (!runner) {
+    spdlog::warn(
+        "OfficeEquipment::invoke() - the runner does not exist(stopped).");
+    return;
   }
 
-  status = Running;
-
-  cond_var.notify_one();
+  if (is_active) {
+    spdlog::warn("OfficeEquipment::invoke() - currently already running.");
+    return;
+  }
+  is_active = true;
 }
 
 void OfficeEquipment::freeze() {
   auto lock = makeLock();
 
-  if (!thread) {
-    spdlog::warn("OfficeEquipment::freeze(): called on the dead thread.");
+  if (!runner) {
+    spdlog::warn(
+        "OfficeEquipment::freeze() - the runner does not exist(stopped).");
     return;
   }
 
-  if (!is_running) {
-    spdlog::warn("OfficeEquipment::freeze(): called on the frozen thread.");
+  if (!is_active) {
+    spdlog::warn("OfficeEquipment::freeze() - currently frozen.");
     return;
   }
 
-  status = Freezed;
-
-  is_running = false;
+  is_active = false;
 }
 
-size_t OfficeEquipment::getCurrentServingAmount() const noexcept {
-  return busy.load() ? 1 : 0;
+Object::Status OfficeEquipment::getStatus() const noexcept {
+  auto lock = makeLock();
+  return !runner ? Dead : (is_active ? Running : Freezed);
 }
 
-void OfficeEquipment::serve(ServerCtx&& ctx) {
+void OfficeEquipment::serve(ServerCtx &&ctx) {
   auto lock = makeLock();
 
-  if (!is_accepting) {
-    spdlog::warn("office equipment does not accept request right now");
-    // ctx->abort();
+  if (is_active) {
+    addRequest(std::move(ctx));
     return;
   }
 
-  tasks.emplace_back(std::move(ctx));
+  spdlog::warn(
+      "OfficeEquipment::serve called when unable to accept the request.");
+  ctx->abort();
 }
 
-void OfficeEquipment::threadFunction(const std::stop_token& stop_token) {
-  auto current_logic = std::make_unique<OfficeEquipmentLogic>(*logic);
-  logic->init();
-
-  while (!stop_token.stop_requested()) {
-    ServerCtx ctx{};
-
-    {
-      auto lock = makeLock();
-
-      if (tasks.empty() || !is_running) {
-        if (stop_token.stop_requested()) {
-          return;
-        }
-
-        cond_var.wait(lock, [this, &stop_token] {
-          return (is_running && !tasks.empty()) || stop_token.stop_requested();
-        });
-      }
-
-      if (stop_token.stop_requested()) {
-        return;
-      }
-      ctx = std::move(tasks.front());
-    }
-
-    busy.store(true);
-    current_logic->execute(std::move(ctx));
-    busy.store(false);
-  }
+void OfficeEquipment::addRequest(Cnm::ServerCtx &&ctx) {
+  auto task = [this, &ctx] { logic.execute(std::move(ctx)); };
+  runner->enqueue(task);
 }
 
 }  // namespace Cnm
