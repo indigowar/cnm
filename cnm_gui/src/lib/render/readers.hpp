@@ -18,7 +18,8 @@ class StringReader final {
 };
 
 // NumberReader - a StringReader that reads only numbers in certain BASE.
-template <size_t BASE, size_t NUMBER_SIZE>
+template <typename NUMERIC, size_t BASE, size_t NUMBER_SIZE>
+  requires std::integral<NUMERIC>
 class NumberReader final {
  public:
   void operator()(const char* name, bool with_name = true) {
@@ -27,6 +28,10 @@ class NumberReader final {
     } else {
       string_reader(name, with_name, ImGuiInputTextFlags_CharsDecimal);
     }
+  }
+
+  NUMERIC value() const noexcept {
+    return std::strtol(string_reader.buffer, nullptr, BASE);
   }
 
  private:
