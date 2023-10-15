@@ -69,6 +69,21 @@ class [[maybe_unused]] ScannerOfficeEquipmentLogic
   std::filesystem::path base_dir;
 };
 
+// PrinterOfficeEquipmentLogic - an OfficeEquipment that writes request in file.
+class [[maybe_unused]] PrinterOfficeEquipmentLogic
+    : public OfficeEquipmentLogic {
+ public:
+  explicit PrinterOfficeEquipmentLogic(std::filesystem::path base_dir);
+
+  void execute(ServerCtx&&) override;
+
+ private:
+  static result_t<bool> writeIntoFile(const std::filesystem::path&,
+                                      const std::string& content);
+
+  const std::filesystem::path base_dir;
+};
+
 }  // namespace Cnm
 
 #endif  // HPP_CNM_CORE_MACHINE_OFFICE_EQUIPMENT_OFFICE_EQUIPMENT_LOGIC_HPP

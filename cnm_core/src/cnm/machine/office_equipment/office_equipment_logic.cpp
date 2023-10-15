@@ -2,6 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 
@@ -170,6 +171,48 @@ std::string ScannerOfficeEquipmentLogic::handleFile(
     return std::string{result.unwrapErr()};
   }
   return result.unwrap();
+}
+
+PrinterOfficeEquipmentLogic::PrinterOfficeEquipmentLogic(
+    std::filesystem::path base_dir)
+    : base_dir{std::move(base_dir)} {}
+
+void PrinterOfficeEquipmentLogic::execute(Cnm::ServerCtx &&ctx) {
+  auto future_request = ctx->acceptRequest();
+  future_request.wait();
+  auto request = future_request.get();
+  if (request.isErr()) {
+    spdlog::warn("Got an error, while serving: %s", request.unwrapErr());
+    ctx->abort();
+    return;
+  }
+  auto body = request.unwrap();
+  std::vector<std::string> results{};
+  auto tasks = body.getMessageList();
+  for (size_t i{}; i < tasks.size(); i += 2) {
+    auto name = tasks.at(i);
+    auto content = tasks.at(i + 1);
+    auto result = writeIntoFile(base_dir / name, content);
+
+    if (result.isErr()) {
+      results.emplace_back("Got an error");
+    } else {
+      results.emplace_back("Success");
+    }
+  }
+  ctx->sendResponse(MessageBatch(std::move(results)));
+}
+
+result_t<bool> PrinterOfficeEquipmentLogic::writeIntoFile(
+    const std::filesystem::path &path, const std::string &content) {
+  try {
+    std::ofstream stream(path, std::ios::out | std::ios::trunc);
+    stream << content;
+    stream.close();
+  } catch (const std::exception &e) {
+    return result_t<bool>::Err(e.what());
+  }
+  return result_t<bool>::Ok(true);
 }
 
 }  // namespace Cnm
