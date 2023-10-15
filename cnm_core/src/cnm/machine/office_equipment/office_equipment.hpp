@@ -1,29 +1,22 @@
 #ifndef HPP_CNM_CORE_MACHINE_OFFICE_EQUIPMENT_OFFICE_EQUIPMENT_HPP
 #define HPP_CNM_CORE_MACHINE_OFFICE_EQUIPMENT_OFFICE_EQUIPMENT_HPP
 
-#include <atomic>
-#include <condition_variable>
-#include <deque>
-#include <future>
-#include <memory>
-#include <thread>
-#include <tuple>
-
-#include "cnm/core/message.hpp"
 #include "cnm/machine/machine.hpp"
 #include "cnm/machine/office_equipment/office_equipment_logic.hpp"
-#include "cnm/utils/result.hpp"
+#include "cnm/utils/thread_pool.hpp"
 
 namespace Cnm {
 
-// OfficeEquipment is a machine in the network that can serve one request at the
-// time.
+// OfficeEquipment - an office equipment in the network.
+// Can serve one request at a time.
 class OfficeEquipment final : public Machine {
  public:
-  OfficeEquipment(const OfficeEquipmentLogic&, HostInfo,
-                  std::unique_ptr<Communicator>);
+  OfficeEquipment(OfficeEquipmentLogic&& logic, HostInfo host_info,
+                  std::unique_ptr<Communicator>&&);
 
   ~OfficeEquipment() override;
+
+  size_t getCurrentServingAmount() const noexcept override;
 
   void start() override;
 
@@ -35,30 +28,18 @@ class OfficeEquipment final : public Machine {
 
   Object::Status getStatus() const noexcept override;
 
-  size_t getCurrentServingAmount() const noexcept override;
-
-  void serve(ServerCtx&& ctx) override;
+  void serve(ServerCtx&&) override;
 
   static constexpr std::string_view Type = "office_equipment";
 
  private:
-  void threadFunction(const std::stop_token& stop_token);
+  void addRequest(ServerCtx&&);
 
-  // is_accepting is true when the object can accept new requests.
-  bool is_accepting;
-  // is_running is true when the object executes(the thread is alive).
-  bool is_running;
+  std::unique_ptr<Utils::ThreadPool> runner;
 
-  std::atomic_bool busy;
+  bool is_active;
 
-  std::deque<ServerCtx> tasks;
-
-  std::condition_variable cond_var;
-  std::unique_ptr<std::jthread> thread;
-
-  std::unique_ptr<OfficeEquipmentLogic> logic;
-
-  Object::Status status;
+  OfficeEquipmentLogic logic;
 };
 
 }  // namespace Cnm
