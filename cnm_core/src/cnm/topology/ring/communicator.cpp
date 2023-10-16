@@ -97,12 +97,8 @@ result_t<ClientCtx> Communicator::makeConnection(std::string address) {
 
   auto path = path_result.unwrap();
 
-  // TODO: replace this constant with member of Ring.
-  constexpr size_t CONNECTION_SPEED = 100;
+  Connection conn(ring->getNetworkSpeed(), path.begin(), path.end());
 
-  Connection conn(CONNECTION_SPEED, path.begin(), path.end());
-
-  // todo: create the server ctx for server
   std::ignore = std::async([this, &conn] {
     auto ctx = conn.createServerContext();
     if (ctx.isErr()) {
