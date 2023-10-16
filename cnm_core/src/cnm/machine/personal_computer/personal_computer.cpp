@@ -55,9 +55,12 @@ void PersonalComputer::stop() {
     spdlog::info("PersonalComputer::stop(): stopping frozen thread.");
   }
 
+  continue_execution = false;
   thread->request_stop();
+
   if (thread->joinable()) {
-    thread->join();
+    thread->detach();
+    thread.reset(nullptr);
   }
 
   status = Dead;
