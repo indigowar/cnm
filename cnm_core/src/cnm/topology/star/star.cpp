@@ -108,4 +108,14 @@ std::unique_lock<std::mutex> Star::makeLock() const noexcept {
   return std::unique_lock(mutex);
 }
 
+size_t Star::getNetworkSpeed() const noexcept {
+  std::unique_lock lock(mutex);
+  return network_speed;
+}
+
+void Star::setNetworkSpeed(size_t speed) {
+  std::unique_lock lock(mutex);
+  network_speed = speed;
+}
+
 }  // namespace Cnm::Star

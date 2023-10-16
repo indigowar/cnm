@@ -39,6 +39,9 @@ class Topology : public Object {
 
   [[nodiscard]] virtual std::string_view getType() const noexcept = 0;
 
+  [[nodiscard]] virtual size_t getNetworkSpeed() const noexcept = 0;
+  virtual void setNetworkSpeed(size_t speed) = 0;
+
   // begin - returns an iterator for the first element.
   template <typename T, NodeIterator I>
     requires std::derived_from<T, Topology> || requires(T t) {

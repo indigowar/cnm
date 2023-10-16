@@ -46,12 +46,18 @@ class Star final : public Topology {
 
   std::unique_lock<std::mutex> makeLock() const noexcept;
 
+  size_t getNetworkSpeed() const noexcept override;
+
+  void setNetworkSpeed(size_t speed) override;
+
  private:
   HostInfo generateFreeHostInfo(std::string name);
 
   std::shared_ptr<Hub> hub;
 
   std::vector<std::shared_ptr<Cnm::Node>> nodes;
+
+  size_t network_speed{0};
 
   mutable std::mutex mutex;
 };

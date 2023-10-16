@@ -15,7 +15,7 @@ class Ring final : public Topology {
  public:
   Ring() = default;
 
-  ~Ring() = default;
+  ~Ring() override = default;
 
   void start() override;
 
@@ -43,6 +43,10 @@ class Ring final : public Topology {
 
   std::string_view getType() const noexcept override { return "Ring"; }
 
+  size_t getNetworkSpeed() const noexcept override;
+
+  void setNetworkSpeed(size_t speed) override;
+
   [[nodiscard]] Iterator begin();
   [[nodiscard]] Iterator end();
 
@@ -57,7 +61,9 @@ class Ring final : public Topology {
 
   std::map<std::string, std::shared_ptr<Node>> nodes;
 
-  Object::Status status;
+  Object::Status status{NotInitialized};
+
+  size_t network_speed{0};
 
   mutable std::mutex mutex;
 };

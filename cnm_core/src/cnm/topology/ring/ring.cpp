@@ -132,4 +132,14 @@ HostInfo Ring::generateHostInfo(std::string name) {
   return hi;
 }
 
+size_t Ring::getNetworkSpeed() const noexcept {
+  std::unique_lock lock(mutex);
+  return network_speed;
+}
+
+void Ring::setNetworkSpeed(size_t speed) {
+  std::unique_lock lock(mutex);
+  network_speed = speed;
+}
+
 }  // namespace Cnm::Ring
