@@ -61,21 +61,31 @@ void renderInvokeButtonForNode(std::shared_ptr<Cnm::Node>& node) {
   }
 }
 
-void renderMenuForRunningNode(std::shared_ptr<Cnm::Node>& node) {
+void renderDeleteButtonForNode(std::shared_ptr<Cnm::Node>& node,
+                               Cnm::Topology* topology) {
+  if (ImGui::Button("Delete")) {
+    topology->deleteMachine(node->getHostInfo());
+  }
+}
+
+void renderMenuForRunningNode(std::shared_ptr<Cnm::Node>& node,
+                              Cnm::Topology* topology) {
   IM_ASSERT(node->getStatus() == Cnm::Object::Status::Running);
   renderStopButtonForNode(node);
   ImGui::SameLine();
   renderKillButtonForNode(node);
 }
 
-void renderMenuForFrozenNode(std::shared_ptr<Cnm::Node>& node) {
+void renderMenuForFrozenNode(std::shared_ptr<Cnm::Node>& node,
+                             Cnm::Topology* topology) {
   IM_ASSERT(node->getStatus() == Cnm::Object::Status::Freezed);
   renderInvokeButtonForNode(node);
   ImGui::SameLine();
   renderKillButtonForNode(node);
 }
 
-ImGuiWindow* renderNode(std::shared_ptr<Cnm::Node>& node) {
+ImGuiWindow* renderNode(std::shared_ptr<Cnm::Node>& node,
+                        Cnm::Topology* topology) {
   auto name = makeNodeWindowName(node);
 
   auto is_active = node->getStatus() == Cnm::Object::Status::Running;
@@ -100,11 +110,12 @@ ImGuiWindow* renderNode(std::shared_ptr<Cnm::Node>& node) {
   auto status = node->getStatus();
 
   if (status == Cnm::Object::Status::Running) {
-    renderMenuForRunningNode(node);
+    renderMenuForRunningNode(node, topology);
   } else if (status == Cnm::Object::Status::Freezed) {
-    renderMenuForFrozenNode(node);
+    renderMenuForFrozenNode(node, topology);
   } else {
     ImGui::Text("Object is inactive");
+    renderDeleteButtonForNode(node, topology);
   }
 
   // On moving the window, checks if it goes out of Editor window.

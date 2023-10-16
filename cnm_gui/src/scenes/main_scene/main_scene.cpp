@@ -227,11 +227,11 @@ void MainScene::renderEditor() {
 
     std::vector<std::pair<ImGuiWindow*, ImGuiWindow*>> connections;
 
-    auto hub_window = renderNode(hub);
+    auto hub_window = renderNode(hub, &(*topology));
 
     std::transform(topology->getHub()->begin(), topology->getHub()->end(),
                    std::back_inserter(connections), [this, hub_window](auto i) {
-                     auto win = renderNode(i);
+                     auto win = renderNode(i, &(*topology));
                      return std::pair<ImGuiWindow*, ImGuiWindow*>(hub_window,
                                                                   win);
                    });

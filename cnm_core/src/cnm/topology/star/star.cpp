@@ -55,9 +55,10 @@ result_t<Cnm::HostInfo> Star::addMachineWithAddress(
 result_t<bool> Star::deleteMachine(Cnm::HostInfo info) {
   auto result = hub->deleteMachine(info);
   if (result.isOk()) {
-    auto lock = makeLock();
-    std::erase_if(nodes,
-                  [&info](const auto& i) { return i->getHostInfo() == info; });
+    //      auto lock = makeLock();
+    std::erase_if(nodes, [this, &info](const auto& i) {
+      return i->getHostInfo() == info;
+    });
   }
   return result;
 }
