@@ -8,8 +8,10 @@
 
 using namespace Popup;
 
-inline void renderIPv4Reader(NumberReader<10, 3>& f, NumberReader<10, 3>& s,
-                             NumberReader<10, 3>& t, NumberReader<10, 3>& fo) {
+inline void renderIPv4Reader(NumberReader<uint8_t, 10, 3>& f,
+                             NumberReader<uint8_t, 10, 3>& s,
+                             NumberReader<uint8_t, 10, 3>& t,
+                             NumberReader<uint8_t, 10, 3>& fo) {
   ImGui::PushItemWidth(25.0f);
   f("first of ipv4 for oe", false);
   ImGui::SameLine();
@@ -45,10 +47,10 @@ void CreateOfficeEquipmentPopup::render(bool* is_open) {
 
   // The Address of the Server in IPv4
   ImGui::Text("The Address of the Office Equipment");
-  static NumberReader<10, 3> first_reader{};
-  static NumberReader<10, 3> second_reader{};
-  static NumberReader<10, 3> third_reader{};
-  static NumberReader<10, 3> fourth_reader{};
+  static NumberReader<uint8_t, 10, 3> first_reader{};
+  static NumberReader<uint8_t, 10, 3> second_reader{};
+  static NumberReader<uint8_t, 10, 3> third_reader{};
+  static NumberReader<uint8_t, 10, 3> fourth_reader{};
   renderIPv4Reader(first_reader, second_reader, third_reader, fourth_reader);
   ImGui::Separator();
 
