@@ -4,6 +4,7 @@
 
 #include "cnm/connection/connection.hpp"
 #include "cnm/topology/star/hub.hpp"
+#include "cnm/topology/star/star.hpp"
 
 namespace Cnm::Star {
 
@@ -47,7 +48,7 @@ result_t<ClientCtx> Communicator::makeConnection(std::string address) {
   path.emplace_back(hub);
   path.emplace_back(server);
 
-  Connection connection(hub->getSpeed(), path.begin(), path.end());
+  Connection connection(hub->star->getNetworkSpeed(), path.begin(), path.end());
 
   std::ignore = std::async([this, &connection, &server] {
     auto ctx = connection.createServerContext();

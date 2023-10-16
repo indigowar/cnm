@@ -63,8 +63,6 @@ class Hub final : public Cnm::Node {
 
   std::set<std::shared_ptr<Node>>::iterator end() { return nodes.end(); }
 
-  [[nodiscard]] size_t getSpeed() const noexcept { return 1000; }
-
  private:
   void forEachNode(std::function<void(std::shared_ptr<Node> &)>);
 
