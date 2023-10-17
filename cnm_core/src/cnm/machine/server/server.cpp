@@ -4,12 +4,12 @@
 
 namespace Cnm {
 
-Server::Server(ServerLogic&& logic, size_t limit, HostInfo host_info,
-               std::unique_ptr<Communicator> communicator)
+Server::Server(std::unique_ptr<ServerLogic>&& logic, size_t limit,
+               HostInfo host_info, std::unique_ptr<Communicator> communicator)
     : Machine(Server::Type, limit, host_info, std::move(communicator)),
       thread_pool{},
       is_accepting{},
-      logic{logic},
+      logic{std::move(logic)},
       status{NotInitialized} {}
 
 Server::~Server() { stop(); }
@@ -31,6 +31,8 @@ void Server::start() {
   is_accepting = true;
 
   thread_pool = std::make_unique<Utils::ThreadPool>(getServingLimit());
+  logic->reset();
+  logic->init(host_info);
   thread_pool->startThreads();
   status = Status::Running;
 }
@@ -104,7 +106,7 @@ void Server::serve(ServerCtx&& ctx) {
 }
 
 void Server::addRequestToThreadPool(Cnm::ServerCtx&& ctx) {
-  auto task = [this, &ctx] { logic.execute(communicator, std::move(ctx)); };
+  auto task = [this, &ctx] { logic->execute(communicator, std::move(ctx)); };
   thread_pool->enqueue(task);
 }
 

@@ -10,7 +10,7 @@ namespace Cnm {
 // Server - is a machine that serves something to clients.
 class Server final : public Machine {
  public:
-  Server(ServerLogic&& logic, size_t limit, HostInfo host_info,
+  Server(std::unique_ptr<ServerLogic>&& logic, size_t limit, HostInfo host_info,
          std::unique_ptr<Communicator> communicator);
 
   ~Server() override;
@@ -41,7 +41,7 @@ class Server final : public Machine {
   bool is_accepting;
 
   // ServerLogic object contains a custom logic for servers.
-  ServerLogic logic;
+  std::unique_ptr<ServerLogic> logic;
 
   Object::Status status;
 };

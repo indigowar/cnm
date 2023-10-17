@@ -4,9 +4,9 @@
 
 namespace Cnm {
 
-PersonalComputer::PersonalComputer(Cnm::PersonalComputerLogic&& logic,
-                                   Cnm::HostInfo host_info,
-                                   std::unique_ptr<Communicator>&& communicator)
+PersonalComputer::PersonalComputer(
+    std::unique_ptr<PersonalComputerLogic>&& logic, HostInfo,
+    std::unique_ptr<Communicator>&&)
     : Machine(PersonalComputer::Type, 0, host_info, std::move(communicator)),
       logic(std::move(logic)),
       thread{},
@@ -93,18 +93,18 @@ void PersonalComputer::freeze() {
 }
 
 void PersonalComputer::threadRunner(std::stop_token stop_token) {
-  // With creation of thread we init the logic for the runner.
-  auto running_logic = logic;
-  running_logic.init();
-
+  logic->reset();
+  logic->init();
   while (!stop_token.stop_requested()) {
     auto lock = makeLock();
     cond_var.wait(lock, [this, &stop_token] {
       return continue_execution || stop_token.stop_requested();
     });
-
+    if (stop_token.stop_requested()) {
+      return;
+    }
     if (continue_execution) {
-      running_logic.execute(communicator);
+      logic->execute(communicator);
     }
   }
 }

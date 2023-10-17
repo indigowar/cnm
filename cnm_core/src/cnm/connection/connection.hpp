@@ -24,6 +24,36 @@ class Connection final : public Connections::Connection {
   enum class SendingDirection { ToClient, ToServer, None };
 
  public:
+  Connection(size_t net_speed,
+             const std::vector<std::shared_ptr<Node>>& nodes) {
+    if (nodes.size() < 2) {
+      throw std::runtime_error(
+          "can't create connection with less than 2 nodes.");
+    }
+    sleep_wrapper = std::move(std::make_shared<Utils::SleepWrapper>());
+    client_node = std::make_shared<Connections::ClientNode>(*this, nodes.at(0),
+                                                            sleep_wrapper);
+    std::shared_ptr<Connections::ConnectionNode> prev_node = client_node;
+
+    for (auto it = nodes.begin() + 1; it != nodes.end() - 1; it++) {
+      auto node = *it;
+      auto intermediate = std::make_shared<Connections::IntermediateNode>(
+          *this, node, sleep_wrapper, prev_node);
+      intermediate->setPreviousNode(prev_node);
+      prev_node->setNextNode(intermediate);
+      prev_node = intermediate;
+    }
+
+    server_node = std::make_shared<Connections::ServerNode>(*this, nodes.back(),
+                                                            sleep_wrapper);
+    server_node->setPreviousNode(prev_node);
+    prev_node->setNextNode(server_node);
+
+    speed = net_speed;
+    is_aborted = false;
+    current_direction = SendingDirection::ToServer;
+  }
+
   template <typename Iter>
   Connection(size_t net_speed, Iter begin, Iter end) {
     if (std::distance(begin, end) < 2) {
@@ -35,7 +65,6 @@ class Connection final : public Connections::Connection {
 
     client_node =
         std::make_shared<Connections::ClientNode>(*this, *begin, sleep_wrapper);
-
     std::shared_ptr<Connections::ConnectionNode> prev = client_node;
     Iter prev_node = begin;
     for (auto it = begin + 1; std::distance(it, end) > 1; it++) {

@@ -48,7 +48,7 @@ result_t<ClientCtx> Communicator::makeConnection(std::string address) {
   path.emplace_back(hub);
   path.emplace_back(server);
 
-  Connection connection(hub->star->getNetworkSpeed(), path.begin(), path.end());
+  Connection connection(hub->star->getNetworkSpeed(), path);
 
   std::ignore = std::async([this, &connection, &server] {
     auto ctx = connection.createServerContext();
