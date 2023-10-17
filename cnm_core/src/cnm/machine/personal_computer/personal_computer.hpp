@@ -15,7 +15,7 @@ namespace Cnm {
 
 class PersonalComputer final : public Machine {
  public:
-  PersonalComputer(PersonalComputerLogic&&, HostInfo,
+  PersonalComputer(std::unique_ptr<PersonalComputerLogic>&&, HostInfo,
                    std::unique_ptr<Communicator>&&);
 
   ~PersonalComputer() override;
@@ -39,7 +39,7 @@ class PersonalComputer final : public Machine {
  private:
   void threadRunner(std::stop_token);
 
-  PersonalComputerLogic logic;
+  std::unique_ptr<PersonalComputerLogic> logic;
 
   std::unique_ptr<std::jthread> thread;
   std::condition_variable cond_var;

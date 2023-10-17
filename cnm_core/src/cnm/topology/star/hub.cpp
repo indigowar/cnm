@@ -61,7 +61,7 @@ void Hub::serve(std::unique_ptr<ServerContext> &&ctx) { ctx->abort(); }
 std::string_view Hub::getType() const noexcept { return "Hub"; }
 
 void Hub::attachConnectionNode(Connections::ConnectionNode *node) {
-  std::unique_lock lock(mutex);
+  //  std::unique_lock lock(mutex);
 
   if (!connection_nodes.contains(node)) {
     connection_nodes.emplace(node);

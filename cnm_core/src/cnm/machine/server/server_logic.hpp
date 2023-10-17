@@ -19,6 +19,8 @@ class ServerLogic {
     onInit();
   }
 
+  virtual void reset() {}
+
   virtual void execute(std::unique_ptr<Communicator>&, ServerCtx&&) {}
 
  protected:

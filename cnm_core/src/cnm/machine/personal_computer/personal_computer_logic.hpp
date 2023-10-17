@@ -11,12 +11,20 @@ class PersonalComputerLogic {
 
   virtual void init() {}
 
-  virtual void execute(std::unique_ptr<Communicator>& communicator) {}
+  virtual void reset() {}
+
+  virtual void execute(std::unique_ptr<Communicator>& communicator) {
+    //
+
+    //
+  }
 };
 
 class RandomPersonalComputerLogic final : public PersonalComputerLogic {
  public:
   void init() override;
+
+  void reset() override {}
 
   void execute(std::unique_ptr<Communicator>&) override;
 };
