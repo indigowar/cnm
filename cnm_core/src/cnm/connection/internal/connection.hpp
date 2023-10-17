@@ -37,12 +37,6 @@ class Connection {
   // pass one Message from one node to another).
   [[nodiscard]] virtual size_t getSpeed() const noexcept = 0;
 
-  // stopRequesting() - forbids sending from client to server.
-  virtual void stopRequesting() = 0;
-
-  // stopServing() - forbids sending from server to client.
-  virtual void stopServing() = 0;
-
   // getClientHostInfo() - retrieve the host info of the client.
   virtual HostInfo getClientHostInfo() const noexcept = 0;
 

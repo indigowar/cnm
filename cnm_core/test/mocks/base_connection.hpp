@@ -14,8 +14,6 @@ class MockBaseConnection : public Cnm::Connections::Connection {
   MOCK_METHOD(std::unique_lock<std::mutex>, makeLock, (),
               (const, noexcept, override));
   MOCK_METHOD(size_t, getSpeed, (), (const, noexcept, override));
-  MOCK_METHOD(void, stopRequesting, (), (override));
-  MOCK_METHOD(void, stopServing, (), (override));
   MOCK_METHOD(Cnm::HostInfo, getClientHostInfo, (),
               (const, noexcept, override));
   MOCK_METHOD(Cnm::HostInfo, getServerHostInfo, (),

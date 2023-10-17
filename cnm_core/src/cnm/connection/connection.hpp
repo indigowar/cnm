@@ -100,9 +100,9 @@ class Connection final : public Connections::Connection {
 
   size_t getSpeed() const noexcept override;
 
-  void stopRequesting() override;
+  void stopRequesting();
 
-  void stopServing() override;
+  void stopServing();
 
   std::vector<std::shared_ptr<Connections::ConnectionNode>>::iterator begin() {
     return nodes.begin();
