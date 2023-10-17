@@ -5,7 +5,7 @@
 
 #include <cnm/connection/internal/connection.hpp>
 
-class MockConnection : public Cnm::Connections::Connection {
+class MockBaseConnection : public Cnm::Connections::Connection {
  public:
   MOCK_METHOD(void, abort, (), (override));
   MOCK_METHOD(bool, isRequesting, (), (const, noexcept, override));

@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-#include "mocks/connection.hpp"
+#include "mocks/base_connection.hpp"
 #include "mocks/connection_node.hpp"
 #include "mocks/node.hpp"
 #include "mocks/sleep_wrapper.hpp"
@@ -18,7 +18,7 @@ using ::testing::Return;
 class ClientNodeTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    connection = std::make_shared<NiceMock<MockConnection>>();
+    connection = std::make_shared<NiceMock<MockBaseConnection>>();
     node = std::make_shared<NiceMock<MockNode>>();
     sleep_wrapper = std::make_shared<NiceMock<MockSleepWrapper>>();
     connection_node = std::make_shared<NiceMock<MockConnectionNode>>(
@@ -35,7 +35,7 @@ class ClientNodeTest : public ::testing::Test {
     connection.reset();
   }
 
-  std::shared_ptr<NiceMock<MockConnection>> connection;
+  std::shared_ptr<NiceMock<MockBaseConnection>> connection;
   std::shared_ptr<NiceMock<MockNode>> node;
   std::shared_ptr<NiceMock<MockConnectionNode>> connection_node;
   std::shared_ptr<NiceMock<MockSleepWrapper>> sleep_wrapper;

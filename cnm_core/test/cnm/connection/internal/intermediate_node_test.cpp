@@ -3,7 +3,7 @@
 
 #include <cnm/connection/internal/intermediate_node.hpp>
 
-#include "mocks/connection.hpp"
+#include "mocks/base_connection.hpp"
 #include "mocks/connection_node.hpp"
 #include "mocks/node.hpp"
 #include "mocks/sleep_wrapper.hpp"
@@ -15,7 +15,7 @@ class IntermediateNodeTest : public ::testing::Test {
  protected:
   void SetUp() override {
     sleep_wrapper = std::make_shared<testing::NiceMock<MockSleepWrapper>>();
-    connection = std::make_shared<testing::NiceMock<MockConnection>>();
+    connection = std::make_shared<testing::NiceMock<MockBaseConnection>>();
     node = std::make_shared<testing::NiceMock<MockNode>>();
 
     intermediate_node =
@@ -30,7 +30,7 @@ class IntermediateNodeTest : public ::testing::Test {
 
   std::unique_ptr<IntermediateNode> intermediate_node;
   std::shared_ptr<MockNode> node;
-  std::shared_ptr<MockConnection> connection;
+  std::shared_ptr<MockBaseConnection> connection;
 
   std::shared_ptr<MockSleepWrapper> sleep_wrapper;
 };

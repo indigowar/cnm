@@ -3,7 +3,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mocks/client_node.hpp"
+#include "mocks/intermediate_node.hpp"
 #include "mocks/node.hpp"
+#include "mocks/server_node.hpp"
 
 using namespace Cnm;
 
