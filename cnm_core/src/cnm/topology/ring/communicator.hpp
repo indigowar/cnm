@@ -36,7 +36,7 @@ class Communicator final : public Cnm::Communicator {
   std::vector<HostInfo> getSpecificType(std::string_view type,
                                         bool filteR_unavailable = false);
 
-  result_t<std::vector<std::shared_ptr<Node>>> findShortestPath(
+  result_t<std::vector<std::shared_ptr<Cnm::Node>>> findShortestPath(
       const std::string& from, const std::string& to);
 
   Ring* ring;

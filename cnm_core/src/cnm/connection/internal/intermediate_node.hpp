@@ -43,6 +43,8 @@ class IntermediateNode final : public ConnectionNode {
   std::shared_ptr<ConnectionNode> next;
 };
 
+using IntermediateT = std::shared_ptr<IntermediateNode>;
+
 }  // namespace Cnm::Connections
 
 #endif  // HPP_CNM_CORE_CONNECTION_INTERNAL_INTERMEDIATE_NODE_HPP

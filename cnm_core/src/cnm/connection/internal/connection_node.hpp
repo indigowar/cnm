@@ -57,6 +57,8 @@ class ConnectionNode {
   mutable std::mutex mutex;
 };
 
+using NodeT = std::shared_ptr<ConnectionNode>;
+
 }  // namespace Cnm::Connections
 
 #endif  // HPP_CNM_CORE_CONNECTION_INTERNAL_CONNECTION_NODE_HPP

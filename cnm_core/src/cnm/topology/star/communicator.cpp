@@ -1,5 +1,7 @@
 #include "communicator.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <ranges>
 
 #include "cnm/connection/connection.hpp"

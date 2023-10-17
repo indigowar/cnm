@@ -41,6 +41,8 @@ class ClientNode final : public ConnectionNode {
   std::vector<Message> retrieved;
 };
 
+using ClientT = std::shared_ptr<ClientNode>;
+
 }  // namespace Cnm::Connections
 
 #endif  // HPP_CNM_CORE_CONNECTION_INTERNAL_CLIENT_NODE_HPP

@@ -1,5 +1,7 @@
 #include "communicator.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <memory>
 #include <ranges>
 
@@ -8,7 +10,6 @@
 #include "cnm/topology/base/node.hpp"
 #include "cnm/topology/ring/node.hpp"
 #include "cnm/utils/result.hpp"
-#include "spdlog/common.h"
 
 namespace Cnm::Ring {
 
@@ -51,9 +52,9 @@ void Communicator::disconnect(HostInfo host_info) {
 
 void Communicator::setNode(Cnm::Node* n) { this->node = n; }
 
-result_t<std::vector<std::shared_ptr<Node>>> Communicator::findShortestPath(
-    const std::string& from, const std::string& to) {
-  using ResultType = std::vector<std::shared_ptr<Node>>;
+result_t<std::vector<std::shared_ptr<Cnm::Node>>>
+Communicator::findShortestPath(const std::string& from, const std::string& to) {
+  using ResultType = std::vector<std::shared_ptr<Cnm::Node>>;
 
   if (!ring->nodes.contains(from)) {
     return result_t<ResultType>::Err(
@@ -97,7 +98,7 @@ result_t<ClientCtx> Communicator::makeConnection(std::string address) {
 
   auto path = path_result.unwrap();
 
-  Connection conn(ring->getNetworkSpeed(), path.begin(), path.end());
+  Connection conn(ring->getNetworkSpeed(), path);
 
   std::ignore = std::async([this, &conn] {
     auto ctx = conn.createServerContext();

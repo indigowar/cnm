@@ -37,6 +37,8 @@ class ServerNode final : public ConnectionNode {
   std::vector<Message> retrieved;
 };
 
+using ServerT = std::shared_ptr<ServerNode>;
+
 }  // namespace Cnm::Connections
 
 #endif  // HPP_CNM_CORE_CONNECTION_INTERNAL_SERVER_NODE_HPP
