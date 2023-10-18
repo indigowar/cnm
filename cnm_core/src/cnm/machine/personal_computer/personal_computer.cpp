@@ -2,12 +2,15 @@
 
 #include <spdlog/spdlog.h>
 
+#include <utility>
+
 namespace Cnm {
 
 PersonalComputer::PersonalComputer(
-    std::unique_ptr<PersonalComputerLogic>&& logic, HostInfo,
+    std::unique_ptr<PersonalComputerLogic>&& logic, HostInfo host_info,
     std::unique_ptr<Communicator>&&)
-    : Machine(PersonalComputer::Type, 0, host_info, std::move(communicator)),
+    : Machine(PersonalComputer::Type, 0, std::move(host_info),
+              std::move(communicator)),
       logic(std::move(logic)),
       thread{},
       continue_execution{},
