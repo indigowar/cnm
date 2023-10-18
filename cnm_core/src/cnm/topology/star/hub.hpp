@@ -47,7 +47,7 @@ class Hub final : public Cnm::Node {
 
   void serve(std::unique_ptr<ServerContext> &&ptr) override;
 
-  std::string_view getType() const noexcept override;
+  std::string_view getType() const noexcept override { return TYPE; }
 
   void attachConnectionNode(Connections::ConnectionNode *node) override;
 
@@ -62,6 +62,8 @@ class Hub final : public Cnm::Node {
   std::set<std::shared_ptr<Node>>::iterator begin() { return nodes.begin(); }
 
   std::set<std::shared_ptr<Node>>::iterator end() { return nodes.end(); }
+
+  static constexpr std::string_view TYPE = "Hub";
 
  private:
   void forEachNode(std::function<void(std::shared_ptr<Node> &)>);

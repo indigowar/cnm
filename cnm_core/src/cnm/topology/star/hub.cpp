@@ -58,8 +58,6 @@ std::vector<std::shared_ptr<Cnm::Node>> Hub::getConnectedNodes()
 
 void Hub::serve(std::unique_ptr<ServerContext> &&ctx) { ctx->abort(); }
 
-std::string_view Hub::getType() const noexcept { return "Hub"; }
-
 void Hub::attachConnectionNode(Connections::ConnectionNode *node) {
   //  std::unique_lock lock(mutex);
 
