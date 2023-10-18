@@ -4,6 +4,7 @@
 #include <imgui_internal.h>
 #include <spdlog/spdlog.h>
 
+#include <cnm/machine/office_equipment/office_equipment.hpp>
 #include <cnm/machine/server/server.hpp>
 #include <string_view>
 
@@ -38,10 +39,19 @@ MainScene::MainScene(Scenes::Switcher* switcher, Scenes::Exiter* exiter)
   });
 
   create_office_eq_popup.onSave([this](auto& info) {
-    spdlog::warn("CreateOfficeEquipmentPopup::onSave");
-  });
-  create_office_eq_popup.onClose([this](auto& info) {
-    spdlog::warn("CreateOfficeEquipmentPopup::onClose");
+    auto host_info = Cnm::HostInfo::generate(info.name, info.ip.f, info.ip.s,
+                                             info.ip.t, info.ip.fo);
+
+    std::unique_ptr<Cnm::OfficeEquipmentLogic> logic{};
+    if (info.type == Popup::CreateOfficeEquipmentPopup::Type::Scanner) {
+      logic = std::make_unique<Cnm::ScannerOfficeEquipmentLogic>(info.base_dir);
+    } else {
+      logic = std::make_unique<Cnm::PrinterOfficeEquipmentLogic>(info.base_dir);
+    }
+
+    auto oe = std::make_unique<Cnm::OfficeEquipment>(std::move(logic),
+                                                     host_info, nullptr);
+    topology->addMachine(std::move(oe), host_info);
   });
 }
 

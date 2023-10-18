@@ -4,11 +4,14 @@
 #include <functional>
 #include <string>
 
+#include "lib/render/list_chooser.hpp"
+#include "lib/render/readers.hpp"
+
 namespace Popup {
 
 class CreateOfficeEquipmentPopup final {
  public:
-  enum class OfficeEquipmentType { Scanner, Printer };
+  enum class Type { NotSelected, Scanner, Printer };
 
   struct Info final {
     struct {
@@ -20,22 +23,33 @@ class CreateOfficeEquipmentPopup final {
 
     std::string name;
 
-    OfficeEquipmentType type;
+    std::string base_dir;
+
+    Type type;
   };
 
   CreateOfficeEquipmentPopup() = default;
 
   void render(bool*);
 
-  void onClose(std::function<void(Info&)> f) { on_close = std::move(f); }
-
   void onSave(std::function<void(Info&)> f) { on_save = std::move(f); }
 
  private:
-  std::function<void(Info&)> on_close;
-  std::function<void(Info&)> on_save;
+  Info makeInfo();
+  bool validate(Info);
+  void reset();
 
-  Info info;
+  StringReader<256> name_reader{};
+  StringReader<1024> base_dir{};
+
+  NumberReader<uint8_t, 10, 3> first_reader{};
+  NumberReader<uint8_t, 10, 3> second_reader{};
+  NumberReader<uint8_t, 10, 3> third_reader{};
+  NumberReader<uint8_t, 10, 3> fourth_reader{};
+
+  ListChooser<2> type_chooser{{"Printer", "Scanner"}};
+
+  std::function<void(Info&)> on_save;
 };
 
 }  // namespace Popup
