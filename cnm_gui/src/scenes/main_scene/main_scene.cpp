@@ -38,15 +38,15 @@ void MainScene::start() {
   topology = std::make_unique<Cnm::Star::Star>();
   {
     auto server = std::make_unique<Cnm::Server>(
-        Cnm::ServerLogic{}, 10, Cnm::HostInfo("Server A", "123.44.50.255"),
-        nullptr);
+        std::make_unique<Cnm::ServerLogic>(), 10,
+        Cnm::HostInfo("Server A", "123.44.50.255"), nullptr);
 
     topology->addMachine(std::move(server),
                          Cnm::HostInfo("Server A", "123.44.50.255"));
 
     server = std::make_unique<Cnm::Server>(
-        Cnm::ServerLogic{}, 10, Cnm::HostInfo("Server b", "23.122.51.255"),
-        nullptr);
+        std::make_unique<Cnm::ServerLogic>(), 10,
+        Cnm::HostInfo("Server b", "23.122.51.255"), nullptr);
 
     topology->addMachine(std::move(server),
                          Cnm::HostInfo("Server B", "23.122.51.255"));
@@ -149,8 +149,8 @@ Menu::Menu MainScene::makeMenuBar() {
                      [this] {
                        auto host_info = Cnm::HostInfo::generate("PC");
                        auto machine = std::make_unique<Cnm::PersonalComputer>(
-                           Cnm::PersonalComputerLogic{}, host_info,
-                           topology->getHub()->createCommunicator());
+                           std::make_unique<Cnm::PersonalComputerLogic>(),
+                           host_info, topology->getHub()->createCommunicator());
 
                        topology->addMachine(std::move(machine), host_info);
                      }),
