@@ -1,7 +1,8 @@
 #include "application.hpp"
 
-#include "scenes/demo_scene/demo_scene.hpp"
-#include "scenes/main_scene/main_scene.hpp"
+#include "scenes/main_menu/main_menu.hpp"
+#include "scenes/ring_scene/ring_scene.hpp"
+#include "scenes/star_scene/star_scene.hpp"
 
 Application::Application(std::string name)
     : scene_manager(),
@@ -12,13 +13,15 @@ Application::Application(std::string name)
 void Application::init() {
   scene_manager = std::make_unique<Scenes::Manager>(&exiter);
 
-  auto main_scene = std::make_shared<MainScene>();
-  scene_manager->add(main_scene);
+  auto star = std::make_shared<StarScene>();
+  auto ring = std::make_shared<RingScene>();
+  auto menu = std::make_shared<MainMenu>();
 
-  auto demo_scene = std::make_shared<DemoScene>();
-  scene_manager->add(demo_scene);
+  scene_manager->add(star);
+  scene_manager->add(ring);
+  scene_manager->add(menu);
 
-  scene_manager->setNextScene(main_scene->getName());
+  scene_manager->setNextScene(menu->getName());
 }
 
 const std::string& Application::getName() const noexcept { return name; }

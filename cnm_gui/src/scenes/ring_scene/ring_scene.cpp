@@ -1,4 +1,4 @@
-#include "main_scene.hpp"
+#include "ring_scene.hpp"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -13,7 +13,7 @@
 #include "helpers/fps_window.hpp"
 #include "lib/render/node.hpp"
 
-MainScene::MainScene(Scenes::Switcher* switcher, Scenes::Exiter* exiter)
+RingScene::RingScene(Scenes::Switcher* switcher, Scenes::Exiter* exiter)
     : Scene("MainScene", switcher, exiter) {
   open_server_creation_window = false;
   open_office_equipment_creation_window = false;
@@ -70,7 +70,7 @@ MainScene::MainScene(Scenes::Switcher* switcher, Scenes::Exiter* exiter)
   });
 }
 
-void MainScene::start() {
+void RingScene::start() {
   spdlog::info("MainScene::start()");
 
   menu = std::make_unique<Menu::Menu>(makeMenuBar());
@@ -95,9 +95,9 @@ void MainScene::start() {
   ImGui::StyleColorsDark();
 }
 
-void MainScene::update() {}
+void RingScene::update() {}
 
-void MainScene::render() {
+void RingScene::render() {
   menu->render();
   helpers::renderFPSWindow();
 
@@ -150,65 +150,83 @@ void MainScene::render() {
   renderEditor();
 }
 
-void MainScene::postRender() {}
+void RingScene::postRender() {}
 
-void MainScene::cleanup() { spdlog::info("TestScene::cleanup()"); }
+void RingScene::cleanup() { spdlog::info("TestScene::cleanup()"); }
 
-void MainScene::freeze() { spdlog::info("TestScene::freeze()"); }
+void RingScene::freeze() { spdlog::info("TestScene::freeze()"); }
 
-void MainScene::invoke() { spdlog::info("TestScene::invoke()"); }
+void RingScene::invoke() { spdlog::info("TestScene::invoke()"); }
 
-Menu::Menu MainScene::makeMenuBar() {
-  /**
-   * TODO: Add the actual logic for every MenuField
-   */
-
-  const static auto test = [](std::string_view first, std::string_view second) {
+Menu::Menu RingScene::makeMenuBar() {
+  const static auto log_msg = [](std::string_view first,
+                                 std::string_view second) {
     spdlog::info("{}->{} clicked!", first, second);
   };
 
-  auto app = Menu::SubMenu(
-      "Application", {
-                         Menu::Item("Start", [this] { topology->start(); }),
-                         Menu::Item("Stop", [this] { topology->stop(); }),
-                         Menu::Item("Invoke", [this] { topology->invoke(); }),
-                         Menu::Item("Freeze", [this] { topology->freeze(); }),
-                         Menu::Item("Exit", std::bind(test, "App", "Exit")),
+  auto app =
+      Menu::SubMenu("App", {
+                               Menu::Item("Exit",
+                                          [this] {
+                                            log_msg("App", "Exit");
+                                            callExit();
+                                          }),
+                               Menu::Item("In Main Menu",
+                                          [this] {
+                                            log_msg("App", "In Main Menu");
+                                            setNextScene("MainMenu");
+                                          }),
+                           });
+
+  auto actions =
+      Menu::SubMenu("Actions", {
+                                   Menu::Item("Start",
+                                              [this] {
+                                                log_msg("Actions", "Start");
+                                                topology->start();
+                                              }),
+
+                                   Menu::Item("Stop",
+                                              [this] {
+                                                log_msg("Actions", "Stop");
+                                                topology->stop();
+                                              }),
+                                   Menu::Item("Invoke",
+                                              [this] {
+                                                log_msg("Actions", "Invoke");
+                                                topology->invoke();
+                                              }),
+                                   Menu::Item("Freeze",
+                                              [this] {
+                                                log_msg("Actions", "Freeze");
+                                                topology->freeze();
+                                              }),
+                               });
+
+  auto add_machine = Menu::SubMenu(
+      "Add Machine", {
+                         Menu::Item("PC",
+                                    [this] {
+                                      log_msg("Add Machine", "PC");
+                                      open_pc_creation_window = true;
+                                    }),
+                         Menu::Item("Office Equipment",
+                                    [this] {
+                                      log_msg("Add Machine", "OfficeEquipment");
+                                      open_office_equipment_creation_window =
+                                          true;
+                                    }),
+                         Menu::Item("Server",
+                                    [this] {
+                                      log_msg("Add Machine", "Server");
+                                      open_server_creation_window = true;
+                                    }),
                      });
-  auto topology_menu = Menu::SubMenu(
-      "Topology", {
-                      Menu::Item("Ring", std::bind(test, "Topology", "Ring")),
 
-                      Menu::Item("Star", std::bind(test, "Topology", "Star")),
-                      Menu::Item("Mesh", std::bind(test, "Topology", "Mesh")),
-                  });
-  auto machine = Menu::SubMenu(
-      "Machine", {
-                     Menu::Item("PC",
-                                [this] {
-                                  test("Machine", "PC");
-                                  open_pc_creation_window = true;
-                                }),
-                     Menu::Item("Server",
-                                [this] {
-                                  test("Machine", "Server");
-                                  open_server_creation_window = true;
-                                }),
-                     Menu::Item("Office Equipment",
-                                [this] {
-                                  test("Machine", "Server");
-                                  open_office_equipment_creation_window = true;
-                                }),
-                 });
-
-  auto test_menu = Menu::SubMenu(
-      "Test",
-      {Menu::Item("Go to DEMO", [this] { this->setNextScene("demo"); })});
-
-  return Menu::Menu({test_menu, app, topology_menu, machine});
+  return Menu::Menu({app, actions, add_machine});
 }
 
-void MainScene::renderEditor() {
+void RingScene::renderEditor() {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
   ImGui::Begin("Editor", nullptr,

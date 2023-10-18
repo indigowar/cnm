@@ -1,5 +1,5 @@
-#ifndef HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
-#define HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
+#ifndef HPP_CNM_GUI_SCENES_STAR_SCENE_HPP
+#define HPP_CNM_GUI_SCENES_STAR_SCENE_HPP
 
 #include <cnm/topology/star/star.hpp>
 #include <map>
@@ -13,9 +13,9 @@
 #include "lib/scenes/scene.hpp"
 #include "lib/scenes/switcher.hpp"
 
-class MainScene final : public Scenes::Scene {
+class StarScene final : public Scenes::Scene {
  public:
-  MainScene(Scenes::Switcher* switcher = nullptr,
+  StarScene(Scenes::Switcher* switcher = nullptr,
             Scenes::Exiter* exitter = nullptr);
   void start() override;
 
@@ -49,4 +49,4 @@ class MainScene final : public Scenes::Scene {
   Popup::CreatePC create_pc_popup{};
 };
 
-#endif  // HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP
+#endif  // HPP_CNM_GUI_SCENES_STAR_SCENE_HPP
