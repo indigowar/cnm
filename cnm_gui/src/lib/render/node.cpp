@@ -5,135 +5,30 @@
 
 #include <sstream>
 
-#include "cnm/core/object.hpp"
-
-constexpr ImVec4 ACTIVE_NODE_COLOR = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
-constexpr ImVec4 INACTIVE_NODE_COLOR = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
-
-// forceWindowInsideParent - force the child to be inside the parent window.
-void forceWindowInsideParent(const ImGuiWindow* parent, ImGuiWindow* child) {
-  auto child_pos = child->Pos;
-  auto child_size = child->Size;
-
-  auto parent_pos = parent->Pos;
-  auto parent_size = parent->Size;
-
-  if (parent_pos.x > child_pos.x) {
-    child_pos.x = parent_pos.x;
-  }
-
-  if (parent_pos.y > child_pos.y) {
-    child_pos.y = parent_pos.y;
-  }
-
-  if (parent_pos.x + parent_size.x < child_pos.x + child_size.x) {
-    child_pos.x = parent_pos.x + parent_size.x - child_size.x;
-  }
-
-  if (parent_pos.y + parent_size.y < child_pos.y + child_size.y) {
-    child_pos.y = parent_pos.y + parent_size.y - child_size.y;
-  }
-
-  child->Pos = child_pos;
-}
-
-void renderStopButtonForNode(std::shared_ptr<Cnm::Node>& node) {
-  if (ImGui::Button("Stop")) {
-    if (node->getStatus() != Cnm::Object::Status::Freezed) {
-      node->freeze();
-    }
-  }
-}
-
-void renderKillButtonForNode(std::shared_ptr<Cnm::Node>& node) {
-  if (ImGui::Button("Kill")) {
-    if (node->getStatus() != Cnm::Object::Status::Dead) {
-      node->stop();
-    }
-  }
-}
-
-void renderInvokeButtonForNode(std::shared_ptr<Cnm::Node>& node) {
-  if (ImGui::Button("Invoke")) {
-    if (node->getStatus() != Cnm::Object::Status::Running) {
-      node->invoke();
-    }
-  }
-}
-
-void renderDeleteButtonForNode(std::shared_ptr<Cnm::Node>& node,
-                               Cnm::Topology* topology) {
-  if (ImGui::Button("Delete")) {
-    topology->deleteMachine(node->getHostInfo());
-  }
-}
-
-void renderMenuForRunningNode(std::shared_ptr<Cnm::Node>& node,
-                              Cnm::Topology* topology) {
-  IM_ASSERT(node->getStatus() == Cnm::Object::Status::Running);
-  renderStopButtonForNode(node);
-  ImGui::SameLine();
-  renderKillButtonForNode(node);
-}
-
-void renderMenuForFrozenNode(std::shared_ptr<Cnm::Node>& node,
-                             Cnm::Topology* topology) {
-  IM_ASSERT(node->getStatus() == Cnm::Object::Status::Freezed);
-  renderInvokeButtonForNode(node);
-  ImGui::SameLine();
-  renderKillButtonForNode(node);
-}
+#include "lib/render/ring.hpp"
+#include "lib/render/star.hpp"
+#include "lib/render/utils.hpp"
 
 ImGuiWindow* renderNode(std::shared_ptr<Cnm::Node>& node,
                         Cnm::Topology* topology) {
-  auto name = makeNodeWindowName(node);
-
-  auto is_active = node->getStatus() == Cnm::Object::Status::Running;
-
-  ImGui::PushStyleColor(ImGuiCol_WindowBg,
-                        is_active ? ACTIVE_NODE_COLOR : INACTIVE_NODE_COLOR);
-
-  ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
-
-  ImGui::PopStyleColor();
-
-  auto this_window = ImGui::GetCurrentWindow();
-  auto parent_window = ImGui::FindWindowByName("Editor");
-
-  IM_ASSERT(parent_window != nullptr);
-
-  auto host_info = node->getHostInfo();
-
-  ImGui::Text("Name: %s", host_info.getName().c_str());
-  ImGui::Text("Address: %s", host_info.getAddress().c_str());
-
-  auto status = node->getStatus();
-
-  if (status == Cnm::Object::Status::Running) {
-    renderMenuForRunningNode(node, topology);
-  } else if (status == Cnm::Object::Status::Freezed) {
-    renderMenuForFrozenNode(node, topology);
-  } else {
-    ImGui::Text("Object is inactive");
-    renderDeleteButtonForNode(node, topology);
+  if (topology->getType() == Cnm::Star::Star::TYPE) {
+    auto star_topology = dynamic_cast<Cnm::Star::Star*>(topology);
+    if (node->getType() == Cnm::Star::Hub::TYPE) {
+      std::shared_ptr<Cnm::Star::Hub> hub =
+          std::dynamic_pointer_cast<Cnm::Star::Hub>(node);
+      return renderStarHub(hub, star_topology);
+    }
+    std::shared_ptr<Cnm::Star::Node> star_node =
+        std::dynamic_pointer_cast<Cnm::Star::Node>(node);
+    return renderStarNode(star_node, star_topology);
   }
 
-  // On moving the window, checks if it goes out of Editor window.
-  if (ImGui::IsWindowHovered() &&
-      ImGui::IsMouseDragging(ImGuiMouseButton_Left, -1.0f)) {
-    forceWindowInsideParent(parent_window, this_window);
+  if (topology->getType() == Cnm::Ring::Ring::TYPE) {
+    auto ring_topology = dynamic_cast<Cnm::Ring::Ring*>(topology);
+    auto ring_node = std::dynamic_pointer_cast<Cnm::Ring::Node>(node);
+    return renderRingNode(ring_node, ring_topology);
   }
-
-  ImGui::End();
-  return this_window;
-}
-
-// calculateWindowCenter - calculates the center of the window based of it's
-// size and position.
-ImVec2 calculateWindowCenter(const ImGuiWindow* window) {
-  auto pos = window->Pos;
-  auto size = window->Size;
-  return {pos.x + (size.x / 2), pos.y + (size.y / 2)};
+  return nullptr;
 }
 
 // renderConnection - renders the connection between two windows with given
@@ -150,11 +45,4 @@ void renderNodeConnections(
   for (auto& [f, s] : cons) {
     renderConnection(f, s, IM_COL32(255, 0, 0, 255));
   }
-}
-
-std::string makeNodeWindowName(const std::shared_ptr<Cnm::Node>& node) {
-  std::stringstream ss;
-  ss << node->getHostInfo().getName() << " "
-     << node->getHostInfo().getAddress();
-  return ss.str();
 }
