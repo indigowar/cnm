@@ -7,6 +7,7 @@
 
 #include "lib/menu/menu.hpp"
 #include "lib/popups/create_office_equipment.hpp"
+#include "lib/popups/create_personal_computer.hpp"
 #include "lib/popups/create_server.hpp"
 #include "lib/scenes/exiter.hpp"
 #include "lib/scenes/scene.hpp"
@@ -41,9 +42,11 @@ class MainScene final : public Scenes::Scene {
 
   bool open_server_creation_window;
   bool open_office_equipment_creation_window;
+  bool open_pc_creation_window;
 
   Popup::CreateServerPopup create_server_popup{};
   Popup::CreateOfficeEquipmentPopup create_office_eq_popup{};
+  Popup::CreatePC create_pc_popup{};
 };
 
 #endif  // HPP_CNM_GUI_SCENES_MAIN_SCENE_HPP

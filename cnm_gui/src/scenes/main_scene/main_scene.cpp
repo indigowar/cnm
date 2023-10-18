@@ -17,6 +17,7 @@ MainScene::MainScene(Scenes::Switcher* switcher, Scenes::Exiter* exiter)
     : Scene("MainScene", switcher, exiter) {
   open_server_creation_window = false;
   open_office_equipment_creation_window = false;
+  open_pc_creation_window = false;
 
   create_server_popup.onSave([this](auto info) {
     auto host_info = Cnm::HostInfo::generate(info.name, info.ip.f, info.ip.s,
@@ -52,6 +53,20 @@ MainScene::MainScene(Scenes::Switcher* switcher, Scenes::Exiter* exiter)
     auto oe = std::make_unique<Cnm::OfficeEquipment>(std::move(logic),
                                                      host_info, nullptr);
     topology->addMachine(std::move(oe), host_info);
+  });
+
+  create_pc_popup.onSave([this](auto& info) {
+    auto host_info = Cnm::HostInfo::generate(info.name, info.ip.f, info.ip.s,
+                                             info.ip.t, info.ip.fo);
+    std::unique_ptr<Cnm::PersonalComputerLogic> logic{};
+    if (info.type == Popup::CreatePC::Type::Randomized) {
+      logic = std::make_unique<Cnm::RandomPersonalComputerLogic>();
+    } else {
+      return;
+    }
+    auto pc = std::make_unique<Cnm::PersonalComputer>(std::move(logic),
+                                                      host_info, nullptr);
+    topology->addMachine(std::move(pc), host_info);
   });
 }
 
@@ -168,28 +183,23 @@ Menu::Menu MainScene::makeMenuBar() {
                       Menu::Item("Mesh", std::bind(test, "Topology", "Mesh")),
                   });
   auto machine = Menu::SubMenu(
-      "Machine",
-      {
-          Menu::Item("PC",
-                     [this] {
-                       auto host_info = Cnm::HostInfo::generate("PC");
-                       auto machine = std::make_unique<Cnm::PersonalComputer>(
-                           std::make_unique<Cnm::PersonalComputerLogic>(),
-                           host_info, topology->getHub()->createCommunicator());
-
-                       topology->addMachine(std::move(machine), host_info);
-                     }),
-          Menu::Item("Server",
-                     [this] {
-                       test("Machine", "Server");
-                       open_server_creation_window = true;
-                     }),
-          Menu::Item("Office Equipment",
-                     [this] {
-                       test("Machine", "Server");
-                       open_office_equipment_creation_window = true;
-                     }),
-      });
+      "Machine", {
+                     Menu::Item("PC",
+                                [this] {
+                                  test("Machine", "PC");
+                                  open_pc_creation_window = true;
+                                }),
+                     Menu::Item("Server",
+                                [this] {
+                                  test("Machine", "Server");
+                                  open_server_creation_window = true;
+                                }),
+                     Menu::Item("Office Equipment",
+                                [this] {
+                                  test("Machine", "Server");
+                                  open_office_equipment_creation_window = true;
+                                }),
+                 });
 
   auto test_menu = Menu::SubMenu(
       "Test",
@@ -266,6 +276,7 @@ void MainScene::renderEditor() {
 
   create_server_popup.render(&open_server_creation_window);
   create_office_eq_popup.render(&open_office_equipment_creation_window);
+  create_pc_popup.render(&open_pc_creation_window);
 
   ImGui::End();
 }
