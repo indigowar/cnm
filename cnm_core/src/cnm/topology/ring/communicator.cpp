@@ -7,6 +7,7 @@
 
 #include "cnm/connection/client_ctx.hpp"
 #include "cnm/connection/connection.hpp"
+#include "cnm/connection/ctx_factory.hpp"
 #include "cnm/topology/base/node.hpp"
 #include "cnm/topology/ring/node.hpp"
 #include "cnm/utils/result.hpp"
@@ -98,20 +99,18 @@ result_t<ClientCtx> Communicator::makeConnection(std::string address) {
 
   auto path = path_result.unwrap();
 
-  Connection conn(ring->getNetworkSpeed(), path);
+  auto connection = std::make_shared<Connection>(ring->getNetworkSpeed(), path);
 
-  std::ignore = std::async([this, &conn] {
-    auto ctx = conn.createServerContext();
-    if (ctx.isErr()) {
-      spdlog::warn("Connection::createServerContext() - %s", ctx.unwrapErr());
-      return;
-    }
+  std::ignore = std::async(std::launch::async, [&connection] {
+    auto ctx = ContextFactory::createServerContext<ServerContext>(
+        connection, connection->getServerNode());
 
-    ring->nodes.at(conn.getServerHostInfo().getAddress())
-        ->serve(std::move(ctx.unwrap()));
+    connection->getServerNode()->getNetworkNode()->serve(std::move(ctx));
   });
 
-  return conn.createClientContext();
+  return result_t<ClientCtx>::Ok(
+      ContextFactory::createClientContext<ClientContext>(
+          connection, connection->getClientNode()));
 }
 
 }  // namespace Cnm::Ring

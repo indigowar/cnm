@@ -106,8 +106,10 @@ void Server::serve(ServerCtx&& ctx) {
 }
 
 void Server::addRequestToThreadPool(Cnm::ServerCtx&& ctx) {
-  auto task = [this, &ctx] { logic->execute(communicator, std::move(ctx)); };
-  thread_pool->enqueue(task);
+  auto task = [this, c{std::move(ctx)}]() mutable {
+    logic->execute(communicator, std::move(c));
+  };
+  thread_pool->enqueue(std::move(task));
 }
 
 Object::Status Server::getStatus() const noexcept { return status; }

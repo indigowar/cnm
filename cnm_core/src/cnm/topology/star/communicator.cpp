@@ -5,6 +5,7 @@
 #include <ranges>
 
 #include "cnm/connection/connection.hpp"
+#include "cnm/connection/ctx_factory.hpp"
 #include "cnm/topology/star/hub.hpp"
 #include "cnm/topology/star/star.hpp"
 
@@ -50,18 +51,16 @@ result_t<ClientCtx> Communicator::makeConnection(std::string address) {
   path.emplace_back(hub);
   path.emplace_back(server);
 
-  Connection connection(hub->star->getNetworkSpeed(), path);
+  auto connection =
+      std::make_shared<Connection>(hub->star->getNetworkSpeed(), path);
 
-  std::ignore = std::async([this, &connection, &server] {
-    auto ctx = connection.createServerContext();
-    if (ctx.isErr()) {
-      spdlog::warn("Connection::createServerContext() - %s", ctx.unwrapErr());
-      return;
-    }
-    server->serve(std::move(ctx.unwrap()));
-  });
+  auto ctx = ContextFactory::createServerContext<ServerContext>(
+      connection, connection->getServerNode());
+  server->serve(std::move(ctx));
 
-  return connection.createClientContext();
+  return result_t<ClientCtx>::Ok(
+      ContextFactory::createClientContext<ClientContext>(
+          connection, connection->getClientNode()));
 }
 
 std::vector<HostInfo> Communicator::getSpecificType(std::string_view type,
