@@ -17,10 +17,25 @@ MainScene::MainScene(Scenes::Switcher* switcher, Scenes::Exiter* exiter)
   open_server_creation_window = false;
   open_office_equipment_creation_window = false;
 
-  create_server_popup.onSave(
-      [this](auto& info) { spdlog::warn("CreateServerPopup::onSave"); });
-  create_server_popup.onClose(
-      [this](auto& info) { spdlog::warn("CreateServerPopup::onClose"); });
+  create_server_popup.onSave([this](auto info) {
+    auto host_info = Cnm::HostInfo::generate(info.name, info.ip.f, info.ip.s,
+                                             info.ip.t, info.ip.fo);
+
+    if (info.type == Popup::CreateServerPopup::ServerType::FileServer &&
+        !info.files.has_value()) {
+      return;
+    }
+
+    std::unique_ptr<Cnm::ServerLogic> logic =
+        info.type == Popup::CreateServerPopup::ServerType::FileServer
+            ? std::make_unique<Cnm::FileServerLogic>(info.files.value())
+            : std::make_unique<Cnm::ServerLogic>();
+
+    auto server = std::make_unique<Cnm::Server>(std::move(logic), info.limit,
+                                                host_info, nullptr);
+
+    topology->addMachine(std::move(server), host_info);
+  });
 
   create_office_eq_popup.onSave([this](auto& info) {
     spdlog::warn("CreateOfficeEquipmentPopup::onSave");
