@@ -11,8 +11,8 @@ namespace Cnm {
 // Can serve one request at a time.
 class OfficeEquipment final : public Machine {
  public:
-  OfficeEquipment(OfficeEquipmentLogic&& logic, HostInfo host_info,
-                  std::unique_ptr<Communicator>&&);
+  OfficeEquipment(std::unique_ptr<OfficeEquipmentLogic> &&logic,
+                  HostInfo host_info, std::unique_ptr<Communicator> &&);
 
   ~OfficeEquipment() override;
 
@@ -28,18 +28,18 @@ class OfficeEquipment final : public Machine {
 
   Object::Status getStatus() const noexcept override;
 
-  void serve(ServerCtx&&) override;
+  void serve(ServerCtx &&) override;
 
   static constexpr std::string_view Type = "office_equipment";
 
  private:
-  void addRequest(ServerCtx&&);
+  void addRequest(ServerCtx &&);
 
   std::unique_ptr<Utils::ThreadPool> runner;
 
   bool is_active;
 
-  OfficeEquipmentLogic logic;
+  std::unique_ptr<OfficeEquipmentLogic> logic;
 };
 
 }  // namespace Cnm

@@ -4,13 +4,13 @@
 
 namespace Cnm {
 
-OfficeEquipment::OfficeEquipment(Cnm::OfficeEquipmentLogic &&logic,
-                                 Cnm::HostInfo host_info,
+OfficeEquipment::OfficeEquipment(std::unique_ptr<OfficeEquipmentLogic> &&logic,
+                                 HostInfo host_info,
                                  std::unique_ptr<Communicator> &&c)
     : Machine(OfficeEquipment::Type, 1, std::move(host_info), std::move(c)),
       runner(nullptr),
       is_active{},
-      logic{logic} {}
+      logic{std::move(logic)} {}
 
 OfficeEquipment::~OfficeEquipment() { stop(); }
 
@@ -99,8 +99,10 @@ void OfficeEquipment::serve(ServerCtx &&ctx) {
 }
 
 void OfficeEquipment::addRequest(Cnm::ServerCtx &&ctx) {
-  auto task = [this, &ctx] { logic.execute(std::move(ctx)); };
-  runner->enqueue(task);
+  auto task = [this, c{std::move(ctx)}]() mutable {
+    logic->execute(std::move(c));
+  };
+  runner->enqueue(std::move(task));
 }
 
 }  // namespace Cnm
