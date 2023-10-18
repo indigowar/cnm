@@ -46,7 +46,7 @@ class MessageBatch final {
   }
 
   [[nodiscard]] bool containsMessageList() const noexcept {
-    return std::holds_alternative<Message>(data);
+    return std::holds_alternative<std::vector<Message>>(data);
   }
 
  private:
