@@ -61,7 +61,11 @@ void CreateServerPopup::render(bool* is_open) {
   type_chooser();
 
   if (type_chooser.has_selected()) {
-    // additional settings for specific server types
+    if (type_chooser.get() == 0) {
+      static MapReader file_reader;
+
+      file_reader("Files");
+    }
   }
 
   ImGui::Separator();
