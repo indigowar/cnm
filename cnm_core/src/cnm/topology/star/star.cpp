@@ -80,8 +80,6 @@ result_t<bool> Star::validate() const noexcept {
   return result_t<bool>::Ok(count == hub->getConnectedNodes().size());
 }
 
-std::string_view Star::getType() const noexcept { return std::string_view(); }
-
 std::shared_ptr<Cnm::Star::Hub> Star::getHub() noexcept { return hub; }
 
 HostInfo Star::generateFreeHostInfo(std::string name) {

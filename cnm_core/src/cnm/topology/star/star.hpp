@@ -39,7 +39,7 @@ class Star final : public Topology {
 
   result_t<bool> validate() const noexcept override;
 
-  std::string_view getType() const noexcept override;
+  std::string_view getType() const noexcept override { return TYPE; }
 
   std::vector<std::shared_ptr<Cnm::Node>>::iterator begin();
   std::vector<std::shared_ptr<Cnm::Node>>::iterator end();
@@ -49,6 +49,8 @@ class Star final : public Topology {
   size_t getNetworkSpeed() const noexcept override;
 
   void setNetworkSpeed(size_t speed) override;
+
+  static constexpr std::string_view TYPE = "star_topology";
 
  private:
   HostInfo generateFreeHostInfo(std::string name);

@@ -41,7 +41,7 @@ class Ring final : public Topology {
 
   result_t<bool> validate() const noexcept override;
 
-  std::string_view getType() const noexcept override { return "Ring"; }
+  std::string_view getType() const noexcept override { return TYPE; }
 
   size_t getNetworkSpeed() const noexcept override;
 
@@ -49,6 +49,8 @@ class Ring final : public Topology {
 
   [[nodiscard]] Iterator begin();
   [[nodiscard]] Iterator end();
+
+  static constexpr std::string_view TYPE = "ring_topology";
 
  private:
   friend class Cnm::Ring::Communicator;
