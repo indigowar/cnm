@@ -16,7 +16,7 @@ void FileServerLogic::onInit() {
 
 void FileServerLogic::execute(std::unique_ptr<Communicator>& com,
                               ServerCtx&& ctx) {
-  auto request = readRequest(ctx);
+  auto request = ctx->acceptAndGetRequest();
   if (request.isErr()) {
     spdlog::warn("Got an error, while reading the request: %s",
                  request.unwrapErr());
@@ -32,20 +32,14 @@ void FileServerLogic::execute(std::unique_ptr<Communicator>& com,
   }
 }
 
-result_t<MessageBatch> FileServerLogic::readRequest(ServerCtx& ctx) {
-  auto future = ctx->acceptRequest();
-  future.wait();
-  return future.get();
-}
-
 void FileServerLogic::retrieveFile(ServerCtx&& ctx, const Message& file_name) {
   std::unique_lock lock(mutex);
   if (!file_storage.contains(file_name)) {
-    ctx->sendResponse(MessageBatch(Message("file is not found")));
+    ctx->respond(MessageBatch(Message("file is not found")));
     return;
   }
   auto file = file_storage.at(file_name);
-  ctx->sendResponse(MessageBatch(Message(file)));
+  ctx->respond(MessageBatch(Message(file)));
 }
 
 void FileServerLogic::retrieveFiles(ServerCtx&& ctx,
@@ -64,7 +58,7 @@ void FileServerLogic::retrieveFiles(ServerCtx&& ctx,
                   }
                 });
 
-  ctx->sendResponse(MessageBatch(std::move(files)));
+  ctx->respond(MessageBatch(std::move(files)));
 }
 
 }  // namespace Cnm

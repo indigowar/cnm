@@ -13,11 +13,7 @@ class PersonalComputerLogic {
 
   virtual void reset() {}
 
-  virtual void execute(std::unique_ptr<Communicator>& communicator) {
-    //
-
-    //
-  }
+  virtual void execute(std::unique_ptr<Communicator>& communicator) {}
 };
 
 class RandomPersonalComputerLogic final : public PersonalComputerLogic {

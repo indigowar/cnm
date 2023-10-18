@@ -57,8 +57,8 @@ void RandomPersonalComputerLogic::execute(
     spdlog::warn("RPCL::execute() - Failed to be accepted.");
     return;
   }
-  ctx->sendRequest(MessageBatch(std::move(msg)));
-  auto response = ctx->waitAndGetResponse();
+  ctx->request(MessageBatch(std::move(msg)));
+  auto response = ctx->getResponse();
   if (response.isErr()) {
     spdlog::warn("RPCL::execute() - Failed to get response.");
     return;

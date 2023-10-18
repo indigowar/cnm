@@ -12,9 +12,7 @@ ScannerOfficeEquipmentLogic::ScannerOfficeEquipmentLogic(
     : base_dir{std::move(base_dir)} {}
 
 void ScannerOfficeEquipmentLogic::execute(Cnm::ServerCtx &&ctx) {
-  auto future_request = ctx->acceptRequest();
-  future_request.wait();
-  auto request = future_request.get();
+  auto request = ctx->acceptAndGetRequest();
   if (request.isErr()) {
     spdlog::warn("Got an error, while serving: %s", request.unwrapErr());
     ctx->abort();
@@ -47,7 +45,7 @@ result_t<std::string> ScannerOfficeEquipmentLogic::readFromFile(
 
 void ScannerOfficeEquipmentLogic::serveSimpleRequest(ServerCtx &&ctx,
                                                      Message &&task) {
-  ctx->sendResponse(MessageBatch(handleFile(task)));
+  ctx->respond(MessageBatch(handleFile(task)));
 }
 
 void ScannerOfficeEquipmentLogic::serveComplexRequest(ServerCtx &&ctx,
@@ -56,7 +54,7 @@ void ScannerOfficeEquipmentLogic::serveComplexRequest(ServerCtx &&ctx,
   std::vector<std::string> results;
   std::transform(files.begin(), files.end(), std::back_inserter(results),
                  [this](const auto &i) { return handleFile(i); });
-  ctx->sendResponse(MessageBatch(std::move(results)));
+  ctx->respond(MessageBatch(std::move(results)));
 }
 
 std::string ScannerOfficeEquipmentLogic::handleFile(
@@ -74,14 +72,13 @@ PrinterOfficeEquipmentLogic::PrinterOfficeEquipmentLogic(
     : base_dir{std::move(base_dir)} {}
 
 void PrinterOfficeEquipmentLogic::execute(Cnm::ServerCtx &&ctx) {
-  auto future_request = ctx->acceptRequest();
-  future_request.wait();
-  auto request = future_request.get();
+  auto request = ctx->acceptAndGetRequest();
   if (request.isErr()) {
     spdlog::warn("Got an error, while serving: %s", request.unwrapErr());
     ctx->abort();
     return;
   }
+
   auto body = request.unwrap();
   std::vector<std::string> results{};
   auto tasks = body.getMessageList();
@@ -96,7 +93,7 @@ void PrinterOfficeEquipmentLogic::execute(Cnm::ServerCtx &&ctx) {
       results.emplace_back("Success");
     }
   }
-  ctx->sendResponse(MessageBatch(std::move(results)));
+  ctx->respond(MessageBatch(std::move(results)));
 }
 
 result_t<bool> PrinterOfficeEquipmentLogic::writeIntoFile(

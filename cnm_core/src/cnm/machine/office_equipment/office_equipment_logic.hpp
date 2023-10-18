@@ -35,7 +35,8 @@ class [[maybe_unused]] ScannerOfficeEquipmentLogic
   std::filesystem::path base_dir;
 };
 
-// PrinterOfficeEquipmentLogic - an OfficeEquipment that writes request in file.
+// PrinterOfficeEquipmentLogic - an OfficeEquipment that writes request in
+// file.
 class [[maybe_unused]] PrinterOfficeEquipmentLogic
     : public OfficeEquipmentLogic {
  public:

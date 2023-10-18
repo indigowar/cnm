@@ -38,8 +38,6 @@ class FileServerLogic final : public ServerLogic {
  private:
   void onInit() override;
 
-  static result_t<MessageBatch> readRequest(ServerCtx& ctx);
-
   void retrieveFile(ServerCtx&& ctx, const Message& file_name);
 
   void retrieveFiles(ServerCtx&& ctx, const MessageBatch&);
