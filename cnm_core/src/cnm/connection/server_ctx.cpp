@@ -2,128 +2,82 @@
 
 #include "cnm/connection/connection.hpp"
 
-namespace Cnm {
+using namespace Cnm;
 
-ServerContext::ServerContext(
-    Cnm::Connection *connection,
-    std::shared_ptr<Connections::ServerNode> server_node)
-    : connection{connection}, server_node{std::move(server_node)} {}
+ServerContext::ServerContext(std::shared_ptr<Connection> c,
+                             Connections::ServerT srv)
+    : connection{std::move(c)}, server_node(std::move(srv)) {}
 
-ServerContext::ServerContext(Cnm::ServerContext &&other) noexcept
-    : connection{other.connection}, server_node{std::move(other.server_node)} {}
+ServerContext::~ServerContext() = default;
 
-ServerContext &ServerContext::operator=(ServerContext &&other) noexcept {
-  connection = other.connection;
-  server_node = std::move(other.server_node);
-
-  return *this;
+void ServerContext::accept() {
+  // signals the Connection, that the server is ready to retrieve requests.
+  connection->signalAccept();
 }
 
-std::future<result_t<MessageBatch>> ServerContext::acceptRequest() {
-  // not working
-  //  return std::async(std::launch::async, [this] {
-  //    return result_t<MessageBatch>::Ok(MessageBatch(Message("hi")));
-  //      if (connection->isAborted()) {
-  //        return result_t<MessageBatch>::Err("connection is aborted");
-  //      }
-  //
-  //      auto lock = connection->makeLock();
-  //      // Have to wait until the requesting stage is ended.
-  //      // It could ends in two state - serving(working) and aborted.
-  //      cond_var.wait(lock, [this] {
-  //        return connection->isServing() || connection->isAborted();
-  //      });
-  //
-  //      if (connection->isAborted()) {
-  //        return result_t<MessageBatch>::Err("connection is aborted");
-  //      }
-  //    }
-  //
-  //    auto buffer = server_node->getBuffer();
-  //
-  //    if (buffer.empty()) {
-  //      connection->abort();
-  //      return result_t<MessageBatch>::Err(
-  //          "connection is aborted due to the empty request");
-  //    }
-  //
-  //    return result_t<MessageBatch>::Ok(
-  //        buffer.size() == 1 ? MessageBatch(std::move(buffer.at(0)))
-  //                           : MessageBatch(std::move(buffer)));
-  //  });
+std::future<result_t<MessageBatch>> ServerContext::getFutureRequest() {
+  return std::async(std::launch::async, [this] {
+    auto wait_result = connection->waitForServing();
+    if (wait_result.isErr()) {
+      return result_t<MessageBatch>::Err("failed to wait for Serving");
+    }
 
-  // not working
-  //  std::packaged_task<result_t<MessageBatch>()> task([this] {
-  //    {
-  //      auto lock = connection->makeLock();
-  //
-  //      if (connection->isAborted()) {
-  //        return result_t<MessageBatch>::Err("connection is aborted");
-  //      }
-  //
-  //      // Have to wait until the requesting stage is ended.
-  //      // It could ends in two state - serving(working) and aborted.
-  //      cond_var.wait(lock, [this] {
-  //        return connection->isServing() || connection->isAborted();
-  //      });
-  //
-  //      if (connection->isAborted()) {
-  //        return result_t<MessageBatch>::Err("connection is aborted");
-  //      }
-  //    }
-  //
-  //    auto buffer = server_node->getBuffer();
-  //
-  //    if (buffer.empty()) {
-  //      connection->abort();
-  //      return result_t<MessageBatch>::Err(
-  //          "connection is aborted due to the empty request");
-  //    }
-  //
-  //    return result_t<MessageBatch>::Ok(
-  //        buffer.size() == 1 ? MessageBatch(std::move(buffer.at(0)))
-  //                           : MessageBatch(std::move(buffer)));
-  //  });
-  //
-  //  auto future = task.get_future();
-  //
-  //  std::thread thread(std::move(task));
-  //  thread.detach();
-  //
-  //  return future;
+    auto msgs = server_node->getBuffer();
+    if (msgs.empty()) {
+      return result_t<MessageBatch>::Err("the request is empty");
+    }
+    if (msgs.size() == 1) {
+      return result_t<MessageBatch>::Ok(MessageBatch(std::move(msgs[0])));
+    }
 
-  // not working
-  //  std::promise<result_t<MessageBatch>> promise{};
-  //  auto future = promise.get_future();
-  //
-  //  std::ignore = std::async(std::launch::async, [this, &promise] {
-  //    using namespace std::chrono_literals;
-  //    std::this_thread::sleep_for(10s);
-  //    promise.set_value(result_t<MessageBatch>::Ok(MessageBatch("Hello")));
-  //  });
-  //
-  //  return future;
-
-  return std::async(std::launch::async, [] {
-    return result_t<MessageBatch>::Ok(MessageBatch("Hello"));
+    return result_t<MessageBatch>::Ok(MessageBatch(std::move(msgs)));
   });
+}
+
+std::future<result_t<MessageBatch>> ServerContext::acceptAndGetFutureRequest() {
+  accept();
+  return getFutureRequest();
+}
+
+result_t<MessageBatch> ServerContext::getRequest() {
+  auto future = getFutureRequest();
+  future.wait();
+  return future.get();
+}
+
+result_t<MessageBatch> ServerContext::acceptAndGetRequest() {
+  accept();
+  return getRequest();
 }
 
 void ServerContext::abort() { server_node->abort(); }
 
-void ServerContext::sendResponse(Cnm::MessageBatch &&response) {
+result_t<bool> ServerContext::respond(const MessageBatch& response) {
   if (!connection->isServing()) {
-    return;
+    return result_t<bool>::Err("connection is not serving");
   }
 
   if (response.containsOneMessage()) {
-    server_node->sendBackward(std::move(response.getMessage()));
-    return;
+    server_node->sendBackward(response.getMessage());
+  } else {
+    for (auto m : response.getMessageList()) {
+      server_node->sendBackward(std::move(m));
+    }
   }
 
-  for (auto i : response.getMessageList()) {
-    server_node->sendBackward(std::move(i));
-  }
+  connection->signalComplete();
+  return result_t<bool>::Ok(true);
 }
 
-}  // namespace Cnm
+ServerContext::ServerContext(ServerContext&& ctx) noexcept
+    : connection{std::move(ctx.connection)},
+      server_node{std::move(ctx.server_node)} {}
+
+ServerContext& ServerContext::operator=(ServerContext&& ctx) noexcept {
+  server_node->abort();
+
+  connection = std::move(ctx.connection);
+  server_node = std::move(ctx.server_node);
+
+  return *this;
+}

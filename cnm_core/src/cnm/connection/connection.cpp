@@ -85,6 +85,7 @@ HostInfo Connection::getServerHostInfo() const noexcept {
 void Connection::changeStatus(Connection::Status s) {
   if (!called_aborted) {
     status = s;
+    notifier.notify_all();
   }
 }
 
@@ -96,104 +97,66 @@ void Connection::callAbort() {
   server_node.reset();
 }
 
-result_t<ClientCtx> Connection::createClientContext() {
-  auto result = client_ctx_builder.build(this, client_node);
-
-  if (result.isErr()) {
-    return result_t<ClientCtx>::Err(result.unwrapErr());
+void Connection::signalAccept() {
+  auto lock = makeLock();
+  if (status == Status::Created) {
+    changeStatus(Status::Requesting);
   }
-  return result_t<ClientCtx>::Ok(
-      std::make_unique<ClientContext>(result.unwrap()));
 }
 
-result_t<ServerCtx> Connection::createServerContext() {
-  auto result = server_ctx_builder.build(this, server_node);
-
-  if (result.isErr()) {
-    return result_t<ServerCtx>::Err(result.unwrapErr());
+void Connection::signalComplete() {
+  auto lock = makeLock();
+  if (status != Status::Aborted && status != Status::Complete) {
+    changeStatus(Status::Complete);
   }
-  return result_t<ServerCtx>::Ok(
-      std::make_unique<ServerContext>(result.unwrap()));
 }
 
-// using namespace Cnm;
-//
-// Connection::~Connection() { abort(); }
-//
-// void Connection::abort() {
-//   auto lock = makeLock();
-//   callAbort();
-// }
-//
-// bool Connection::isRequesting() const noexcept {
-//   auto lock = makeLock();
-//   return current_direction == Connection::SendingDirection::ToServer;
-// }
-//
-// bool Connection::isServing() const noexcept {
-//   auto lock = makeLock();
-//   return current_direction == Connection::SendingDirection::ToClient;
-// }
-//
-// bool Connection::isAborted() const noexcept {
-//   auto lock = makeLock();
-//   return current_direction == Connection::SendingDirection::None;
-// }
-//
-// std::unique_lock<std::mutex> Connection::makeLock() const noexcept {
-//   return std::unique_lock(mutex);
-// }
-//
-// size_t Connection::getSpeed() const noexcept { return speed; }
-//
-// void Connection::stopRequesting() {
-//   auto lock = makeLock();
-//   if (current_direction == Connection::SendingDirection::ToServer) {
-//     current_direction = Connection::SendingDirection::ToClient;
-//   }
-// }
-//
-// void Connection::stopServing() {
-//   auto lock = makeLock();
-//   if (current_direction == Connection::SendingDirection::ToClient) {
-//     current_direction = Connection::SendingDirection::None;
-//   }
-// }
-//
-// result_t<ClientCtx> Connection::createClientContext() {
-//   auto result = client_ctx_builder.build(this, client_node);
-//
-//   if (result.isErr()) {
-//     return result_t<ClientCtx>::Err(result.unwrapErr());
-//   }
-//   return result_t<ClientCtx>::Ok(
-//       std::make_unique<ClientContext>(result.unwrap()));
-// }
-//
-// result_t<ServerCtx> Connection::createServerContext() {
-//   auto result = server_ctx_builder.build(this, server_node);
-//
-//   if (result.isErr()) {
-//     return result_t<ServerCtx>::Err(result.unwrapErr());
-//   }
-//   return result_t<ServerCtx>::Ok(
-//       std::make_unique<ServerContext>(result.unwrap()));
-// }
-//
-// void Connection::callAbort() {
-//   if (!is_aborted) {
-//     is_aborted = true;
-//     client_node.reset();
-//     server_node.reset();
-//     nodes.resize(0);
-//     nodes.shrink_to_fit();
-//   }
-// }
-//
-// HostInfo Connection::getClientHostInfo() const noexcept {
-//   return client_node->getNetworkNode()->getHostInfo();
-// }
-//
-// HostInfo Connection::getServerHostInfo() const noexcept {
-//   return server_node->getNetworkNode()->getHostInfo();
-// }
+void Connection::signalStopRequest() {
+  auto lock = makeLock();
+  if (status != Status::Aborted && status != Status::Complete &&
+      status == Status::Requesting) {
+    changeStatus(Status::Serving);
+  }
+}
+
+Connections::ServerT Connection::getServerNode() { return server_node; }
+
+Connections::ClientT Connection::getClientNode() { return client_node; }
+
+result_t<bool> Connection::waitForStatusChange(Connection::Status s) {
+  auto lock = makeLock();
+  if (status == s) {
+    return result_t<bool>::Ok(true);
+  }
+
+  if (status > s) {
+    return result_t<bool>::Err("connection never will get into this state");
+  }
+
+  if (status == Status::Aborted) {
+    return result_t<bool>::Err("connection is aborted");
+  }
+
+  notifier.wait(lock, [this, &s] {
+    return status == s || status == Status::Aborted ||
+           status == Status::Complete;
+  });
+
+  if (s == status) {
+    return result_t<bool>::Ok(true);
+  } else {
+    return result_t<bool>::Err("status has changed to different.");
+  }
+}
+
+result_t<bool> Connection::waitForRequesting() {
+  return waitForStatusChange(Status::Requesting);
+}
+
+result_t<bool> Connection::waitForServing() {
+  return waitForStatusChange(Status::Serving);
+}
+
+result_t<bool> Connection::waitForComplete() {
+  return waitForStatusChange(Status::Complete);
+}
