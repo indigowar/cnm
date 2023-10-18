@@ -29,25 +29,20 @@ class DirectSL : public Cnm::ServerLogic {
  public:
   void execute(std::unique_ptr<Cnm::Communicator>& c,
                Cnm::ServerCtx&& ctx) override {
-    auto request_future = ctx->acceptRequest();
-    if (!request_future.valid()) {
-      spdlog::warn("INVALID FUTURE");
-      return;
-    }
-    request_future.wait();
-    auto request = request_future.get();
+    auto request = ctx->acceptAndGetRequest();
     if (request.isErr()) {
-      //      spdlog::warn("Failed to read request: %s", request.unwrapErr());
-      std::cerr << "Failed to read request:" << request.unwrapErr()
-                << std::endl;
+      spdlog::warn("Failed to read request: %s", request.unwrapErr());
       ctx->abort();
       return;
     }
+
     auto body = request.unwrap();
     auto msg = body.containsOneMessage() ? body.getMessage()
                                          : body.getMessageList()[0];
-    auto result = reverse(msg);
-    ctx->sendResponse(Cnm::MessageBatch(Cnm::Message(result)));
+
+    auto response = reverse(msg);
+
+    ctx->respond(Cnm::MessageBatch(std::move(response)));
   }
 
   static std::string reverse(const std::string& s) {
@@ -70,6 +65,7 @@ class DirectPCL : public Cnm::PersonalComputerLogic {
       return;
     }
     auto ctx = connection_result.unwrap();
+
     auto accept_result = ctx->waitUntilAccepted();
     if (accept_result.isErr()) {
       spdlog::warn("Failed to be accepted for %s, failed because of: %s",
@@ -77,23 +73,31 @@ class DirectPCL : public Cnm::PersonalComputerLogic {
       ctx->abort();
       return;
     }
+
+    auto req = getRequest();
+    auto request_result = ctx->request(Cnm::MessageBatch(std::move(req)));
+    if (request_result.isErr()) {
+      spdlog::warn("request result is err: %s", request_result.unwrapErr());
+      ctx->abort();
+      return;
+    }
+    auto response = ctx->getResponse();
+    if (response.isErr()) {
+      spdlog::warn("Failed to get response: %s", response.unwrapErr());
+      return;
+    }
+  }
+
+ private:
+  std::string getRequest() {
     auto req = messages.at(i);
     i++;
     if (i == messages.size()) {
       i = 0;
     }
-    ctx->sendRequest(Cnm::MessageBatch(std::move(req)));
-    auto response = ctx->waitAndGetResponse();
-    if (response.isErr()) {
-      spdlog::warn("Failed to get response: %s", response.unwrapErr());
-      return;
-    }
-    spdlog::info("Got response: %s", response.unwrap().getMessage());
-    //    std::cout << "Got response: " << response.unwrap().getMessage()
-    //              << std::endl;
+    return req;
   }
 
- private:
   std::string target_addr;
   size_t i{};
   std::vector<std::string> messages{"hi", "hello, world", "bye", "how are you",
@@ -223,6 +227,7 @@ class DirectPCL : public Cnm::PersonalComputerLogic {
 
 int main() {
   Cnm::Star::Star star;
+  star.setNetworkSpeed(50);
 
   auto svr_addr = Cnm::HostInfo("Direct Server", "12.43.55.100");
   auto svr = std::make_unique<Cnm::Server>(std::make_unique<DirectSL>(), 5,
