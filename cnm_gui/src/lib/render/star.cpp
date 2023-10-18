@@ -86,7 +86,8 @@ ImGuiWindow* renderStarHub(std::shared_ptr<Cnm::Star::Hub>& hub,
     renderMenuForFrozenNode(base_ptr, topology);
   } else {
     ImGui::Text("Object is inactive");
-    renderDeleteButtonForNode(base_ptr, topology);
+    // The Hub should not be ever deleted.
+    //    renderDeleteButtonForNode(base_ptr, topology);
   }
 
   // On moving the window, checks if it goes out of Editor window.
