@@ -71,10 +71,9 @@ Communicator::findShortestPath(const std::string& from, const std::string& to) {
   auto end = ring->nodes.at(to);
 
   ResultType next_path{};
-  for (auto it = ++Iterator(start); (*it)->getHostInfo().getAddress() != from &&
-                                    (*it)->getHostInfo().getAddress() != to;
-       ++it) {
-    next_path.emplace_back(*it);
+
+  for (auto ptr = start->getNextNode(); ptr != end; ptr = ptr->getNextNode()) {
+    next_path.emplace_back(ptr);
   }
 
   if (next_path.size() >= ring->nodes.size() / 2 &&
@@ -83,10 +82,9 @@ Communicator::findShortestPath(const std::string& from, const std::string& to) {
   }
 
   ResultType back_path{};
-  for (auto it = --Iterator(start); (*it)->getHostInfo().getAddress() != from &&
-                                    (*it)->getHostInfo().getAddress() != to;
-       ++it) {
-    back_path.emplace_back(*it);
+  for (auto ptr = start->getPreviousNode(); ptr != end;
+       ptr = ptr->getPreviousNode()) {
+    back_path.emplace_back(ptr);
   }
 
   return result_t<ResultType>::Ok(
