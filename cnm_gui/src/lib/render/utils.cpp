@@ -26,6 +26,12 @@ void forceWindowInsideParent(const ImGuiWindow* parent, ImGuiWindow* child) {
   child->Pos = child_pos;
 }
 
+void setCursorAtTheBottom(float offset) {
+  auto size = ImGui::GetWindowSize();
+  auto cursor_y = size.y - offset;
+  ImGui::SetCursorPosY(cursor_y);
+}
+
 void renderStopButtonForNode(std::shared_ptr<Cnm::Node>& node) {
   if (ImGui::Button("Stop")) {
     if (node->getStatus() != Cnm::Object::Status::Freezed) {
@@ -60,6 +66,7 @@ void renderDeleteButtonForNode(std::shared_ptr<Cnm::Node>& node,
 void renderMenuForRunningNode(std::shared_ptr<Cnm::Node>& node,
                               Cnm::Topology* topology) {
   IM_ASSERT(node->getStatus() == Cnm::Object::Status::Running);
+  setCursorAtTheBottom(35);
   renderStopButtonForNode(node);
   ImGui::SameLine();
   renderKillButtonForNode(node);
@@ -68,6 +75,7 @@ void renderMenuForRunningNode(std::shared_ptr<Cnm::Node>& node,
 void renderMenuForFrozenNode(std::shared_ptr<Cnm::Node>& node,
                              Cnm::Topology* topology) {
   IM_ASSERT(node->getStatus() == Cnm::Object::Status::Freezed);
+  setCursorAtTheBottom(35);
   renderInvokeButtonForNode(node);
   ImGui::SameLine();
   renderKillButtonForNode(node);

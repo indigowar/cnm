@@ -37,6 +37,7 @@ ImGuiWindow* renderStarNode(std::shared_ptr<Cnm::Star::Node>& node,
     renderMenuForFrozenNode(base_ptr, topology);
   } else {
     ImGui::Text("Object is inactive");
+    setCursorAtTheBottom(35);
     renderDeleteButtonForNode(base_ptr, topology);
   }
 

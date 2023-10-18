@@ -36,4 +36,6 @@ std::string makeNodeWindowName(const std::shared_ptr<Cnm::Node>& node);
 // size and position.
 ImVec2 calculateWindowCenter(const ImGuiWindow* window);
 
+void setCursorAtTheBottom(float offset);
+
 #endif  // HPP_CNM_GUI_LIB_RENDER_UTILS_HPP
