@@ -1,6 +1,7 @@
 #include "ring.hpp"
 
 #include <ranges>
+#include <utility>
 
 #include "cnm/topology/ring/communicator.hpp"
 #include "cnm/topology/ring/iterator.hpp"
@@ -115,16 +116,16 @@ result_t<bool> Ring::validate() const noexcept {
   return result_t<bool>::Ok(found.size() == nodes.size());
 }
 
-Iterator Ring::begin() { return Iterator(nodes.begin()->second); }
+Iterator Ring::begin() { return Iterator(nodes.begin()); }
 
-Iterator Ring::end() { return Iterator(nullptr); }
+Iterator Ring::end() { return Iterator(nodes.end()); }
 
 void Ring::signalNodes(std::function<void(std::shared_ptr<Node>&)> func) {
   auto only_nodes = nodes | std::views::values;
-  std::for_each(only_nodes.begin(), only_nodes.end(), func);
+  std::for_each(only_nodes.begin(), only_nodes.end(), std::move(func));
 }
 
-HostInfo Ring::generateHostInfo(std::string name) {
+HostInfo Ring::generateHostInfo(const std::string& name) {
   HostInfo hi{};
   do {
     hi = HostInfo::generate(name);

@@ -1,6 +1,8 @@
 #ifndef HPP_CNM_CORE_TOPOLOGY_RING_RING_ITERATOR_HPP
 #define HPP_CNM_CORE_TOPOLOGY_RING_RING_ITERATOR_HPP
 
+#include <map>
+
 #include "cnm/topology/base/node_iterator.hpp"
 #include "cnm/topology/ring/node.hpp"
 
@@ -8,8 +10,11 @@ namespace Cnm::Ring {
 
 // Ring::Iterator - is an iterator for Ring topology.
 class Iterator final {
+  using MapIterator =
+      std::map<std::string, std::shared_ptr<Ring::Node>>::iterator;
+
  public:
-  explicit Iterator(std::shared_ptr<Node> node) : node{std::move(node)} {}
+  explicit Iterator(MapIterator iterator) : iterator{iterator} {}
 
   ~Iterator() = default;
 
@@ -19,47 +24,30 @@ class Iterator final {
   Iterator(Iterator&&) = default;
   Iterator& operator=(Iterator&&) = default;
 
-  std::shared_ptr<Node> operator*() const noexcept { return node; }
+  std::shared_ptr<Node> operator*() const noexcept { return iterator->second; }
 
   Iterator& operator++() {
-    if (node) {
-      node = node->getNextNode();
-    }
+    iterator++;
     return *this;
   }
 
   Iterator& operator--() {
-    if (node) {
-      node = node->getPreviousNode();
-    }
+    iterator--;
     return *this;
   }
 
   template <NodeIterator I>
   bool operator==(const I& other) const {
-    auto t = this->operator*();
-    auto o = this->operator*();
-
-    // equal pointers - same node.
-    if (t == o) {
-      return true;
-    }
-
-    // if one of pointers is nullptr and other one is not.
-    if (!t || !o) {
-      return false;
-    }
-
-    return t->getHostInfo() == o->getHostInfo();
+    return iterator == other.iterator;
   }
 
   template <NodeIterator I>
   bool operator!=(const I& o) const {
-    return !this->operator==(o);
+    return iterator != o.iterator;
   }
 
  private:
-  std::shared_ptr<Node> node;
+  MapIterator iterator;
 };
 
 }  // namespace Cnm::Ring
