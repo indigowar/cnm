@@ -1,5 +1,10 @@
 # CNM
 
+```
+This project is abandoned. Probably will be rewritten in Rust
+
+```
+
 CNM is course work for "Object Oriented Programming" subject at the university.
 
 Written using those technologies:
